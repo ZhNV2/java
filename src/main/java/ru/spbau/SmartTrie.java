@@ -16,6 +16,7 @@ public class SmartTrie implements Trie, StreamSerializable {
     final private Node root = new Node();
 
     public boolean add(String element) {
+        if (contains(element)) return false;
         Node curNode = root;
         boolean isNew = false;
         for (int i = 0; i < element.length(); i++) {
@@ -23,13 +24,12 @@ public class SmartTrie implements Trie, StreamSerializable {
             char curSymbol = element.charAt(i);
             if (curNode.nextNode.get(curSymbol) == null) {
                 curNode.nextNode.put(curSymbol, new Node());
-                isNew = true;
             }
             curNode = curNode.nextNode.get(curSymbol);
         }
         curNode.isTerminal = true;
         curNode.cntWords++;
-        return isNew;
+        return true;
     }
 
     public boolean contains(String element) {
