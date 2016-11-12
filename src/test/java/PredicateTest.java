@@ -1,8 +1,5 @@
-import com.sun.org.apache.xerces.internal.impl.dv.xs.BooleanDV;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.junit.Test;
 import ru.spbau.Predicate;
-import ru.spbau.zhidkov.Function1;
 
 import static org.junit.Assert.*;
 
@@ -13,63 +10,95 @@ public class PredicateTest {
 
     @Test
     public void testALWAYS_TRUE() {
-        Predicate predicate = Predicate.ALWAYS_TRUE();
+        Predicate<Object> predicate = Predicate.ALWAYS_TRUE;
         assertTrue(predicate.apply(3));
         assertTrue(predicate.apply("QWE"));
 
-        Predicate<Integer> predicate1 = Predicate.ALWAYS_TRUE();
+        Predicate<Object> predicate1 = Predicate.ALWAYS_TRUE;
         assertTrue(predicate1.apply(1));
         assertTrue(predicate1.apply(0));
     }
 
     @Test
     public void testALWAYS_FALSE() {
-        Predicate predicate = Predicate.ALWAYS_FALSE();
+        Predicate<Object> predicate = Predicate.ALWAYS_FALSE;
         assertFalse(predicate.apply(3));
         assertFalse(predicate.apply("QWE"));
 
-        Predicate<Integer> predicate1 = Predicate.ALWAYS_FALSE();
+        Predicate<Object> predicate1 = Predicate.ALWAYS_FALSE;
         assertFalse(predicate1.apply(1));
         assertFalse(predicate1.apply(0));
     }
 
     @Test
     public void testNot() {
-        assertTrue(Predicate.ALWAYS_FALSE().not().apply("abc"));
-        assertTrue(Predicate.<Integer>ALWAYS_FALSE().not().apply(3));
-        assertFalse(Predicate.ALWAYS_TRUE().not().apply("abc"));
-        assertFalse(Predicate.<Integer>ALWAYS_TRUE().not().apply(3));
-        assertTrue(TestConstants.isOdd.not().apply(6));
-        assertFalse(TestConstants.isOdd.not().apply(5));
+        assertTrue(Predicate.ALWAYS_FALSE.not().apply("abc"));
+        assertTrue(Predicate.ALWAYS_FALSE.not().apply(3));
+        assertFalse(Predicate.ALWAYS_TRUE.not().apply("abc"));
+        assertFalse(Predicate.ALWAYS_TRUE.not().apply(3));
+        assertTrue(TestConstants.IS_ODD.not().apply(6));
+        assertFalse(TestConstants.IS_ODD.not().apply(5));
     }
 
     @Test
     public void testOr() {
-        assertTrue(TestConstants.isOdd.or(TestConstants.isEven).apply(0));
-        assertTrue(TestConstants.isOdd.or(TestConstants.isEven).apply(1));
-        assertTrue(TestConstants.isOdd.or(Predicate.ALWAYS_TRUE()).apply(0));
-        assertTrue(TestConstants.isOdd.or(Predicate.ALWAYS_TRUE()).apply(1));
-        assertFalse(TestConstants.isOdd.or(Predicate.ALWAYS_FALSE()).apply(0));
-        assertTrue(TestConstants.isOdd.or(Predicate.ALWAYS_FALSE()).apply(1));
+        assertTrue(TestConstants.IS_ODD.or(TestConstants.IS_EVEN).apply(0));
+        assertTrue(TestConstants.IS_ODD.or(TestConstants.IS_EVEN).apply(1));
+        assertTrue(TestConstants.IS_ODD.or(Predicate.ALWAYS_TRUE).apply(0));
+        assertTrue(TestConstants.IS_ODD.or(Predicate.ALWAYS_TRUE).apply(1));
+        assertFalse(TestConstants.IS_ODD.or(Predicate.ALWAYS_FALSE).apply(0));
+        assertTrue(TestConstants.IS_ODD.or(Predicate.ALWAYS_FALSE).apply(1));
 
-        assertTrue(Predicate.ALWAYS_TRUE().or(Predicate.ALWAYS_FALSE()).apply(2));
-        assertTrue(Predicate.ALWAYS_TRUE().or(Predicate.ALWAYS_FALSE()).apply(1));
-        assertFalse(Predicate.ALWAYS_FALSE().or(Predicate.ALWAYS_FALSE()).apply(1));
+        assertTrue(Predicate.ALWAYS_TRUE.or(Predicate.ALWAYS_FALSE).apply(2));
+        assertTrue(Predicate.ALWAYS_TRUE.or(Predicate.ALWAYS_FALSE).apply(1));
+        assertFalse(Predicate.ALWAYS_FALSE.or(Predicate.ALWAYS_FALSE).apply(1));
 
     }
 
     @Test
     public void testAnd() {
-        assertFalse(TestConstants.isOdd.and(TestConstants.isEven).apply(0));
-        assertFalse(TestConstants.isOdd.and(TestConstants.isEven).apply(1));
-        assertFalse(TestConstants.isOdd.and(Predicate.ALWAYS_TRUE()).apply(0));
-        assertTrue(TestConstants.isOdd.and(Predicate.ALWAYS_TRUE()).apply(1));
-        assertFalse(TestConstants.isOdd.and(Predicate.ALWAYS_FALSE()).apply(0));
-        assertFalse(TestConstants.isOdd.and(Predicate.ALWAYS_FALSE()).apply(1));
+        assertFalse(TestConstants.IS_ODD.and(TestConstants.IS_EVEN).apply(0));
+        assertFalse(TestConstants.IS_ODD.and(TestConstants.IS_EVEN).apply(1));
+        assertFalse(TestConstants.IS_ODD.and(Predicate.ALWAYS_TRUE).apply(0));
+        assertTrue(TestConstants.IS_ODD.and(Predicate.ALWAYS_TRUE).apply(1));
+        assertFalse(TestConstants.IS_ODD.and(Predicate.ALWAYS_FALSE).apply(0));
+        assertFalse(TestConstants.IS_ODD.and(Predicate.ALWAYS_FALSE).apply(1));
 
-        assertFalse(Predicate.ALWAYS_TRUE().and(Predicate.ALWAYS_FALSE()).apply(2));
-        assertFalse(Predicate.ALWAYS_TRUE().and(Predicate.ALWAYS_FALSE()).apply(1));
-        assertTrue(Predicate.ALWAYS_TRUE().and(Predicate.ALWAYS_TRUE()).apply(1));
+        assertFalse(Predicate.ALWAYS_TRUE.and(Predicate.ALWAYS_FALSE).apply(2));
+        assertFalse(Predicate.ALWAYS_TRUE.and(Predicate.ALWAYS_FALSE).apply(1));
+        assertTrue(Predicate.ALWAYS_TRUE.and(Predicate.ALWAYS_TRUE).apply(1));
+    }
+
+    private int testFlag;
+
+    private Predicate<Integer> myAlwaysYes = new Predicate<Integer>() {
+        @Override
+        public Boolean apply(Integer arg) {
+            testFlag = 1;
+            return true;
+        }
+    };
+
+    private Predicate<Integer> myAlwaysNo = new Predicate<Integer>() {
+        @Override
+        public Boolean apply(Integer arg) {
+            testFlag = 2;
+            return false;
+        }
+    };
+
+    @Test
+    public void testLazinessAnd() {
+        testFlag = 0;
+        myAlwaysNo.and(myAlwaysYes).apply(1);
+        assertEquals(testFlag, 2);
+    }
+
+    @Test
+    public void testLazinessOr() {
+        testFlag = 0;
+        myAlwaysYes.or(myAlwaysNo).apply(1);
+        assertEquals(testFlag, 1);
     }
 
 

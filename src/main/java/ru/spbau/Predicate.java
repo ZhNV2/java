@@ -1,6 +1,10 @@
 package ru.spbau;
 
+import javafx.beans.binding.ObjectExpression;
 import ru.spbau.zhidkov.Function1;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Nikolay on 23.10.16.
@@ -10,23 +14,19 @@ abstract public class Predicate<D> extends Function1<D, Boolean> {
 
     abstract public Boolean apply(D arg);
 
-    static public <T> Predicate<T> ALWAYS_TRUE() {
-        return new Predicate<T>() {
-            @Override
-            public Boolean apply(T arg) {
-                return true;
-            }
-        };
-    }
+    static public Predicate<Object> ALWAYS_TRUE = new Predicate<Object>() {
+        @Override
+        public Boolean apply(Object o) {
+            return true;
+        }
+    };
 
-    static public <T> Predicate<T> ALWAYS_FALSE() {
-        return new Predicate<T>() {
-            @Override
-            public Boolean apply(T arg) {
-                return false;
-            }
-        };
-    }
+    static public Predicate<Object> ALWAYS_FALSE = new Predicate<Object>() {
+        @Override
+        public Boolean apply(Object o) {
+            return false;
+        }
+    };
 
     public Predicate<D> not() {
         return new Predicate<D>() {

@@ -16,17 +16,17 @@ import static ru.Collections.*;
  */
 public class CollectionsTest {
 
-    private final ArrayList<Integer> integers = new ArrayList<Integer>(Arrays.asList(2,4,2,3,5,5,2,3,4,1,7,3,4,5,6));
+    private final List<Integer> integers = Arrays.asList(2,4,2,3,5,5,2,3,4,1,7,3,4,5,6);
 
     @Test
     public void testMap() {
-        List<Integer> resMap = map(TestConstants.mul3, integers);
+        List<Integer> resMap = map(TestConstants.MUL_3, integers);
         List<Integer> res = integers.stream()
                                 .map(o -> o * 3)
                                 .collect(Collectors.toList());
         assertEquals(resMap, res);
 
-        List<Integer> hashCodes = map(TestConstants.hashCode, integers);
+        List<Integer> hashCodes = map(TestConstants.HASH_CODE, integers);
         List<Integer> realHashCodes = integers.stream()
                                         .map(Object::hashCode)
                                         .collect(Collectors.toList());
@@ -35,13 +35,13 @@ public class CollectionsTest {
 
     @Test
     public void testFilter() {
-        List<Integer> evens = filter(TestConstants.isEven, integers);
+        List<Integer> evens = filter(TestConstants.IS_EVEN, integers);
         List<Integer> realEvens = integers.stream()
                                     .filter(o -> o % 2 == 0)
                                     .collect(Collectors.toList());
         assertEquals(evens, realEvens);
 
-        List<Integer> hashCodeEvens = filter(TestConstants.isHashCodeEven, integers);
+        List<Integer> hashCodeEvens = filter(TestConstants.IS_HASH_CODE_EVEN, integers);
         List<Integer> realHashCodeEvens = integers.stream()
                                             .filter(o -> o.hashCode() % 2 == 0)
                                             .collect(Collectors.toList());
@@ -50,7 +50,7 @@ public class CollectionsTest {
 
     @Test
     public void testTakeWhile() {
-        List<Integer> take = takeWhile(TestConstants.isEven, integers);
+        List<Integer> take = takeWhile(TestConstants.IS_EVEN, integers);
         List<Integer> realTake = new ArrayList<Integer>();
         for (Integer elem : integers) {
             if (elem % 2 == 0) {
