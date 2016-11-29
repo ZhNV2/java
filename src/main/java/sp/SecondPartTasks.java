@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 
+
 public final class SecondPartTasks {
 
     private SecondPartTasks() {}
@@ -24,6 +25,7 @@ public final class SecondPartTasks {
                             stringBuilder.append((char)c);
                         }
                         String text = stringBuilder.toString();
+                        fileReader.close();
                         return text.contains(sequence);
                     } catch (Throwable e) {
                         return false;
@@ -53,39 +55,39 @@ public final class SecondPartTasks {
     // Дано отображение из имени автора в список с содержанием его произведений.
     // Надо вычислить, чья общая длина произведений наибольшая.
     public static String findPrinter(Map<String, List<String>> compositions) {
-        final Function<String, Integer> length = autor->{
-            List<String> comps = compositions.getOrDefault(autor, Collections.emptyList());
-            int len = 0;
-            if (comps != null) {
-                for (String text : comps) {
-                    len += text.length();
-                }
-            }
-            return len;
-        };
-
         return compositions
                 .entrySet()
                 .stream()
-                .map(a->a.getKey())
-                .max((a1,a2)->length.apply(a1)
-                                    .compareTo(length.apply(a2)))
-                .orElseGet(()->"");
+                .map(Map.Entry::getKey)
+                .max(Comparator.comparingInt(author -> {
+                    List<String> comps = compositions.getOrDefault(author, Collections.emptyList());
+                    int len = 0;
+                    if (comps != null) {
+                        for (String text : comps) {
+                            len += text.length();
+                        }
+                    }
+                    return len;}))
+                .orElse(null);
     }
-
     // Вы крупный поставщик продуктов. Каждая торговая сеть делает вам заказ в виде Map<Товар, Количество>.
     // Необходимо вычислить, какой товар и в каком количестве надо поставить.
     public static Map<String, Integer> calculateGlobalOrder(List<Map<String, Integer>> orders) {
         return orders
                 .stream()
-                .reduce(new HashMap<String, Integer>(),
-                        (m1, m2)-> {
-                            for (Map.Entry<String, Integer> entry : m2.entrySet()) {
-                                int val = entry.getValue() == null ? 0 : entry.getValue();
-                                m1.put(entry.getKey(), m1.getOrDefault(entry.getKey(), 0) + val);
-                            }
-                            return m1;
-                        }
-                );
+                .filter(a -> a != null)
+                .flatMap(a->a.entrySet().stream())
+                .map(Map.Entry::getKey)
+                .distinct()
+                .filter(a -> a != null)
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.summingInt(a -> a == null ? 0 :
+                            orders
+                                .stream()
+                                .mapToInt(m -> {
+                                    if (m == null) return 0;
+                                    if (m.getOrDefault(a, 0) == null) return 0;
+                                    return  m.getOrDefault(a, 0);
+                                })
+                                .sum())));
     }
 }

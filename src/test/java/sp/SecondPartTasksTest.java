@@ -18,10 +18,10 @@ public class SecondPartTasksTest {
     @Test
     public void testFindQuotes() throws IOException {
 
-        List<String> paths = Arrays.asList("src/test/resources/a.txt",
-                                            "src/test/resources/b.txt",
-                                            "src/test/resources/c.txt",
-                                            "src/test/resources/d.txt"
+        List<String> paths = Arrays.asList("src/main/resources/a.txt",
+                                            "src/main/resources/b.txt",
+                                            "src/main/resources/c.txt",
+                                            "src/main/resources/d.txt"
         );
         FileWriter fileWriter = new FileWriter(paths.get(0));
         fileWriter.write("abacaba");
@@ -84,7 +84,7 @@ public class SecondPartTasksTest {
 
         assertEquals(
                 res,
-                calculateGlobalOrder(Arrays.asList(a, b, c)));
+                calculateGlobalOrder(Arrays.asList(a, b, c, null)));
 
     }
 }

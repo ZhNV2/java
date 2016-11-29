@@ -41,12 +41,11 @@ public final class FirstPartTasks {
     // Список альбомов, в которых есть хотя бы один трек с рейтингом более 95, отсортированный по названию
     public static List<Album> sortedFavorites(Stream<Album> albums) {
         return albums
-                .filter(a-> a
+                .filter(a -> a
                         .getTracks()
                         .stream()
-                        .filter(b->b.getRating() > 95)
-                        .count() >= 1)
-                .sorted((a, b)->a.getName().compareTo(b.getName()))
+                        .anyMatch(b->b.getRating() > 95))
+                .sorted(Comparator.comparing(Album::getName))
                 .collect(toList());
     }
 
@@ -65,7 +64,7 @@ public final class FirstPartTasks {
     // Число повторяющихся альбомов в потоке
     public static long countAlbumDuplicates(Stream<Album> albums) {
         return albums
-                .collect(groupingBy(a->a, Collectors.counting()))
+                .collect(groupingBy(Function.identity(), Collectors.counting()))
                 .entrySet()
                 .stream()
                 .filter(a -> a.getValue() > 1)
@@ -75,27 +74,24 @@ public final class FirstPartTasks {
     // Альбом, в котором максимум рейтинга минимален
     // (если в альбоме нет ни одного трека, считать, что максимум рейтинга в нем --- 0)
     public static Optional<Album> minMaxRating(Stream<Album> albums) {
-        final Function<Album, Integer> maxRating = a -> a
-                                                .getTracks()
-                                                .stream()
-                                                .mapToInt(Track::getRating)
-                                                .max()
-                                                .orElseGet(()->0);
         return albums
-                .min((album1, album2)->maxRating.apply(album1)
-                                        .compareTo(maxRating.apply(album2)));
+                .min(Comparator.comparing(a -> a
+                                            .getTracks()
+                                            .stream()
+                                            .mapToInt(Track::getRating)
+                                            .max()
+                                            .orElse(0)));
     }
 
     // Список альбомов, отсортированный по убыванию среднего рейтинга его треков (0, если треков нет)
     public static List<Album> sortByAverageRating(Stream<Album> albums) {
-        final Function<Album, Double> averageRating = a -> a
-                .getTracks()
-                .stream()
-                .mapToDouble(Track::getRating)
-                .sum() / a.getTracks().size();
         return albums
-                .sorted((a1, a2)->averageRating.apply(a2)
-                        .compareTo(averageRating.apply(a1)))
+                .sorted(Comparator.comparing( a -> -1 * (a
+                                                .getTracks()
+                                                .stream()
+                                                .mapToDouble(Track::getRating)
+                                                .average()
+                                                .orElse(0))))
                 .collect(toList());
     }
 
@@ -110,9 +106,9 @@ public final class FirstPartTasks {
     // Вернуть строку, состояющую из конкатенаций переданного массива, и окруженную строками "<", ">"
     // см. тесты
     public static String joinTo(String... strings) {
-        return '<' + Arrays
+        return Arrays
                 .stream(strings)
-                .collect(Collectors.joining(", ")) + '>';
+                .collect(Collectors.joining(", ", "<", ">"));
     }
 
     // Вернуть поток из объектов класса 'clazz'
