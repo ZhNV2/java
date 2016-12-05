@@ -1,5 +1,6 @@
 package sp;
 
+import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.*;
 import java.util.function.Function;
@@ -17,15 +18,13 @@ public final class SecondPartTasks {
         return paths
                 .stream()
                 .filter(path-> {
-                    try {
-                        FileReader fileReader = new FileReader(path);
+                    try (FileReader fileReader = new FileReader(path); BufferedReader bufferedReader = new BufferedReader(fileReader)){
                         StringBuilder stringBuilder = new StringBuilder();
-                        int c = 0;
-                        while ((c = fileReader.read()) != -1) {
-                            stringBuilder.append((char)c);
+                        String curLine;
+                        while ((curLine = bufferedReader.readLine()) != null) {
+                            stringBuilder.append(curLine);
                         }
                         String text = stringBuilder.toString();
-                        fileReader.close();
                         return text.contains(sequence);
                     } catch (Throwable e) {
                         return false;
@@ -58,17 +57,17 @@ public final class SecondPartTasks {
         return compositions
                 .entrySet()
                 .stream()
-                .map(Map.Entry::getKey)
-                .max(Comparator.comparingInt(author -> {
-                    List<String> comps = compositions.getOrDefault(author, Collections.emptyList());
-                    int len = 0;
-                    if (comps != null) {
-                        for (String text : comps) {
-                            len += text.length();
+                .max(Comparator.comparingInt(a -> {
+                                    if (a.getValue() == null) return 0;
+                                    return a
+                                    .getValue()
+                                    .stream()
+                                    .mapToInt(String::length)
+                                    .sum();
                         }
-                    }
-                    return len;}))
-                .orElse(null);
+                ))
+                .orElse(null)
+                .getKey();
     }
     // Вы крупный поставщик продуктов. Каждая торговая сеть делает вам заказ в виде Map<Товар, Количество>.
     // Необходимо вычислить, какой товар и в каком количестве надо поставить.
