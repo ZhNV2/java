@@ -18,7 +18,7 @@ public final class SecondPartTasks {
         return paths
                 .stream()
                 .filter(path-> {
-                    try (FileReader fileReader = new FileReader(path); BufferedReader bufferedReader = new BufferedReader(fileReader)){
+                    try (BufferedReader bufferedReader = new BufferedReader(new FileReader(path))){
                         StringBuilder stringBuilder = new StringBuilder();
                         String curLine;
                         while ((curLine = bufferedReader.readLine()) != null) {
@@ -66,27 +66,15 @@ public final class SecondPartTasks {
                                     .sum();
                         }
                 ))
-                .orElse(null)
-                .getKey();
+                .map(Map.Entry::getKey)
+                .orElse(null);
     }
     // Вы крупный поставщик продуктов. Каждая торговая сеть делает вам заказ в виде Map<Товар, Количество>.
     // Необходимо вычислить, какой товар и в каком количестве надо поставить.
     public static Map<String, Integer> calculateGlobalOrder(List<Map<String, Integer>> orders) {
         return orders
                 .stream()
-                .filter(a -> a != null)
                 .flatMap(a->a.entrySet().stream())
-                .map(Map.Entry::getKey)
-                .distinct()
-                .filter(a -> a != null)
-                .collect(Collectors.groupingBy(Function.identity(), Collectors.summingInt(a -> a == null ? 0 :
-                            orders
-                                .stream()
-                                .mapToInt(m -> {
-                                    if (m == null) return 0;
-                                    if (m.getOrDefault(a, 0) == null) return 0;
-                                    return  m.getOrDefault(a, 0);
-                                })
-                                .sum())));
+                .collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.summingInt(Map.Entry::getValue)));
     }
 }

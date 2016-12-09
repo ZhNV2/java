@@ -63,14 +63,14 @@ public class SecondPartTasksTest {
     @Test
     public void testCalculateGlobalOrder() {
         Map<String, Integer> a = new HashMap<String, Integer>();
-        a.put("a", null);
+        a.put("a", 0);
         a.put("b", 0);
         a.put("c", 1);
         a.put("d", 2);
 
         Map<String, Integer> b = new HashMap<String, Integer>();
         b.put("c", 10);
-        b.put("d", null);
+        b.put("d", 0);
 
         Map<String, Integer> c = new HashMap<String, Integer>();
         c.put("a", 11);
@@ -84,7 +84,7 @@ public class SecondPartTasksTest {
 
         assertEquals(
                 res,
-                calculateGlobalOrder(Arrays.asList(a, b, c, null)));
+                calculateGlobalOrder(Arrays.asList(a, b, c)));
 
     }
 }
