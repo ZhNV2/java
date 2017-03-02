@@ -116,7 +116,7 @@ public class LazyMultiThreadTest {
     private <T> void runThreads(List<T> results, Lazy<T> lazy) {
         List<Thread> threads = new ArrayList<>();
         for (int i = 0; i < TestConstants.THREAD_CNT; i++) {
-            Thread thread = new EvalThread<>(results, lazy);
+            Thread thread = new Thread(new EvalTask<>(results, lazy));
             threads.add(thread);
             thread.start();
         }
@@ -135,7 +135,7 @@ public class LazyMultiThreadTest {
      * Thread that run <tt>Lazy</tt> evaluation and add it to overall list of
      * results.
      */
-    static class EvalThread<T> extends Thread {
+    static class EvalTask<T> implements Runnable {
         /**
          * Overall list of <tt>Lazy</tt> evaluation results.
          */
@@ -147,19 +147,19 @@ public class LazyMultiThreadTest {
         final private Lazy<T> lazy;
 
         /**
-         * Constructs an empty <tt>EvalThread</tt> with initial list of results
+         * Constructs an empty <tt>EvalTask</tt> with initial list of results
          * and <tt>Lazy</tt>.
          * @param results the initial list of results
          * @param lazy the inital <tt>Lazy</tt>
          */
-        EvalThread(List<T> results, Lazy<T> lazy) {
+        EvalTask(List<T> results, Lazy<T> lazy) {
             this.results = results;
             this.lazy = lazy;
         }
 
         /**
-         * Runs {@link EvalThread#lazy EvalThread::lazy} evaluation and add its
-         * result to {@link EvalThread#results EvalThread::results}.
+         * Runs {@link EvalTask#lazy EvalTask::lazy} evaluation and add its
+         * result to {@link EvalTask#results EvalTask::results}.
          */
         @Override
         public void run() {

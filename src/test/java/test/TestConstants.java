@@ -11,8 +11,8 @@ public class TestConstants {
     /**
      * Number of repeating iterations.
      */
-    public static final int REPEAT_IT = 100;
-    public static final int THREAD_CNT = 1000;
+    public static final int REPEAT_IT = 10;
+    public static final int THREAD_CNT = 10;
 
     /**
      * Returns supplier that returns expanding integers staring from 0.
