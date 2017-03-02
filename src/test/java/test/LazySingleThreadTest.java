@@ -1,3 +1,5 @@
+package test;
+
 import org.junit.Test;
 import ru.spbau.Lazy;
 import ru.spbau.LazyFactory;

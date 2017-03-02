@@ -1,3 +1,5 @@
+package test;
+
 import java.util.function.Supplier;
 
 
@@ -9,7 +11,7 @@ public class TestConstants {
     /**
      * Number of repeating iterations.
      */
-    public static final int REPEAT_IT = 10;
+    public static final int REPEAT_IT = 100;
 
     /**
      * Returns supplier that returns expanding integers staring from 0.

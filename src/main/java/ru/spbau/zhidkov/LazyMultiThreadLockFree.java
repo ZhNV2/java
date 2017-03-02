@@ -2,6 +2,7 @@ package ru.spbau.zhidkov;
 
 import ru.spbau.Lazy;
 
+import javax.xml.ws.Holder;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.function.Supplier;
 
@@ -17,8 +18,8 @@ public class LazyMultiThreadLockFree<T> implements Lazy<T> {
      * Updater for {@link LazySingleThread#holder LazySingleThread::
      * holder field}.
      */
-    private static final AtomicReferenceFieldUpdater<LazyMultiThreadLockFree, ValueHolder> holderUpdater =
-            AtomicReferenceFieldUpdater.newUpdater(LazyMultiThreadLockFree.class, ValueHolder.class, "holder");
+    private static final AtomicReferenceFieldUpdater<LazyMultiThreadLockFree, Holder> holderUpdater =
+            AtomicReferenceFieldUpdater.newUpdater(LazyMultiThreadLockFree.class, Holder.class, "holder");
 
     /**
      * Supplier providing evaluation
@@ -26,11 +27,10 @@ public class LazyMultiThreadLockFree<T> implements Lazy<T> {
     private Supplier<T> supplier;
 
     /**
-     * Holder for the evaluation result. It's initial value is {@link
-     * ValueHolder#EMPTY_HOLDER ValuerHolder::EMPTY_HOLDER} to specify
-     * that evaluation is being delayed until first usage.
+     * Holder for the evaluation result. It's initial value is {@code null}
+     * to specify that evaluation is being delayed until first usage.
      */
-    private volatile ValueHolder<T> holder = (ValueHolder<T>) ValueHolder.EMPTY_HOLDER;
+    private volatile Holder<T> holder = null;
 
     /**
      * Construct an empty <tt>LazyMultiThreadLockFree</tt> with the specified
@@ -52,9 +52,8 @@ public class LazyMultiThreadLockFree<T> implements Lazy<T> {
      */
     @Override
     public T get() {
-        holderUpdater.compareAndSet(this, (ValueHolder<T>) ValueHolder.EMPTY_HOLDER,
-                new ValueHolder<T>(true, supplier.get()));
-        return holder.getValue();
+        holderUpdater.compareAndSet(this, null, new Holder<>(supplier.get()));
+        return holder.value;
     }
 
 }

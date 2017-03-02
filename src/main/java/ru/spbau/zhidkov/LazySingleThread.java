@@ -2,7 +2,9 @@ package ru.spbau.zhidkov;
 
 import ru.spbau.Lazy;
 
+import javax.xml.ws.Holder;
 import java.util.function.Supplier;
+import java.util.logging.Handler;
 
 /**
  * This implementation guarantees correctness in single thread execution. It
@@ -19,11 +21,10 @@ public class LazySingleThread<T> implements Lazy<T> {
     private Supplier<T> supplier;
 
     /**
-     * Holder for the evaluation result. It's initial value is {@link
-     * ValueHolder#EMPTY_HOLDER ValuerHolder::EMPTY_HOLDER} to specify that
-     * evaluation is being delayed until first usage.
+     * Holder for the evaluation result. It's initial value is {@code null}
+     * to specify that evaluation is being delayed until first usage.
      */
-    private ValueHolder<T> holder = (ValueHolder<T>) ValueHolder.EMPTY_HOLDER;
+    private Holder<T> holder = null;
 
     /**
      * Construct an empty <tt>LazySingleThread</tt> with the specified
@@ -44,9 +45,9 @@ public class LazySingleThread<T> implements Lazy<T> {
      */
     @Override
     public T get() {
-        if (!holder.isInitialized()) {
-            holder = new ValueHolder<T>(true, supplier.get());
+        if (holder == null) {
+            holder = new Holder<>(supplier.get());
         }
-        return holder.getValue();
+        return holder.value;
     }
 }

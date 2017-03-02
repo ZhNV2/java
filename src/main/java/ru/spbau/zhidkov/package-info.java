@@ -1,6 +1,4 @@
 /**
- * Contains implementations of <tt>Lazy</tt> interface. Also
- * contains supporting class <tt>ValueHolder</tt> (which is
- * used in implementations).
+ * Contains implementations of <tt>Lazy</tt> interface.
  */
 package ru.spbau.zhidkov;
