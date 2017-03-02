@@ -7,6 +7,7 @@ import org.junit.experimental.theories.*;
 import ru.spbau.LazyFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -75,12 +76,14 @@ public class LazyMultiThreadTest {
     @Test
     @Theory
     public void testRaces(Impl impl) {
-        Lazy<Integer> lazy = impl.invoke(TestConstants.getIncSupplier());
-        List<Integer> results = new ArrayList<>();
-        runThreads(results, lazy);
-        int v = results.get(0);
-        for (int value : results) {
-            assertEquals(v, value);
+        for (int i = 0; i < TestConstants.REPEAT_IT; i++) {
+            Lazy<Integer> lazy = impl.invoke(TestConstants.getIncSupplier());
+            List<Integer> results = Collections.synchronizedList(new ArrayList<>());
+            runThreads(results, lazy);
+            int v = results.get(0);
+            for (int element : results) {
+                assertEquals(v, element);
+            }
         }
     }
 
@@ -93,25 +96,26 @@ public class LazyMultiThreadTest {
     @Test
     @Theory
     public void testRacesNullSupplier(Impl impl) {
-        Lazy<Integer> lazy = impl.invoke(TestConstants.getNullSupplier());
-        List<Integer> results = new ArrayList<>();
-        runThreads(results, lazy);
-        for (Integer x : results) {
-            assertNull(x);
+        for (int i = 0; i < TestConstants.REPEAT_IT; i++) {
+            Lazy<Integer> lazy = impl.invoke(TestConstants.getNullSupplier());
+            List<Integer> results = Collections.synchronizedList(new ArrayList<>());
+            runThreads(results, lazy);
+            for (Integer x : results) {
+                assertNull(x);
+            }
         }
     }
 
     /**
      * Run several threads trying to run evaluation at the same time.
-     *
-     * @param results list for storing results
-     * @param lazy <tt>Lazy</tt> providing evaluation
      * @param <T> the type of evaluation result (the same as in <tt>Lazy</tt>
      *           interface)
+     * @param results list for storing results
+     * @param lazy <tt>Lazy</tt> providing evaluation
      */
     private <T> void runThreads(List<T> results, Lazy<T> lazy) {
         List<Thread> threads = new ArrayList<>();
-        for (int i = 0; i < TestConstants.REPEAT_IT; i++) {
+        for (int i = 0; i < TestConstants.THREAD_CNT; i++) {
             Thread thread = new EvalThread<>(results, lazy);
             threads.add(thread);
             thread.start();
@@ -130,9 +134,6 @@ public class LazyMultiThreadTest {
     /**
      * Thread that run <tt>Lazy</tt> evaluation and add it to overall list of
      * results.
-     *
-     * @param <T> the type of evaluation result (the same as in <tt>Lazy</tt>
-     *           interface)
      */
     static class EvalThread<T> extends Thread {
         /**

@@ -12,6 +12,7 @@ public class TestConstants {
      * Number of repeating iterations.
      */
     public static final int REPEAT_IT = 100;
+    public static final int THREAD_CNT = 1000;
 
     /**
      * Returns supplier that returns expanding integers staring from 0.
@@ -20,7 +21,7 @@ public class TestConstants {
      */
     public static Supplier<Integer> getIncSupplier() {
         return new Supplier<Integer>() {
-            int x = 0;
+            int x = 1;
 
             @Override
             public Integer get() {
