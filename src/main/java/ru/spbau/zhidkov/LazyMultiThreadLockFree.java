@@ -52,7 +52,9 @@ public class LazyMultiThreadLockFree<T> implements Lazy<T> {
      */
     @Override
     public T get() {
-        holderUpdater.compareAndSet(this, null, new Holder<>(supplier.get()));
+        if (holder == null) {
+            holderUpdater.compareAndSet(this, null, new Holder<>(supplier.get()));
+        }
         return holder.value;
     }
 
