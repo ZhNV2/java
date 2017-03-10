@@ -9,7 +9,9 @@ import java.util.Map;
 public class VcsTree extends VcsObject {
     private Map<String, String> children;
 
-    public VcsTree(Map<String, String> children) {
-        this.children = children;
+    public VcsTree() {}
+    public void addToChildren(String file, String hash) {
+        children.put(file, hash);
     }
+
 }

@@ -5,4 +5,7 @@ package ru.spbau.zhidkov;
  */
 public class VcsBlob extends VcsObject {
 
+    public VcsBlob(byte[] content) {
+        super(content);
+    }
 }

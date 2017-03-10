@@ -1,5 +1,7 @@
 package ru.spbau.zhidkov;
 
+import ru.Vcs;
+
 import java.io.File;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -12,8 +14,14 @@ public abstract class VcsObject {
 
     private byte[] content;
 
+    VcsObject() {}
+
+    VcsObject(byte[] content) {
+        this.content = content;
+    }
+
     public String getHash() {
-        MessageDigest md = null;
+        MessageDigest md =   null;
         try {
             md = MessageDigest.getInstance("SHA-1");
             return byteArray2Hex(md.digest(content));

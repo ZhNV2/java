@@ -1,6 +1,7 @@
 package ru.spbau;
 
 import ru.Vcs;
+import ru.spbau.zhidkov.VcsBlob;
 import ru.spbau.zhidkov.VcsCommit;
 import ru.spbau.zhidkov.VcsObject;
 import ru.spbau.zhidkov.VcsTree;
@@ -10,8 +11,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class VcsLight implements Vcs {
     private static final String ROOT_DIR = System.getProperty("user.dir") + File.separator + ".vcs";
@@ -21,18 +26,16 @@ public class VcsLight implements Vcs {
     private static final String INITIAL_COMMIT_MESSAGE = "Initial commit.";
     private static final String HEAD = ROOT_DIR + File.separator + "HEAD";
     private static final String MASTER = "master";
+    private static final String NAME = ROOT_DIR + File.separator + "NAME";
 
-    public void init() throws IOException {
+    public void init(String authorName) throws IOException {
         Files.createDirectory(Paths.get(ROOT_DIR));
         Files.createDirectory(Paths.get(OBJECTS_DIR));
         Files.createDirectory(Paths.get(BRANCHES_DIR));
-
         createEmptyFile(ADD_LIST);
         createEmptyFile(HEAD);
-
         writeToFile(HEAD, MASTER);
-
-        createFirstCommit();
+        commit(INITIAL_COMMIT_MESSAGE);
     }
 
     public void add(List<String> fileNames) throws IOException {
@@ -44,13 +47,27 @@ public class VcsLight implements Vcs {
         Files.write(Paths.get(ADD_LIST), stringBuilder.toString().getBytes(), StandardOpenOption.APPEND);
     }
 
-    private void createFirstCommit() throws IOException {
-        VcsTree vcsTree = new VcsTree(new HashMap<>());
-        VcsCommit vcsCommit = new VcsCommit(INITIAL_COMMIT_MESSAGE, vcsTree);
-        writeToFile(vcsTree, OBJECTS_DIR);
-        writeToFile(vcsCommit, OBJECTS_DIR);
-        Files.createSymbolicLink(Paths.get(BRANCHES_DIR + File.separator + MASTER),
-                Paths.get(vcsCommit.getPath(OBJECTS_DIR)));
+    public void commit(String message) throws IOException {
+        List<String> filesToAdd = Files.lines(Paths.get(ADD_LIST)).distinct().collect(Collectors.toList());
+        VcsTree tree = new VcsTree();
+        for (String file : filesToAdd) {
+            VcsBlob blob = new VcsBlob(Files.readAllBytes(Paths.get(file)));
+            tree.addToChildren(file, blob.getHash());
+            writeToFile(blob, OBJECTS_DIR);
+        }
+        VcsCommit commit = new VcsCommit(message, tree, new Date());
+        writeToFile(tree, OBJECTS_DIR);
+        writeToFile(commit, OBJECTS_DIR);
+        Files.createSymbolicLink(Paths.get(BRANCHES_DIR + File.separator + getCurrentBranch()),
+                Paths.get(commit.getPath(OBJECTS_DIR)));
+    }
+
+    private String getCurrentBranch() throws IOException {
+        String result = Files.lines(Paths.get(HEAD)).findAny().orElse("error");
+        if (result == "error") {
+            // TODO: ...
+        }
+        return result;
     }
 
     private void writeToFile(VcsObject vcsObject, String dir) throws IOException {
