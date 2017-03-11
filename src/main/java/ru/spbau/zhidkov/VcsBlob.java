@@ -1,11 +1,14 @@
 package ru.spbau.zhidkov;
 
-/**
- * Created by Nikolay on 08.03.17.
- */
 public class VcsBlob extends VcsObject {
 
+    private byte[] content = null;
+
     public VcsBlob(byte[] content) {
-        super(content);
+        this.content = content;
+    }
+
+    public byte[] getContent() {
+        return content;
     }
 }
