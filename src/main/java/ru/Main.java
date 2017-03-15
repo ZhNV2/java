@@ -11,7 +11,7 @@ import java.util.List;
 public class Main {
 
     public enum Command {
-        init, add, commit, log, checkout, branch;
+        init, add, commit, log, checkout, branch, merge;
     }
 
     public static void main(String[] args) throws IOException {
@@ -51,6 +51,8 @@ public class Main {
             } else {
                 // TODO:
             }
+        } else if (command.equals(Command.merge.toString())) {
+            Vcs.merge(args[1]);
         } else {
             // TODO:
         }

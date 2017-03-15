@@ -3,17 +3,13 @@ package ru.spbau;
 import ru.spbau.zhidkov.VcsBlob;
 import ru.spbau.zhidkov.VcsCommit;
 import ru.spbau.zhidkov.VcsObject;
-import ru.spbau.zhidkov.VcsTree;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 abstract public class Vcs {
@@ -27,6 +23,7 @@ abstract public class Vcs {
     private static final String MASTER = "master";
     private static final String AUTHOR_NAME = ONE_LINE_VARS_DIR + File.separator + "AUTHOR_NAME";
     private static final String INITIAL_COMMIT_PREV_HASH = "";
+    private static final String MERGE_MESSAGE = "Merged with branch ";
 
     public static void init(String authorName) throws IOException {
         Files.createDirectory(Paths.get(ROOT_DIR));
@@ -52,24 +49,14 @@ abstract public class Vcs {
 
     public static void commit(String message) throws IOException {
         List<String> filesToAdd = Files.lines(Paths.get(ADD_LIST)).distinct().collect(Collectors.toList());
-        VcsTree tree;
-        if (message.equals(INITIAL_COMMIT_MESSAGE)) {
-            tree = new VcsTree(new HashMap<>());
-        } else {
-            String lastCommitHash = getFirstLine(BRANCHES_DIR + File.separator + getFirstLine(HEAD));
-            VcsCommit lastCommit = getCommit(lastCommitHash);
-            VcsTree lastTree = getTree(lastCommit);
-            tree = new VcsTree(lastTree.getChildren());
-        }
+        VcsCommit commit = new VcsCommit(message, new Date(), getFirstLine(AUTHOR_NAME),
+                message.equals(INITIAL_COMMIT_MESSAGE) ? INITIAL_COMMIT_PREV_HASH :
+                        getFirstLine(BRANCHES_DIR + File.separator + getFirstLine(HEAD)), new HashMap<>());
         for (String file : filesToAdd) {
             VcsBlob blob = new VcsBlob(Files.readAllBytes(Paths.get(file)));
-            tree.addToChildren(file, blob.getHash());
+            commit.addToChildren(file, blob.getHash());
             writeToFile(blob, OBJECTS_DIR);
         }
-        VcsCommit commit = new VcsCommit(tree.getHash(), message, new Date(), getFirstLine(AUTHOR_NAME),
-                message.equals(INITIAL_COMMIT_MESSAGE) ? INITIAL_COMMIT_PREV_HASH :
-                        getFirstLine(BRANCHES_DIR + File.separator + getFirstLine(HEAD)));
-        writeToFile(tree, OBJECTS_DIR);
         writeToFile(commit, OBJECTS_DIR);
         writeToFile(BRANCHES_DIR + File.separator + getFirstLine(HEAD), commit.getHash());
         writeToFile(ADD_LIST, "");
@@ -90,29 +77,37 @@ abstract public class Vcs {
     }
 
     public static void checkout(String commitHash, String branchName) throws IOException {
-            if (branchName != null) commitHash = getFirstLine(BRANCHES_DIR + File.separator + branchName);
+        if (branchName != null) commitHash = getFirstLine(BRANCHES_DIR + File.separator + branchName);
         String lastCommitHash = getFirstLine(BRANCHES_DIR + File.separator + getFirstLine(HEAD));
         if (lastCommitHash.equals(commitHash)) return;
         if (!getFirstLine(ADD_LIST).equals("")) {
             // TODO:
         }
-        VcsCommit lastCommit = getCommit(lastCommitHash);
-        VcsTree lastTree = getTree(lastCommit);
-        for (Map.Entry<String, String> entry : lastTree.getChildren().entrySet()) {
-            Files.deleteIfExists(Paths.get(entry.getKey()));
-        }
-        VcsCommit checkoutCommit = (VcsCommit) VcsObject.readFromJson(OBJECTS_DIR + File.separator + commitHash, VcsCommit.class);
-        VcsTree checkoutTree = (VcsTree) VcsObject.readFromJson(OBJECTS_DIR + File.separator + checkoutCommit.getTreeHash(), VcsTree.class);
-        for (Map.Entry<String, String> entry : checkoutTree.getChildren().entrySet()) {
-            VcsBlob blob = (VcsBlob) VcsObject.readFromJson(OBJECTS_DIR + File.separator + entry.getValue(), VcsBlob.class);
-            writeToFile(entry.getKey(), blob.getContent());
-        }
+        deleteCommittedFiles(lastCommitHash);
+
+        Collection <String> restored = new HashSet<>();
+        restore(commitHash, restored);
         if (branchName == null) {
             writeToFile(BRANCHES_DIR + File.separator + getFirstLine(HEAD), commitHash);
         } else {
             writeToFile(HEAD, branchName);
         }
     }
+
+    public static void merge(String branchToMerge) throws IOException {
+        if (branchToMerge.equals(getFirstLine(HEAD))) {
+            // TODO:
+            return;
+        }
+        VcsCommit commit = new VcsCommit(MERGE_MESSAGE + branchToMerge, new Date(), getFirstLine(AUTHOR_NAME),
+                        getFirstLine(BRANCHES_DIR + File.separator + getFirstLine(HEAD)), new HashMap<>());
+        Collection<String> checked = new HashSet<>();
+        mergeCommit(getFirstLine(BRANCHES_DIR + File.separator + branchToMerge), checked, commit);
+        writeToFile(commit, OBJECTS_DIR);
+        writeToFile(BRANCHES_DIR + File.separator + getFirstLine(HEAD), commit.getHash());
+        deleteBranch(branchToMerge);
+    }
+
 
 
 
@@ -128,12 +123,56 @@ abstract public class Vcs {
         Files.deleteIfExists(Paths.get(BRANCHES_DIR + File.separator + branchName));
     }
 
-    private static VcsCommit getCommit(String commitHash) throws IOException {
-        return (VcsCommit) VcsObject.readFromJson(OBJECTS_DIR + File.separator + commitHash, VcsCommit.class);
+    private static void mergeCommit(String commitHash, Collection<String> checked, VcsCommit newCommit) throws IOException {
+        VcsCommit commit = getCommit(commitHash);
+        for (Map.Entry<String, String> entry : commit.getChildren().entrySet()) {
+            if (checked.contains(entry.getKey())) continue;
+            String fileName = entry.getKey();
+            checked.add(fileName);
+            VcsBlob blob = (VcsBlob) VcsObject.readFromJson(OBJECTS_DIR + File.separator + entry.getValue(), VcsBlob.class);
+            if (Files.exists(Paths.get(fileName))) {
+                byte[] fileBytes = Files.readAllBytes(Paths.get(fileName));
+                if (!Arrays.equals(fileBytes, blob.getContent())) {
+                    // TODO: confilct
+                    return;
+                }
+            } else {
+                newCommit.addToChildren(fileName, blob.getHash());
+                writeToFile(fileName, blob.getContent());
+            }
+        }
+        if (!commit.getPrevCommitHash().equals(INITIAL_COMMIT_PREV_HASH)) {
+            restore(commit.getPrevCommitHash(), checked);
+        }
     }
 
-    private static VcsTree getTree(VcsCommit commit) throws IOException {
-        return (VcsTree) VcsObject.readFromJson(OBJECTS_DIR + File.separator + commit.getTreeHash(), VcsTree.class);
+    private static void deleteCommittedFiles(String commitHash) throws IOException {
+        VcsCommit commit = getCommit(commitHash);
+        for (Map.Entry<String, String> entry : commit.getChildren().entrySet()) {
+            System.out.println(entry.getKey());
+            System.out.println(Files.deleteIfExists(Paths.get(entry.getKey())));
+        }
+        if (!commit.getPrevCommitHash().equals(INITIAL_COMMIT_PREV_HASH)) {
+            deleteCommittedFiles(commit.getPrevCommitHash());
+        }
+    }
+
+    private static void restore(String commitHash, Collection<String> restored) throws IOException {
+        VcsCommit commit = getCommit(commitHash);
+        for (Map.Entry<String, String> entry : commit.getChildren().entrySet()) {
+            if (!restored.contains(entry.getKey())) {
+                VcsBlob blob = (VcsBlob) VcsObject.readFromJson(OBJECTS_DIR + File.separator + entry.getValue(), VcsBlob.class);
+                writeToFile(entry.getKey(), blob.getContent());
+                restored.add(entry.getKey());
+            }
+        }
+        if (!commit.getPrevCommitHash().equals(INITIAL_COMMIT_PREV_HASH)) {
+            restore(commit.getPrevCommitHash(), restored);
+        }
+    }
+
+    private static VcsCommit getCommit(String commitHash) throws IOException {
+        return (VcsCommit) VcsObject.readFromJson(OBJECTS_DIR + File.separator + commitHash, VcsCommit.class);
     }
 
     private static String getFirstLine(String fileName) throws IOException {
