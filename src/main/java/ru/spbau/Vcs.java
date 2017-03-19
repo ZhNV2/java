@@ -40,6 +40,7 @@ abstract public class Vcs {
     }
 
     public static void restoreWorkingCopy() throws IOException {
+        System.out.println("Restoring working copy");
         for (Path fileName : FileSystem.getAllFilesFromDirInRevOrder(CURRENT_FOLDER)) {
             if (!fileName.startsWith(ROOT_DIR) && !fileName.startsWith(WORKING_COPY)) {
                 if (!fileName.equals(Paths.get(CURRENT_FOLDER)))
