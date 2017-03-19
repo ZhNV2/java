@@ -1,60 +1,76 @@
 package ru;
 
+import com.beust.jcommander.JCommander;
 import ru.spbau.Vcs;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
+import java.nio.file.AccessDeniedException;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.NoSuchFileException;
 
 public class Main {
 
-    public enum Command {
-        init, add, commit, log, checkout, branch, merge;
+    private static String HELP = System.getProperty("line.separator") + "Use --help for more information about available commands";
+
+    public enum CommandName {
+        init(new JCommanderParser.CommandInit()),
+        add(new JCommanderParser.CommandAdd()),
+        commit(new JCommanderParser.CommandCommit()),
+        log(new JCommanderParser.CommandLog()),
+        checkout(new JCommanderParser.CommandCheckout()),
+        branch(new JCommanderParser.CommandBranch()),
+        merge(new JCommanderParser.CommandMerge());
+
+        private Command command;
+
+        CommandName(Command command) {
+            this.command = command;
+        }
+
+        public Command getCommand() {
+            return command;
+        }
     }
 
     public static void main(String[] args) throws IOException {
 
-        if (args.length == 0) {
-            // TODO: ...
+        JCommanderParser cm = new JCommanderParser();
+        JCommander jc = new JCommander(cm);
+
+        for (CommandName commandName : CommandName.values()) {
+            Command command = commandName.getCommand();
+            jc.addCommand(commandName.toString(), command);
         }
-        String command = args[0];
-        if (command.equals(Command.init.toString())) {
 
-            Vcs.init(args[1]);
-
-        } else if (command.equals(Command.add.toString())) {
-            List<String> fileNames = new ArrayList<>();
-            Collections.addAll(fileNames, args);
-            fileNames.remove(command);
-            Vcs.add(fileNames);
-
-        } else if (command.equals(Command.commit.toString())) {
-            Vcs.commit(args[1]);
-
-        } else if (command.equals(Command.log.toString())) {
-            System.out.println(Vcs.log().toString());
-        } else if (command.equals(Command.checkout.toString())) {
-            if (args[1].equals("-r")) {
-                Vcs.checkout(args[2], null);
-            } else if (args[1].equals("-b")) {
-                Vcs.checkout(null, args[2]);
+        try {
+            jc.parse(args);
+            if (cm.help) {
+                jc.usage();
             } else {
-                // TODO:
+                Vcs.saveWorkingCopy();
+                CommandName.valueOf(jc.getParsedCommand()).getCommand().run();
+                Vcs.clearWorkingCopy();
             }
-        } else if (command.equals(Command.branch.toString())) {
-            if (args[1].equals("-n")) {
-                Vcs.createBranch(args[2]);
-            } else if (args[1].equals("-r")) {
-                Vcs.deleteBranch(args[2]);
-            } else {
-                // TODO:
-            }
-        } else if (command.equals(Command.merge.toString())) {
-            Vcs.merge(args[1]);
-        } else {
-            // TODO:
+        } catch (FileAlreadyExistsException e) {
+            System.out.println("You have already initialized repository in the current folder");
+        } catch (FileNotFoundException | NoSuchFileException e) {
+            System.out.println("File not found: " + e.getMessage() + "." + System.getProperty("line.separator") +
+                    "Probably you have deleted this file, " +
+                    "specified wrong one or forgot to init the repository");
+            baseErrorHandling();
+        } catch (AccessDeniedException e) {
+            System.out.println("Access to file " + e.getMessage() + " is forbidden. Check your permission rights");
+            baseErrorHandling();
+        } catch (Exception e) {
+            System.out.println(e.getClass());
+            System.out.println(e.getMessage());
+           baseErrorHandling();
         }
+    }
+
+    private static void baseErrorHandling() throws IOException {
+        System.out.println(HELP);
+        Vcs.restoreWorkingCopy();
     }
 }
