@@ -40,7 +40,7 @@ abstract public class FileSystem {
     public static String getFirstLine(String fileName) throws IOException {
         String result = Files.lines(Paths.get(fileName)).findFirst().orElse("error");
         if (result.equals("error")) {
-            // TODO: ...
+            throw new IllegalStateException("Content of file " + fileName + " is not correct");
         }
         return result;
     }
@@ -61,26 +61,21 @@ abstract public class FileSystem {
         return Files.lines(Paths.get(fileName)).distinct().collect(Collectors.toList());
     }
 
+    public static List<Path> readAllFiles(String fileName) throws IOException {
+        return Files.walk(Paths.get(fileName)).collect(Collectors.toList());
+    }
+
     public static void copy(String source, String target) throws IOException {
         Files.copy(Paths.get(source), Paths.get(target));
     }
 
     public static void deleteFolder(String folder) throws IOException {
-        for (Path file : getAllFilesFromDirInRevOrder(folder)) {
-            Files.deleteIfExists(file);
-        }
-    }
-
-    public static List<Path> getAllFilesFromDirInRevOrder(String folder) throws IOException {
-        return Files.walk(Paths.get(folder))
+        List<Path> filesInRevOrd = readAllFiles(folder).stream()
                 .sorted(Comparator.reverseOrder())
                 .collect(Collectors.toList());
-    }
-
-    public static List<Path> getAllFilesFromDirInOrder(String folder) throws IOException {
-        return Files.walk(Paths.get(folder))
-                .sorted()
-                .collect(Collectors.toList());
+        for (Path file : filesInRevOrd) {
+            Files.deleteIfExists(file);
+        }
     }
 
     public static boolean isDirectory(String dir) {
@@ -88,6 +83,7 @@ abstract public class FileSystem {
     }
 
     public static void copyFilesToDir(String sourceDir, List<Path> files, String targetDir) throws IOException {
+        files = files.stream().sorted().collect(Collectors.toList());
         for (Path fileName : files) {
             if (isDirectory(fileName.toString())) {
                 String newDir = targetDir + File.separator + relativePath(fileName.toString(), sourceDir);

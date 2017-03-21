@@ -1,5 +1,6 @@
 package ru.spbau;
 
+import com.beust.jcommander.ParameterException;
 import ru.spbau.zhidkov.VcsBlob;
 import ru.spbau.zhidkov.VcsCommit;
 import ru.spbau.zhidkov.VcsObject;
@@ -7,14 +8,10 @@ import ru.spbau.zhidkov.VcsObject;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static java.nio.file.StandardCopyOption.ATOMIC_MOVE;
 
 
 abstract public class Vcs {
@@ -33,7 +30,7 @@ abstract public class Vcs {
     private static final String WORKING_COPY = CURRENT_FOLDER + File.separator + ".wc";
 
     public static void saveWorkingCopy() throws IOException {
-        List<Path> files = FileSystem.getAllFilesFromDirInOrder(CURRENT_FOLDER).stream()
+        List<Path> files = FileSystem.readAllFiles(CURRENT_FOLDER).stream()
                 .filter(v->!v.startsWith(ROOT_DIR))
                 .collect(Collectors.toList());
         FileSystem.copyFilesToDir(CURRENT_FOLDER, files, WORKING_COPY);
@@ -41,13 +38,16 @@ abstract public class Vcs {
 
     public static void restoreWorkingCopy() throws IOException {
         System.out.println("Restoring working copy");
-        for (Path fileName : FileSystem.getAllFilesFromDirInRevOrder(CURRENT_FOLDER)) {
+        List<Path> filesInRevOrd = FileSystem.readAllFiles(CURRENT_FOLDER).stream()
+                .sorted(Comparator.reverseOrder())
+                .collect(Collectors.toList());
+        for (Path fileName : filesInRevOrd) {
             if (!fileName.startsWith(ROOT_DIR) && !fileName.startsWith(WORKING_COPY)) {
                 if (!fileName.equals(Paths.get(CURRENT_FOLDER)))
                     FileSystem.deleteIfExists(fileName.toString());
             }
         }
-        FileSystem.copyFilesToDir(WORKING_COPY, FileSystem.getAllFilesFromDirInOrder(WORKING_COPY), CURRENT_FOLDER);
+        FileSystem.copyFilesToDir(WORKING_COPY, FileSystem.readAllFiles(WORKING_COPY), CURRENT_FOLDER);
         clearWorkingCopy();
     }
 
@@ -136,7 +136,7 @@ abstract public class Vcs {
         String lastCommitHash = FileSystem.getFirstLine(BRANCHES_DIR + File.separator + FileSystem.getFirstLine(HEAD));
         if (lastCommitHash.equals(commitHash)) return;
         if (!FileSystem.getFirstLine(ADD_LIST).equals("")) {
-            throw new IllegalStateException("You have several files were added, but haven't committed yet");
+            throw new ParameterException("You have several files were added, but haven't committed yet");
         }
         deleteCommittedFiles(lastCommitHash);
         Collection<String> restored = new HashSet<>();
@@ -145,7 +145,7 @@ abstract public class Vcs {
 
     public static void merge(String branchToMerge) throws IOException {
         if (branchToMerge.equals(FileSystem.getFirstLine(HEAD))) {
-            throw new IllegalArgumentException("You can't merge branch with itself");
+            throw new ParameterException("You can't merge branch with itself");
         }
         checkIfBranchExist(branchToMerge);
         VcsCommit commit = new VcsCommit(MERGE_MESSAGE + branchToMerge, new Date(), FileSystem.getFirstLine(AUTHOR_NAME),
@@ -159,7 +159,7 @@ abstract public class Vcs {
 
     public static void createBranch(String branchName) throws IOException {
         if (FileSystem.exists(BRANCHES_DIR + File.separator + branchName)) {
-            throw new IllegalArgumentException("Branch with this name is already created");
+            throw new ParameterException("Branch with this name is already created");
         }
         FileSystem.writeToFile(BRANCHES_DIR + File.separator + branchName,
                 FileSystem.getFirstLine(BRANCHES_DIR + File.separator + FileSystem.getFirstLine(HEAD)));
@@ -167,7 +167,7 @@ abstract public class Vcs {
 
     public static void deleteBranch(String branchName) throws IOException {
         if (FileSystem.getFirstLine(HEAD).equals(branchName)) {
-            throw new IllegalArgumentException("You can't remove current branch");
+            throw new ParameterException("You can't remove current branch");
         }
         checkIfBranchExist(branchName);
         FileSystem.deleteIfExists(BRANCHES_DIR + File.separator + branchName);
@@ -183,7 +183,7 @@ abstract public class Vcs {
             if (FileSystem.exists(fileName)) {
                 byte[] fileBytes = FileSystem.readAllBytes(fileName);
                 if (!Arrays.equals(fileBytes, blob.getContent())) {
-                    throw new IllegalStateException("Can't merge, because file " + fileName + " is different in both branches");
+                    throw new ParameterException("Can't merge, because file " + fileName + " is different in both branches");
                 }
             } else {
                 newCommit.addToChildren(fileName, blob.getHash());
@@ -225,13 +225,13 @@ abstract public class Vcs {
 
     private static void checkIfBranchExist(String branchName) throws IOException {
         if (!FileSystem.exists(BRANCHES_DIR + File.separator + branchName)) {
-            throw new IllegalArgumentException("Provided branch doesn't exist");
+            throw new ParameterException("Provided branch doesn't exist");
         }
     }
 
     private static void checkIfRevisionExist(String commitHash) throws IOException {
         if (!FileSystem.exists(OBJECTS_DIR + File.separator + commitHash)) {
-            throw new IllegalArgumentException("Provided revision doesn't exist");
+            throw new ParameterException("Provided revision doesn't exist");
         }
     }
 }
