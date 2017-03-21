@@ -3,6 +3,7 @@ package test;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
@@ -17,12 +18,14 @@ import ru.spbau.Vcs;
 
 import java.io.IOException;
 
+import static org.mockito.Matchers.anyString;
+
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(Vcs.class)
 public class CommandAndMainTest {
 
     @Before
-    public void prepareVcs() throws IOException {
+    public void prepareVcs() throws Exception {
         PowerMockito.mockStatic(Vcs.class);
         PowerMockito.doNothing().when(Vcs.class);
     }
@@ -40,13 +43,13 @@ public class CommandAndMainTest {
     }
 
     @Test
-    public void commandCheckoutBranchNullRevisionNotNull() throws IOException {
+    public void commandCheckoutBranchNullRevisionNotNull() throws Exception {
         String args[] = new String[]{"checkout", "-r", "r"};
         Main.execute(args);
     }
 
     @Test
-    public void commandCheckoutBranchNotNullRevisionNull() throws IOException {
+    public void commandCheckoutBranchNotNullRevisionNull() throws Exception {
         String args[] = new String[]{"checkout", "-b", "b"};
         Main.execute(args);
     }
@@ -63,14 +66,23 @@ public class CommandAndMainTest {
         Main.execute(args);
     }
 
-    public void commandBranchNewNullDeleteNotNull() throws IOException {
+    @Test
+    public void commandBranchNewNullDeleteNotNull() throws Exception {
         String args[] = new String[]{"branch", "-d", "d"};
         Main.execute(args);
     }
 
-    public void commandBranchNewNotNullDeleteNull() throws IOException {
+    @Test
+    public void commandBranchNewNotNullDeleteNull() throws Exception {
         String args[] = new String[]{"branch", "-n", "n"};
         Main.execute(args);
     }
+
+    @Test(expected = ParameterException.class)
+    public void noArgsTest() throws IOException {
+        Main.execute(new String[0]);
+    }
+
+
 
 }

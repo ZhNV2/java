@@ -7,6 +7,15 @@ import java.util.Map;
 public class VcsCommit extends VcsObject {
     public String message;
     private Date date;
+
+    public String getMessage() {
+        return message;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
     private String author;
     private String prevCommitHash;
     private Map<String, String> children = new HashMap<>();

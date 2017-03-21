@@ -74,8 +74,13 @@ public class Main {
         if (cm.help) {
             jc.usage();
         } else {
+            Vcs.setCurrentFolder(System.getProperty("user.dir"));
             Vcs.saveWorkingCopy();
-            CommandName.valueOf(jc.getParsedCommand()).getCommand().run();
+            String command = jc.getParsedCommand();
+            if (command == null) {
+                throw new ParameterException("You should specify the command");
+            }
+            CommandName.valueOf(command).getCommand().run();
             Vcs.clearWorkingCopy();
         }
     }

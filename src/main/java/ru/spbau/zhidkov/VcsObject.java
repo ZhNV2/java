@@ -28,7 +28,7 @@ public abstract class VcsObject {
         fileWriter.close();
     }
 
-        public static VcsObject readFromJson(String fileName, Class<? extends VcsObject> VcsObjectClass) throws IOException {
+    public static VcsObject readFromJson(String fileName, Class<? extends VcsObject> VcsObjectClass) throws IOException {
         Gson gson = new Gson();
         FileReader fileReader = new FileReader(fileName);
         VcsObject vcsObject = gson.fromJson(fileReader, VcsObjectClass);

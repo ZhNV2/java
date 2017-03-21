@@ -43,7 +43,7 @@ public class JCommanderParser {
 
         @Override
         public void run() throws IOException {
-            if (message.equals(Vcs.INITIAL_COMMIT_MESSAGE)) {
+            if (message.equals(Vcs.getInitialCommitMessage())) {
                 throw new IllegalArgumentException("This commit message is reserved for first commit. Please, use another one");
             }
             Vcs.commit(message);

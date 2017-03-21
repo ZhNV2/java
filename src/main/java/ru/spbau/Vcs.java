@@ -15,19 +15,37 @@ import java.util.stream.Collectors;
 
 
 abstract public class Vcs {
-    private static final String CURRENT_FOLDER = System.getProperty("user.dir");
-    private static final String ROOT_DIR = CURRENT_FOLDER + File.separator + ".vcs";
-    private static final String OBJECTS_DIR = ROOT_DIR + File.separator + "objects";
-    private static final String BRANCHES_DIR = ROOT_DIR + File.separator + "branches";
-    private static final String ADD_LIST = ROOT_DIR + File.separator + "addList";
-    public static final String INITIAL_COMMIT_MESSAGE = "Initial commit.";
-    private static final String ONE_LINE_VARS_DIR = ROOT_DIR + File.separator + "one_lines_vars";
-    private static final String HEAD = ONE_LINE_VARS_DIR + File.separator + "HEAD";
-    private static final String MASTER = "master";
-    private static final String AUTHOR_NAME = ONE_LINE_VARS_DIR + File.separator + "AUTHOR_NAME";
-    private static final String INITIAL_COMMIT_PREV_HASH = "";
-    private static final String MERGE_MESSAGE = "Merged with branch ";
-    private static final String WORKING_COPY = CURRENT_FOLDER + File.separator + ".wc";
+
+
+    public static void setCurrentFolder(String currentFolder) {
+        CURRENT_FOLDER = currentFolder;
+        ROOT_DIR = CURRENT_FOLDER + File.separator + ".vcs";
+        OBJECTS_DIR = ROOT_DIR + File.separator + "objects";
+        BRANCHES_DIR = ROOT_DIR + File.separator + "branches";
+        ADD_LIST = ROOT_DIR + File.separator + "addList";
+        INITIAL_COMMIT_MESSAGE = "Initial commit.";
+        ONE_LINE_VARS_DIR = ROOT_DIR + File.separator + "one_lines_vars";
+        HEAD = ONE_LINE_VARS_DIR + File.separator + "HEAD";
+        MASTER = "master";
+        AUTHOR_NAME = ONE_LINE_VARS_DIR + File.separator + "AUTHOR_NAME";
+        INITIAL_COMMIT_PREV_HASH = "";
+        MERGE_MESSAGE = "Merged with branch ";
+        WORKING_COPY = CURRENT_FOLDER + File.separator + ".wc";
+    }
+
+    private static String CURRENT_FOLDER;
+    private static String ROOT_DIR;
+    private static String OBJECTS_DIR;
+    private static String BRANCHES_DIR;
+    private static String ADD_LIST;
+    private static String INITIAL_COMMIT_MESSAGE;
+    private static String ONE_LINE_VARS_DIR;
+    private static String HEAD;
+    private static String MASTER;
+    private static String AUTHOR_NAME;
+    private static String INITIAL_COMMIT_PREV_HASH;
+    private static String MERGE_MESSAGE;
+    private static String WORKING_COPY;
 
     public static void saveWorkingCopy() throws IOException {
         List<Path> files = FileSystem.readAllFiles(CURRENT_FOLDER).stream()
@@ -63,8 +81,8 @@ abstract public class Vcs {
         FileSystem.createEmptyFile(ADD_LIST);
         FileSystem.createEmptyFile(HEAD);
         FileSystem.createEmptyFile(AUTHOR_NAME);
-        FileSystem.writeToFile(AUTHOR_NAME, authorName);
-        FileSystem.writeToFile(HEAD, MASTER);
+        FileSystem.writeStringToFile(AUTHOR_NAME, authorName);
+        FileSystem.writeStringToFile(HEAD, MASTER);
         commit(INITIAL_COMMIT_MESSAGE);
     }
 
@@ -99,8 +117,8 @@ abstract public class Vcs {
             FileSystem.writeToFile(blob, OBJECTS_DIR);
         }
         FileSystem.writeToFile(commit, OBJECTS_DIR);
-        FileSystem.writeToFile(BRANCHES_DIR + File.separator + FileSystem.getFirstLine(HEAD), commit.getHash());
-        FileSystem.writeToFile(ADD_LIST, "");
+        FileSystem.writeStringToFile(BRANCHES_DIR + File.separator + FileSystem.getFirstLine(HEAD), commit.getHash());
+        FileSystem.writeStringToFile(ADD_LIST, "");
     }
 
     public static StringBuilder log() throws IOException {
@@ -122,14 +140,14 @@ abstract public class Vcs {
         String commitHash = FileSystem.getFirstLine(BRANCHES_DIR + File.separator + branchName);
         checkout(commitHash);
 
-        FileSystem.writeToFile(HEAD, branchName);
+        FileSystem.writeStringToFile(HEAD, branchName);
     }
 
     public static void checkoutRevision(String commitHash) throws IOException {
         checkIfRevisionExist(commitHash);
         checkout(commitHash);
 
-        FileSystem.writeToFile(BRANCHES_DIR + File.separator + FileSystem.getFirstLine(HEAD), commitHash);
+        FileSystem.writeStringToFile(BRANCHES_DIR + File.separator + FileSystem.getFirstLine(HEAD), commitHash);
     }
 
     private static void checkout(String commitHash) throws IOException {
@@ -154,14 +172,14 @@ abstract public class Vcs {
         mergeCommit(FileSystem.getFirstLine(BRANCHES_DIR + File.separator + branchToMerge), checked, commit);
 
         FileSystem.writeToFile(commit, OBJECTS_DIR);
-        FileSystem.writeToFile(BRANCHES_DIR + File.separator + FileSystem.getFirstLine(HEAD), commit.getHash());
+        FileSystem.writeStringToFile(BRANCHES_DIR + File.separator + FileSystem.getFirstLine(HEAD), commit.getHash());
     }
 
     public static void createBranch(String branchName) throws IOException {
         if (FileSystem.exists(BRANCHES_DIR + File.separator + branchName)) {
             throw new ParameterException("Branch with this name is already created");
         }
-        FileSystem.writeToFile(BRANCHES_DIR + File.separator + branchName,
+        FileSystem.writeStringToFile(BRANCHES_DIR + File.separator + branchName,
                 FileSystem.getFirstLine(BRANCHES_DIR + File.separator + FileSystem.getFirstLine(HEAD)));
     }
 
@@ -187,7 +205,7 @@ abstract public class Vcs {
                 }
             } else {
                 newCommit.addToChildren(fileName, blob.getHash());
-                FileSystem.writeToFile(fileName, blob.getContent());
+                FileSystem.writeBytesToFile(fileName, blob.getContent());
             }
         }
         if (!commit.getPrevCommitHash().equals(INITIAL_COMMIT_PREV_HASH)) {
@@ -210,7 +228,7 @@ abstract public class Vcs {
         for (Map.Entry<String, String> entry : commit.getChildren().entrySet()) {
             if (!restored.contains(entry.getKey())) {
                 VcsBlob blob = (VcsBlob) VcsObject.readFromJson(OBJECTS_DIR + File.separator + entry.getValue(), VcsBlob.class);
-                FileSystem.writeToFile(entry.getKey(), blob.getContent());
+                FileSystem.writeBytesToFile(entry.getKey(), blob.getContent());
                 restored.add(entry.getKey());
             }
         }
@@ -233,5 +251,57 @@ abstract public class Vcs {
         if (!FileSystem.exists(OBJECTS_DIR + File.separator + commitHash)) {
             throw new ParameterException("Provided revision doesn't exist");
         }
+    }
+
+    public static String getCurrentFolder() {
+        return CURRENT_FOLDER;
+    }
+
+    public static String getRootDir() {
+        return ROOT_DIR;
+    }
+
+    public static String getObjectsDir() {
+        return OBJECTS_DIR;
+    }
+
+    public static String getBranchesDir() {
+        return BRANCHES_DIR;
+    }
+
+    public static String getAddList() {
+        return ADD_LIST;
+    }
+
+    public static String getInitialCommitMessage() {
+        return INITIAL_COMMIT_MESSAGE;
+    }
+
+    public static String getOneLineVarsDir() {
+        return ONE_LINE_VARS_DIR;
+    }
+
+    public static String getHEAD() {
+        return HEAD;
+    }
+
+    public static String getMASTER() {
+        return MASTER;
+    }
+
+    public static String getAuthorName() {
+        return AUTHOR_NAME;
+    }
+
+    public static String getInitialCommitPrevHash() {
+        return INITIAL_COMMIT_PREV_HASH;
+    }
+
+    public static String getMergeMessage() {
+        return MERGE_MESSAGE;
+    }
+
+    public static String getWorkingCopy() {
+        return WORKING_COPY;
     }
 }

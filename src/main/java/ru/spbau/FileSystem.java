@@ -16,11 +16,11 @@ abstract public class FileSystem {
         vcsObject.writeAsJson(vcsObject.getPath(dir));
     }
 
-    public static void writeToFile(String fileName, byte[] content) throws IOException {
+    public static void writeBytesToFile(String fileName, byte[] content) throws IOException {
         Files.write(Paths.get(fileName), content);
     }
 
-    public static void writeToFile(String fileName, String text) throws IOException {
+    public static void writeStringToFile(String fileName, String text) throws IOException {
         Files.write(Paths.get(fileName), text.getBytes());
     }
 
@@ -38,11 +38,7 @@ abstract public class FileSystem {
     }
 
     public static String getFirstLine(String fileName) throws IOException {
-        String result = Files.lines(Paths.get(fileName)).findFirst().orElse("error");
-        if (result.equals("error")) {
-            throw new IllegalStateException("Content of file " + fileName + " is not correct");
-        }
-        return result;
+        return Files.lines(Paths.get(fileName)).findFirst().orElse("");
     }
 
     public static void deleteIfExists(String fileName) throws IOException {
