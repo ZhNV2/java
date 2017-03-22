@@ -1,5 +1,10 @@
 package ru.spbau.zhidkov;
 
+/**
+ * Vcs object providing usual file (blob) structure.
+ * It only contains {@code byte[]} array of all data
+ * in presenting file.
+ */
 public class VcsBlob extends VcsObject {
 
     private byte[] content = null;

@@ -1,4 +1,4 @@
-package test;
+package test.ru.spbau;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Random;
 
 import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
 
 public class FileSystemTest {
 
@@ -26,7 +25,7 @@ public class FileSystemTest {
     public void testCopyFilesToDir() throws IOException {
         File sourceDir = folder.newFolder();
         File targetDir = folder.newFolder();
-        String files[] = { "a.txt", "a\\b\\c", "a\\b\\x.md", "a\\b\\y.png", "a", "a\\b", "a\\hy.txt", "" };
+        String files[] = {"a.txt", "a\\b\\c", "a\\b\\x.md", "a\\b\\y.png", "a", "a\\b", "a\\hy.txt", ""};
         List<Path> newFiles = new ArrayList<>();
         for (String fileName : files) {
             String newFileName = sourceDir + File.separator + fileName;
@@ -53,7 +52,6 @@ public class FileSystemTest {
             Files.createFile(Paths.get(fileName));
             Files.write(Paths.get(fileName), content);
         } else {
-            System.out.println(fileName);
             Files.createDirectories(Paths.get(fileName));
         }
     }

@@ -1,20 +1,27 @@
 package ru;
 
 import com.beust.jcommander.JCommander;
-import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import ru.spbau.Vcs;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.NoSuchFileException;
 
+import static ru.Main.CommandName.init;
+
+/**
+ * Main class for all application for parsing command line arguments
+ * and call appropriate method from vcs.
+ */
 public class Main {
 
     private static String HELP = System.getProperty("line.separator") + "Use --help for more information about available commands";
 
+    /**
+     * Enum containing all possible command line commands.
+     */
     public enum CommandName {
         init, add, commit, log, checkout, branch, merge;
 
@@ -24,6 +31,11 @@ public class Main {
             return command;
         }
 
+        /**
+         * Initializes enum elements with corresponding parser. It
+         * should be called every time before you run {@link
+         * #execute(String[]) execute(String[])}.
+         */
         public static void initialize() {
             init.command = new JCommanderParser.CommandInit();
             add.command = new JCommanderParser.CommandAdd();
@@ -35,15 +47,17 @@ public class Main {
         }
     }
 
+    /**
+     * Main application method. Parses args and calls appropriate
+     * vcs methods.
+     *
+     * @param args command line args
+     */
     public static void main(String[] args) {
-
         try {
             execute(args);
-        } catch (ParameterException e) {
+        } catch (Vcs.VcsException | ParameterException e) {
             System.out.println(e.getMessage());
-            System.out.println(HELP);
-        } catch (FileAlreadyExistsException e) {
-            System.out.println("You have already initialized repository in the current folder");
             baseErrorHandling();
         } catch (FileNotFoundException | NoSuchFileException e) {
             System.out.println("File not found: " + e.getMessage() + "." + System.getProperty("line.separator") +
@@ -62,7 +76,17 @@ public class Main {
         }
     }
 
-    public static void execute(String[] args) throws IOException {
+    /**
+     * Method that parses args and calls appropriate methods
+     * in vcs.
+     *
+     * @param args command line args to be parsed
+     * @throws IOException      if something has gone wrong during
+     *                          the work with file system
+     * @throws Vcs.VcsException if something has gone wrong
+     *                          during the vcs work
+     */
+    public static void execute(String[] args) throws IOException, Vcs.VcsException {
         JCommanderParser cm = new JCommanderParser();
         JCommander jc = new JCommander(cm);
         CommandName.initialize();
@@ -79,7 +103,12 @@ public class Main {
             String command = jc.getParsedCommand();
             if (command == null) {
                 throw new ParameterException("You should specify the command");
+            } else if (command.equals(init.toString()) && Vcs.hasInitialized()) {
+                throw new ParameterException("You have already initialized repository in the current folder");
+            } else if (!command.equals(init.toString()) && !Vcs.hasInitialized()) {
+                throw new ParameterException("You have to initialize repository in the current folder");
             }
+
             CommandName.valueOf(command).getCommand().run();
             Vcs.clearWorkingCopy();
         }

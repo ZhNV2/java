@@ -4,8 +4,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Vcs object providing commit structure.
+ */
 public class VcsCommit extends VcsObject {
-    public String message;
+    private String message;
     private Date date;
 
     public String getMessage() {
@@ -20,7 +23,18 @@ public class VcsCommit extends VcsObject {
     private String prevCommitHash;
     private Map<String, String> children = new HashMap<>();
 
-
+    /**
+     * Constructs commit instance by given parameters.
+     *
+     * @param message        commit message
+     * @param date           commit date
+     * @param author         commit author
+     * @param prevCommitHash hash of parent commit
+     * @param children       <tt>Map</tt> of files were changed in this
+     *                       commit. Another words it contains all files
+     *                       were added before this commit and maps their
+     *                       names to hash of relating blob.
+     */
     public VcsCommit(String message, Date date, String author, String prevCommitHash, Map<String, String> children) {
         this.message = message;
         this.date = date;
@@ -37,11 +51,17 @@ public class VcsCommit extends VcsObject {
         return children;
     }
 
-
     public void addToChildren(String file, String hash) {
         children.put(file, hash);
     }
 
+    /**
+     * Represents commit in test format providing its
+     * message, author, date and message.
+     *
+     * @param stringBuilder to which commit will add its test
+     *                      representation
+     */
     public void print(StringBuilder stringBuilder) {
         stringBuilder.append("Commit: ").append(getHash()).append(System.getProperty("line.separator"));
         stringBuilder.append("Author: ").append(author).append(System.getProperty("line.separator"));

@@ -7,8 +7,16 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Formatter;
 
+/**
+ * Class provides basic vcs object structure.
+ */
 public abstract class VcsObject {
 
+    /**
+     * Counts object's hash.
+     *
+     * @return SHA-1 hash of this object.
+     */
     public String getHash() {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-1");
@@ -21,6 +29,13 @@ public abstract class VcsObject {
         }
     }
 
+    /**
+     * Write object to file in JSON structure.
+     *
+     * @param fileName to write object
+     * @throws IOException if something has gone wrong during
+     *                     the work with file system
+     */
     public void writeAsJson(String fileName) throws IOException {
         Gson gson = new Gson();
         FileWriter fileWriter = new FileWriter(fileName);
@@ -28,6 +43,16 @@ public abstract class VcsObject {
         fileWriter.close();
     }
 
+    /**
+     * Deserialize object form file, in which
+     * it should be represented in JSON structure.
+     *
+     * @param fileName       from which the object to be read.
+     * @param VcsObjectClass is object's class.
+     * @return instance was read from the file.
+     * @throws IOException if something has gone wrong during
+     *                     the work with file system
+     */
     public static VcsObject readFromJson(String fileName, Class<? extends VcsObject> VcsObjectClass) throws IOException {
         Gson gson = new Gson();
         FileReader fileReader = new FileReader(fileName);

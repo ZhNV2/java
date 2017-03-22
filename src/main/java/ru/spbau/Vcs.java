@@ -1,6 +1,5 @@
 package ru.spbau;
 
-import com.beust.jcommander.ParameterException;
 import ru.spbau.zhidkov.VcsBlob;
 import ru.spbau.zhidkov.VcsCommit;
 import ru.spbau.zhidkov.VcsObject;
@@ -14,9 +13,18 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 
+/**
+ * Class providing vcs functionality.
+ */
+@SuppressWarnings("WeakerAccess")
 abstract public class Vcs {
 
-
+    /**
+     * Sets the folder with which it will work to {@param currentFolder}
+     *
+     * @param currentFolder folder containing (or that will contain)
+     *                      repository
+     */
     public static void setCurrentFolder(String currentFolder) {
         CURRENT_FOLDER = currentFolder;
         ROOT_DIR = CURRENT_FOLDER + File.separator + ".vcs";
@@ -47,17 +55,29 @@ abstract public class Vcs {
     private static String MERGE_MESSAGE;
     private static String WORKING_COPY;
 
+    /**
+     * Saves all files that are not relating to vcs in temporary storage.
+     *
+     * @throws IOException if something has gone wrong during
+     *                     the work with file system
+     */
     public static void saveWorkingCopy() throws IOException {
         List<Path> files = FileSystem.readAllFiles(CURRENT_FOLDER).stream()
-                .filter(v->!v.startsWith(ROOT_DIR))
+                .filter(v -> !v.startsWith(ROOT_DIR))
                 .collect(Collectors.toList());
         FileSystem.copyFilesToDir(CURRENT_FOLDER, files, WORKING_COPY);
     }
 
+    /**
+     * Returns folder files to their original state.
+     *
+     * @throws IOException if something has gone wrong during
+     *                     the work with file system
+     */
     public static void restoreWorkingCopy() throws IOException {
         System.out.println("Restoring working copy");
         List<Path> filesInRevOrd = FileSystem.readAllFiles(CURRENT_FOLDER).stream()
-                .sorted(Comparator.reverseOrder())
+                .sorted(FileSystem.compByLengthRev)
                 .collect(Collectors.toList());
         for (Path fileName : filesInRevOrd) {
             if (!fileName.startsWith(ROOT_DIR) && !fileName.startsWith(WORKING_COPY)) {
@@ -69,10 +89,23 @@ abstract public class Vcs {
         clearWorkingCopy();
     }
 
+    /**
+     * Deletes temporary storage.
+     *
+     * @throws IOException if something has gone wrong during
+     *                     the work with file system
+     */
     public static void clearWorkingCopy() throws IOException {
         FileSystem.deleteFolder(WORKING_COPY);
     }
 
+    /**
+     * Initializes repo in the current folder.
+     *
+     * @param authorName author name
+     * @throws IOException if something has gone wrong during
+     *                     the work with file system
+     */
     public static void init(String authorName) throws IOException {
         FileSystem.createDirectory(ROOT_DIR);
         FileSystem.createDirectory(OBJECTS_DIR);
@@ -86,6 +119,25 @@ abstract public class Vcs {
         commit(INITIAL_COMMIT_MESSAGE);
     }
 
+    /**
+     * Checks if repo has been already initialized or not.
+     *
+     * @return whether repo has been already initialized or not
+     * @throws IOException if something has gone wrong during
+     *                     the work with file system
+     */
+    public static boolean hasInitialized() throws IOException {
+        return FileSystem.exists(ROOT_DIR);
+    }
+
+    /**
+     * Adds files to repo (adds them to temporary list of
+     * files to add).
+     *
+     * @param fileNames list of files to add.
+     * @throws IOException if something has gone wrong during
+     *                     the work with file system
+     */
     public static void add(List<String> fileNames) throws IOException {
         for (String fileName : fileNames) {
             if (!FileSystem.exists(fileName)) {
@@ -101,6 +153,13 @@ abstract public class Vcs {
         FileSystem.appendToFile(ADD_LIST, stringBuilder.toString().getBytes());
     }
 
+    /**
+     * Commit all files that were added after last commit.
+     *
+     * @param message commit message
+     * @throws IOException if something has gone wrong during
+     *                     the work with file system
+     */
     public static void commit(String message) throws IOException {
         List<String> filesToAdd = FileSystem.readAllLines(ADD_LIST);
         VcsCommit commit = new VcsCommit(message, new Date(), FileSystem.getFirstLine(AUTHOR_NAME),
@@ -121,6 +180,14 @@ abstract public class Vcs {
         FileSystem.writeStringToFile(ADD_LIST, "");
     }
 
+    /**
+     * Prints log about all commits from current to initial in
+     * the current branch.
+     *
+     * @return information about all commits in current branch
+     * @throws IOException if something has gone wrong during
+     *                     the work with file system
+     */
     public static StringBuilder log() throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(System.getProperty("line.separator"));
@@ -135,7 +202,18 @@ abstract public class Vcs {
         return stringBuilder;
     }
 
-    public static void checkoutBranch(String branchName) throws IOException {
+    /**
+     * Switches current branch to another.
+     *
+     * @param branchName branch to switch to
+     * @throws IOException                if something has gone wrong during
+     *                                    the work with file system
+     * @throws VcsBranchNotFoundException when trying to access branch
+     *                                    which doesn't exist.
+     * @throws VcsIllegalStateException   when vcs can't perform command because of incorrect
+     *                                    usage
+     */
+    public static void checkoutBranch(String branchName) throws IOException, VcsBranchNotFoundException, VcsIllegalStateException {
         checkIfBranchExist(branchName);
         String commitHash = FileSystem.getFirstLine(BRANCHES_DIR + File.separator + branchName);
         checkout(commitHash);
@@ -143,31 +221,60 @@ abstract public class Vcs {
         FileSystem.writeStringToFile(HEAD, branchName);
     }
 
-    public static void checkoutRevision(String commitHash) throws IOException {
+    /**
+     * Switches current revision to provided.
+     *
+     * @param commitHash hash of revision to switch to
+     * @throws IOException                  if something has gone wrong during
+     *                                      the work with file system
+     * @throws VcsRevisionNotFoundException when trying to access revision
+     *                                      which doesn't exist
+     * @throws VcsIllegalStateException     when vcs can't perform command because of incorrect
+     *                                      usage
+     */
+    public static void checkoutRevision(String commitHash) throws IOException, VcsRevisionNotFoundException, VcsIllegalStateException {
         checkIfRevisionExist(commitHash);
         checkout(commitHash);
 
         FileSystem.writeStringToFile(BRANCHES_DIR + File.separator + FileSystem.getFirstLine(HEAD), commitHash);
     }
 
-    private static void checkout(String commitHash) throws IOException {
+    private static void checkout(String commitHash) throws IOException, VcsIllegalStateException {
         String lastCommitHash = FileSystem.getFirstLine(BRANCHES_DIR + File.separator + FileSystem.getFirstLine(HEAD));
         if (lastCommitHash.equals(commitHash)) return;
         if (!FileSystem.getFirstLine(ADD_LIST).equals("")) {
-            throw new ParameterException("You have several files were added, but haven't committed yet");
+            throw new VcsIllegalStateException("You have several files were added, but haven't committed yet");
         }
         deleteCommittedFiles(lastCommitHash);
         Collection<String> restored = new HashSet<>();
         restore(commitHash, restored);
     }
 
-    public static void merge(String branchToMerge) throws IOException {
+    /**
+     * Merges current branch with other. Revision may only contain
+     * unique files or content equal files.
+     *
+     * @param branchToMerge branch to merge with
+     * @throws IOException                       if something has gone wrong during
+     *                                           the work with file system
+     * @throws VcsBranchNotFoundException        when trying to access branch
+     *                                           which doesn't exist.
+     * @throws VcsConflictException              when conflict during merge was detected
+     * @throws VcsBranchActionForbiddenException when trying to make illegal
+     *                                           actions with branch
+     * @throws VcsIllegalStateException          when vcs can't perform command because of incorrect
+     *                                           usage
+     */
+    public static void merge(String branchToMerge) throws IOException, VcsBranchNotFoundException, VcsConflictException, VcsBranchActionForbiddenException, VcsIllegalStateException {
         if (branchToMerge.equals(FileSystem.getFirstLine(HEAD))) {
-            throw new ParameterException("You can't merge branch with itself");
+            throw new VcsBranchActionForbiddenException("You can't merge branch with itself");
         }
         checkIfBranchExist(branchToMerge);
+        if (!FileSystem.getFirstLine(ADD_LIST).equals("")) {
+            throw new VcsIllegalStateException("You have several files were added, but haven't committed yet");
+        }
         VcsCommit commit = new VcsCommit(MERGE_MESSAGE + branchToMerge, new Date(), FileSystem.getFirstLine(AUTHOR_NAME),
-                        FileSystem.getFirstLine(BRANCHES_DIR + File.separator + FileSystem.getFirstLine(HEAD)), new HashMap<>());
+                FileSystem.getFirstLine(BRANCHES_DIR + File.separator + FileSystem.getFirstLine(HEAD)), new HashMap<>());
         Collection<String> checked = new HashSet<>();
         mergeCommit(FileSystem.getFirstLine(BRANCHES_DIR + File.separator + branchToMerge), checked, commit);
 
@@ -175,23 +282,48 @@ abstract public class Vcs {
         FileSystem.writeStringToFile(BRANCHES_DIR + File.separator + FileSystem.getFirstLine(HEAD), commit.getHash());
     }
 
-    public static void createBranch(String branchName) throws IOException {
+    /**
+     * Defines new branch.
+     *
+     * @param branchName new branch
+     * @throws IOException                       if something has gone wrong during
+     *                                           the work with file system
+     * @throws VcsBranchActionForbiddenException when trying to make illegal
+     *                                           actions with branch
+     * @throws VcsIllegalStateException          when vcs can't perform command because of incorrect
+     *                                           usage
+     */
+    public static void createBranch(String branchName) throws IOException, VcsBranchActionForbiddenException, VcsIllegalStateException {
         if (FileSystem.exists(BRANCHES_DIR + File.separator + branchName)) {
-            throw new ParameterException("Branch with this name is already created");
+            throw new VcsBranchActionForbiddenException("Branch with this name is already created");
+        }
+        if (!FileSystem.getFirstLine(ADD_LIST).equals("")) {
+            throw new VcsIllegalStateException("You have several files were added, but haven't committed yet");
         }
         FileSystem.writeStringToFile(BRANCHES_DIR + File.separator + branchName,
                 FileSystem.getFirstLine(BRANCHES_DIR + File.separator + FileSystem.getFirstLine(HEAD)));
     }
 
-    public static void deleteBranch(String branchName) throws IOException {
+    /**
+     * Deletes specified branch.
+     *
+     * @param branchName to delete
+     * @throws IOException                       if something has gone wrong during
+     *                                           the work with file system
+     * @throws VcsBranchNotFoundException        when trying to access branch
+     *                                           which doesn't exist.
+     * @throws VcsBranchActionForbiddenException when trying to make illegal
+     *                                           actions with branch
+     */
+    public static void deleteBranch(String branchName) throws IOException, VcsBranchNotFoundException, VcsBranchActionForbiddenException {
         if (FileSystem.getFirstLine(HEAD).equals(branchName)) {
-            throw new ParameterException("You can't remove current branch");
+            throw new VcsBranchActionForbiddenException("You can't remove current branch");
         }
         checkIfBranchExist(branchName);
         FileSystem.deleteIfExists(BRANCHES_DIR + File.separator + branchName);
     }
 
-    private static void mergeCommit(String commitHash, Collection<String> checked, VcsCommit newCommit) throws IOException {
+    private static void mergeCommit(String commitHash, Collection<String> checked, VcsCommit newCommit) throws IOException, VcsConflictException {
         VcsCommit commit = getCommit(commitHash);
         for (Map.Entry<String, String> entry : commit.getChildren().entrySet()) {
             if (checked.contains(entry.getKey())) continue;
@@ -201,7 +333,7 @@ abstract public class Vcs {
             if (FileSystem.exists(fileName)) {
                 byte[] fileBytes = FileSystem.readAllBytes(fileName);
                 if (!Arrays.equals(fileBytes, blob.getContent())) {
-                    throw new ParameterException("Can't merge, because file " + fileName + " is different in both branches");
+                    throw new VcsConflictException("Can't merge, because file " + fileName + " is different in both branches");
                 }
             } else {
                 newCommit.addToChildren(fileName, blob.getHash());
@@ -209,7 +341,7 @@ abstract public class Vcs {
             }
         }
         if (!commit.getPrevCommitHash().equals(INITIAL_COMMIT_PREV_HASH)) {
-            restore(commit.getPrevCommitHash(), checked);
+            mergeCommit(commit.getPrevCommitHash(), checked, newCommit);
         }
     }
 
@@ -241,29 +373,73 @@ abstract public class Vcs {
         return (VcsCommit) VcsObject.readFromJson(OBJECTS_DIR + File.separator + commitHash, VcsCommit.class);
     }
 
-    private static void checkIfBranchExist(String branchName) throws IOException {
+    private static void checkIfBranchExist(String branchName) throws IOException, VcsBranchNotFoundException {
         if (!FileSystem.exists(BRANCHES_DIR + File.separator + branchName)) {
-            throw new ParameterException("Provided branch doesn't exist");
+            throw new VcsBranchNotFoundException("Provided branch doesn't exist");
         }
     }
 
-    private static void checkIfRevisionExist(String commitHash) throws IOException {
+    private static void checkIfRevisionExist(String commitHash) throws IOException, VcsRevisionNotFoundException {
         if (!FileSystem.exists(OBJECTS_DIR + File.separator + commitHash)) {
-            throw new ParameterException("Provided revision doesn't exist");
+            throw new VcsRevisionNotFoundException("Provided revision doesn't exist");
         }
     }
 
-    public static String getCurrentFolder() {
-        return CURRENT_FOLDER;
+    /**
+     * Abstract class for all throwable by vcs exceptions.
+     */
+    public static abstract class VcsException extends Exception {
+        public VcsException(String s) {
+            super(s);
+        }
     }
 
-    public static String getRootDir() {
-        return ROOT_DIR;
+    /**
+     * Is thrown when trying to access branch which doesn't exist.
+     */
+    public static class VcsBranchNotFoundException extends VcsException {
+        public VcsBranchNotFoundException(String s) {
+            super(s);
+        }
     }
 
-    public static String getObjectsDir() {
-        return OBJECTS_DIR;
+    /**
+     * Is thrown when trying to make illegal actions with branch.
+     */
+    public static class VcsBranchActionForbiddenException extends VcsException {
+        public VcsBranchActionForbiddenException(String s) {
+            super(s);
+        }
     }
+
+    /**
+     * Is thrown when trying to access revision which doesn't exist.
+     */
+    public static class VcsRevisionNotFoundException extends VcsException {
+        public VcsRevisionNotFoundException(String s) {
+            super(s);
+        }
+    }
+
+    /**
+     * Is thrown when conflict during merge was detected.
+     */
+    public static class VcsConflictException extends VcsException {
+        public VcsConflictException(String s) {
+            super(s);
+        }
+    }
+
+    /**
+     * Is thrown when vcs can't perform command because of incorrect
+     * usage.
+     */
+    public static class VcsIllegalStateException extends VcsException {
+        public VcsIllegalStateException(String s) {
+            super(s);
+        }
+    }
+
 
     public static String getBranchesDir() {
         return BRANCHES_DIR;
@@ -277,16 +453,8 @@ abstract public class Vcs {
         return INITIAL_COMMIT_MESSAGE;
     }
 
-    public static String getOneLineVarsDir() {
-        return ONE_LINE_VARS_DIR;
-    }
-
     public static String getHEAD() {
         return HEAD;
-    }
-
-    public static String getMASTER() {
-        return MASTER;
     }
 
     public static String getAuthorName() {
@@ -297,11 +465,4 @@ abstract public class Vcs {
         return INITIAL_COMMIT_PREV_HASH;
     }
 
-    public static String getMergeMessage() {
-        return MERGE_MESSAGE;
-    }
-
-    public static String getWorkingCopy() {
-        return WORKING_COPY;
-    }
 }

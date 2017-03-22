@@ -1,24 +1,18 @@
-package test;
+package test.ru;
 
-import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import org.testng.annotations.BeforeTest;
-import ru.Command;
-import ru.JCommanderParser;
 import ru.Main;
-import ru.spbau.FileSystem;
 import ru.spbau.Vcs;
 
 import java.io.IOException;
 
-import static org.mockito.Matchers.anyString;
+import static org.powermock.api.mockito.PowerMockito.when;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(Vcs.class)
@@ -27,17 +21,18 @@ public class CommandAndMainTest {
     @Before
     public void prepareVcs() throws Exception {
         PowerMockito.mockStatic(Vcs.class);
+        when(Vcs.hasInitialized()).thenReturn(true);
         PowerMockito.doNothing().when(Vcs.class);
     }
 
     @Test(expected = ParameterException.class)
-    public void commandCheckoutBranchNullRevisionNull() throws IOException {
+    public void commandCheckoutBranchNullRevisionNull() throws IOException, Vcs.VcsException {
         String args[] = new String[]{"checkout"};
         Main.execute(args);
     }
 
     @Test(expected = ParameterException.class)
-    public void commandCheckoutBranchNotNullRevisionNotNull() throws IOException {
+    public void commandCheckoutBranchNotNullRevisionNotNull() throws IOException, Vcs.VcsException {
         String args[] = new String[]{"checkout", "-b", "b", "-r", "r"};
         Main.execute(args);
     }
@@ -55,13 +50,13 @@ public class CommandAndMainTest {
     }
 
     @Test(expected = ParameterException.class)
-    public void commandBranchNewNullDeleteNull() throws IOException {
+    public void commandBranchNewNullDeleteNull() throws IOException, Vcs.VcsException {
         String args[] = new String[]{"branch"};
         Main.execute(args);
     }
 
     @Test(expected = ParameterException.class)
-    public void commandBranchNewNotNullDeleteNotNull() throws IOException {
+    public void commandBranchNewNotNullDeleteNotNull() throws IOException, Vcs.VcsException {
         String args[] = new String[]{"branch", "-n", "n", "-d", "d"};
         Main.execute(args);
     }
@@ -79,10 +74,9 @@ public class CommandAndMainTest {
     }
 
     @Test(expected = ParameterException.class)
-    public void noArgsTest() throws IOException {
+    public void noArgsTest() throws IOException, Vcs.VcsException {
         Main.execute(new String[0]);
     }
-
 
 
 }
