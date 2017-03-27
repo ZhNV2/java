@@ -1,6 +1,9 @@
 package ru.spbau;
 
-import ru.spbau.zhidkov.FileSystem;
+import ru.spbau.zhidkov.vcs.FileSystem;
+import ru.spbau.zhidkov.VcsBlob;
+import ru.spbau.zhidkov.VcsCommit;
+import ru.spbau.zhidkov.VcsObject;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,7 +13,7 @@ import static ru.spbau.Branch.checkIfBranchExist;
 import static ru.spbau.Commit.getCommit;
 
 /**
- * Created by Нико on 27.03.2017.
+ * Class implementing merge command.
  */
 public class Merge {
     /**
@@ -29,7 +32,7 @@ public class Merge {
      *                                           usage
      */
     public static void merge(String branchToMerge) throws IOException, Vcs.VcsBranchNotFoundException, Vcs.VcsConflictException, Vcs.VcsBranchActionForbiddenException, Vcs.VcsIllegalStateException {
-        if (branchToMerge.equals(FileSystem.getFirstLine(Vcs.getHEAD()))) {
+        if (branchToMerge.equals(Branch.getHeadBranch())) {
             throw new Vcs.VcsBranchActionForbiddenException("You can't merge branch with itself");
         }
         checkIfBranchExist(branchToMerge);
@@ -37,12 +40,12 @@ public class Merge {
             throw new Vcs.VcsIllegalStateException("You have several files were added, but haven't committed yet");
         }
         VcsCommit commit = new VcsCommit(Vcs.getMergeMessage() + branchToMerge, new Date(), FileSystem.getFirstLine(Vcs.getAuthorName()),
-                FileSystem.getFirstLine(Vcs.getBranchesDir() + File.separator + FileSystem.getFirstLine(Vcs.getHEAD())), new HashMap<>());
+                FileSystem.getFirstLine(Vcs.getBranchesDir() + File.separator + Branch.getHeadBranch()), new HashMap<>());
         Collection<String> checked = new HashSet<>();
         mergeCommit(FileSystem.getFirstLine(Vcs.getBranchesDir() + File.separator + branchToMerge), checked, commit);
 
-        FileSystem.writeToFile(commit, Vcs.getObjectsDir());
-        FileSystem.writeStringToFile(Vcs.getBranchesDir() + File.separator + FileSystem.getFirstLine(Vcs.getHEAD()), commit.getHash());
+        FileSystem.writeToFile(Vcs.getObjectsDir(), commit);
+        FileSystem.writeStringToFile(Vcs.getBranchesDir() + File.separator + Branch.getHeadBranch(), commit.getHash());
     }
 
     private static void mergeCommit(String commitHash, Collection<String> checked, VcsCommit newCommit) throws IOException, Vcs.VcsConflictException {

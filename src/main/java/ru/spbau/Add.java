@@ -1,6 +1,6 @@
 package ru.spbau;
 
-import ru.spbau.zhidkov.FileSystem;
+import ru.spbau.zhidkov.vcs.FileSystem;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -9,7 +9,7 @@ import java.util.List;
 import static ru.spbau.Init.hasInitialized;
 
 /**
- * Created by Нико on 27.03.2017.
+ * Class implementing add command.
  */
 public class Add {
     /**

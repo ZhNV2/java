@@ -1,9 +1,12 @@
-package ru.spbau.zhidkov;
+package ru.spbau.zhidkov.vcs;
 
-import ru.spbau.VcsObject;
+import ru.spbau.Vcs;
+import ru.spbau.zhidkov.VcsObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.*;
 import java.util.Comparator;
 import java.util.List;
@@ -20,12 +23,12 @@ abstract public class FileSystem {
      * Prints <tt>VcsObject</tt> to file in provided
      * folder with its hash.
      *
-     * @param vcsObject to be written
      * @param dir       folder to write in
+     * @param vcsObject to be written
      * @throws IOException if something has gone wrong during
      *                     the work with file system
      */
-    public static void writeToFile(VcsObject vcsObject, String dir) throws IOException {
+    public static void writeToFile(String dir, VcsObject vcsObject) throws IOException {
         vcsObject.writeAsJson(vcsObject.getPath(dir));
     }
 
@@ -224,6 +227,23 @@ abstract public class FileSystem {
      */
     public static String relativePath(String file, String dir) {
         return Paths.get(dir).relativize(Paths.get(file)).toString();
+    }
+
+    private static String normalize(String file) {
+        return Paths.get(file).toAbsolutePath().normalize().toString();
+    }
+
+    /**
+     * Checks if the provided strings represent the same file name.
+     *
+     * @param aName first file name
+     * @param bName second file name
+     * @return whether first file name is the same is the second one
+     */
+    public static boolean fileNameEquals(String aName, String bName) {
+        String a = normalize(aName);
+        String b = normalize(bName);
+        return a.equals(b);
     }
 
     public static Comparator<Path> compByLengthRev = (aName, bName) -> bName.toString().length() - aName.toString().length();

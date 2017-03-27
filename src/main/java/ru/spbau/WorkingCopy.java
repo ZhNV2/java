@@ -1,7 +1,8 @@
 package ru.spbau;
 
-import ru.spbau.zhidkov.FileSystem;
+import ru.spbau.zhidkov.vcs.FileSystem;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -38,7 +39,7 @@ public class WorkingCopy {
                 .collect(Collectors.toList());
         for (Path fileName : filesInRevOrd) {
             if (!fileName.startsWith(Vcs.getRootDir()) && !fileName.startsWith(Vcs.getWorkingCopy())) {
-                if (!fileName.equals(Paths.get(Vcs.getCurrentFolder())))
+                if (!FileSystem.fileNameEquals(fileName.toString(), Vcs.getCurrentFolder()))
                     FileSystem.deleteIfExists(fileName.toString());
             }
         }

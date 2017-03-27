@@ -1,6 +1,9 @@
 package ru.spbau;
 
-import ru.spbau.zhidkov.FileSystem;
+import ru.spbau.zhidkov.vcs.FileSystem;
+import ru.spbau.zhidkov.VcsBlob;
+import ru.spbau.zhidkov.VcsCommit;
+import ru.spbau.zhidkov.VcsObject;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,7 +15,7 @@ import static ru.spbau.Branch.checkIfBranchExist;
 import static ru.spbau.Commit.getCommit;
 
 /**
- * Created by Нико on 27.03.2017.
+ * Class implementing checkout command.
  */
 public class Checkout {
     /**
@@ -49,11 +52,11 @@ public class Checkout {
         checkIfRevisionExist(commitHash);
         checkout(commitHash);
 
-        FileSystem.writeStringToFile(Vcs.getBranchesDir() + File.separator + FileSystem.getFirstLine(Vcs.getHEAD()), commitHash);
+        FileSystem.writeStringToFile(Vcs.getBranchesDir() + File.separator + Branch.getHeadBranch(), commitHash);
     }
 
     private static void checkout(String commitHash) throws IOException, Vcs.VcsIllegalStateException {
-        String lastCommitHash = FileSystem.getFirstLine(Vcs.getBranchesDir() + File.separator + FileSystem.getFirstLine(Vcs.getHEAD()));
+        String lastCommitHash = FileSystem.getFirstLine(Vcs.getBranchesDir() + File.separator + Branch.getHeadBranch());
         if (lastCommitHash.equals(commitHash)) return;
         if (!FileSystem.getFirstLine(Vcs.getAddList()).equals("")) {
             throw new Vcs.VcsIllegalStateException("You have several files were added, but haven't committed yet");

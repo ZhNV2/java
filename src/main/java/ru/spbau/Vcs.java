@@ -1,16 +1,8 @@
 package ru.spbau;
 
-import ru.spbau.zhidkov.FileSystem;
-
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
-
-import static ru.spbau.Init.hasInitialized;
 
 
 /**
@@ -210,6 +202,13 @@ abstract public class Vcs {
     public static void merge(String branchToMerge) throws IOException, Vcs.VcsBranchNotFoundException, Vcs.VcsConflictException, Vcs.VcsBranchActionForbiddenException, Vcs.VcsIllegalStateException {
         Merge.merge(branchToMerge);
     }
+
+
+    public static void reset(String fileName) throws IOException, VcsIllegalStateException {
+        Reset.reset(fileName);
+    }
+
+
 
     /**
      * Abstract class for all throwable by vcs exceptions.

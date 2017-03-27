@@ -2,9 +2,9 @@ package test;
 
 import org.junit.rules.TemporaryFolder;
 import org.powermock.api.mockito.PowerMockito;
-import ru.spbau.zhidkov.FileSystem;
+import ru.spbau.zhidkov.vcs.FileSystem;
 import ru.spbau.Vcs;
-import ru.spbau.VcsObject;
+import ru.spbau.zhidkov.VcsObject;
 
 import java.io.File;
 import java.io.IOException;

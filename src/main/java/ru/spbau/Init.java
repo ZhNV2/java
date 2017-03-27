@@ -1,13 +1,13 @@
 package ru.spbau;
 
-import ru.spbau.zhidkov.FileSystem;
+import ru.spbau.zhidkov.vcs.FileSystem;
 
 import java.io.IOException;
 
 import static ru.spbau.Commit.commit;
 
 /**
- * Created by Нико on 27.03.2017.
+ * Class implementing init command.
  */
 public class Init {
 

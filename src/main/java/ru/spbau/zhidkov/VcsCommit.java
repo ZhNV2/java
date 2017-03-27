@@ -1,4 +1,4 @@
-package ru.spbau;
+package ru.spbau.zhidkov;
 
 import java.util.Date;
 import java.util.HashMap;

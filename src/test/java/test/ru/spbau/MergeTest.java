@@ -7,11 +7,11 @@ import org.mockito.ArgumentCaptor;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import ru.spbau.zhidkov.FileSystem;
+import ru.spbau.zhidkov.vcs.FileSystem;
 import ru.spbau.Vcs;
-import ru.spbau.VcsBlob;
-import ru.spbau.VcsCommit;
-import ru.spbau.VcsObject;
+import ru.spbau.zhidkov.VcsBlob;
+import ru.spbau.zhidkov.VcsCommit;
+import ru.spbau.zhidkov.VcsObject;
 
 import java.io.File;
 import java.io.IOException;
@@ -97,7 +97,7 @@ public class MergeTest {
         ArgumentCaptor<VcsCommit> commitCaptor = ArgumentCaptor.forClass(VcsCommit.class);
         ArgumentCaptor<String> foldCaptor = ArgumentCaptor.forClass(String.class);
         PowerMockito.verifyStatic(times(1));
-        FileSystem.writeToFile(commitCaptor.capture(), foldCaptor.capture());
+        FileSystem.writeToFile(foldCaptor.capture(), commitCaptor.capture());
         assertEquals(foldCaptor.getValue(), OBJECTS);
         VcsCommit commit = commitCaptor.getValue();
         assertEquals(commit.getAuthor(), AUTHOR_NAME);

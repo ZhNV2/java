@@ -1,13 +1,16 @@
 package ru.spbau;
 
-import ru.spbau.zhidkov.FileSystem;
+import ru.spbau.zhidkov.vcs.FileSystem;
+import ru.spbau.zhidkov.VcsBlob;
+import ru.spbau.zhidkov.VcsCommit;
+import ru.spbau.zhidkov.VcsObject;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
 /**
- * Created by Нико on 27.03.2017.
+ * Class implementing commit command.
  */
 public class Commit {
     /**
@@ -21,7 +24,7 @@ public class Commit {
         List<String> filesToAdd = FileSystem.readAllLines(Vcs.getAddList());
         VcsCommit commit = new VcsCommit(message, new Date(), FileSystem.getFirstLine(Vcs.getAuthorName()),
                 message.equals(Vcs.getInitialCommitMessage()) ? Vcs.getInitialCommitPrevHash() :
-                        FileSystem.getFirstLine(Vcs.getBranchesDir() + File.separator + FileSystem.getFirstLine(Vcs.getHEAD())), new HashMap<>());
+                        FileSystem.getFirstLine(Vcs.getBranchesDir() + File.separator + Branch.getHeadBranch()), new HashMap<>());
 
         Collection<VcsBlob> blobs = new ArrayList<>();
         for (String file : filesToAdd) {
@@ -30,10 +33,10 @@ public class Commit {
             blobs.add(blob);
         }
         for (VcsBlob blob : blobs) {
-            FileSystem.writeToFile(blob, Vcs.getObjectsDir());
+            FileSystem.writeToFile(Vcs.getObjectsDir(), blob);
         }
-        FileSystem.writeToFile(commit, Vcs.getObjectsDir());
-        FileSystem.writeStringToFile(Vcs.getBranchesDir() + File.separator + FileSystem.getFirstLine(Vcs.getHEAD()), commit.getHash());
+        FileSystem.writeToFile(Vcs.getObjectsDir(), commit);
+        FileSystem.writeStringToFile(Vcs.getBranchesDir() + File.separator + Branch.getHeadBranch(), commit.getHash());
         FileSystem.writeStringToFile(Vcs.getAddList(), "");
     }
 

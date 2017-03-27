@@ -3,7 +3,7 @@ package test.ru.spbau;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import ru.spbau.zhidkov.FileSystem;
+import ru.spbau.zhidkov.vcs.FileSystem;
 import ru.spbau.Vcs;
 
 import java.io.File;

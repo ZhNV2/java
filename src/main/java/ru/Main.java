@@ -23,7 +23,7 @@ public class Main {
      * Enum containing all possible command line commands.
      */
     public enum CommandName {
-        init, add, commit, log, checkout, branch, merge;
+        init, add, commit, log, checkout, branch, merge, reset;
 
         private Command command;
 
@@ -44,6 +44,7 @@ public class Main {
             checkout.command = new JCommanderParser.CommandCheckout();
             branch.command = new JCommanderParser.CommandBranch();
             merge.command = new JCommanderParser.CommandMerge();
+            reset.command = new JCommanderParser.CommandReset();
         }
     }
 

@@ -5,9 +5,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import ru.spbau.zhidkov.FileSystem;
+import ru.spbau.zhidkov.vcs.FileSystem;
 import ru.spbau.Vcs;
-import ru.spbau.VcsObject;
+import ru.spbau.zhidkov.VcsObject;
 
 import java.io.IOException;
 

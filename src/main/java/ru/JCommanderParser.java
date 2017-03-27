@@ -201,4 +201,27 @@ public class JCommanderParser {
         }
     }
 
+    /**
+     * Class for parse reset command.
+     */
+    @Parameters(commandDescription = "Reset specified file with the last version in repository")
+    public static class CommandReset implements Command {
+
+        @Parameter(names = {"-f", "--file"}, description = "File to reset", required = true)
+        private String fileName;
+
+        /**
+         * Runs necessary action after parsing args.
+         *
+         * @throws IOException                  if something has gone wrong during
+         *                                      the work with file system
+         * @throws Vcs.VcsIllegalStateException when vcs can't perform command because of incorrect
+         *                                      usage
+         */
+        @Override
+        public void run() throws IOException, Vcs.VcsIllegalStateException {
+            Vcs.reset(fileName);
+        }
+    }
+
 }

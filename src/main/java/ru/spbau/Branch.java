@@ -1,12 +1,12 @@
 package ru.spbau;
 
-import ru.spbau.zhidkov.FileSystem;
+import ru.spbau.zhidkov.vcs.FileSystem;
 
 import java.io.File;
 import java.io.IOException;
 
 /**
- * Created by Нико on 27.03.2017.
+ * Class implementing branch command.
  */
 public class Branch {
     /**
@@ -28,7 +28,7 @@ public class Branch {
             throw new Vcs.VcsIllegalStateException("You have several files were added, but haven't committed yet");
         }
         FileSystem.writeStringToFile(Vcs.getBranchesDir() + File.separator + branchName,
-                FileSystem.getFirstLine(Vcs.getBranchesDir() + File.separator + FileSystem.getFirstLine(Vcs.getHEAD())));
+                FileSystem.getFirstLine(Vcs.getBranchesDir() + File.separator + Branch.getHeadBranch()));
     }
 
     /**
@@ -43,7 +43,7 @@ public class Branch {
      *                                           actions with branch
      */
     public static void deleteBranch(String branchName) throws IOException, Vcs.VcsBranchNotFoundException, Vcs.VcsBranchActionForbiddenException {
-        if (FileSystem.getFirstLine(Vcs.getHEAD()).equals(branchName)) {
+        if (Branch.getHeadBranch().equals(branchName)) {
             throw new Vcs.VcsBranchActionForbiddenException("You can't remove current branch");
         }
         checkIfBranchExist(branchName);
@@ -54,5 +54,9 @@ public class Branch {
         if (!FileSystem.exists(Vcs.getBranchesDir() + File.separator + branchName)) {
             throw new Vcs.VcsBranchNotFoundException("Provided branch doesn't exist");
         }
+    }
+
+    public static String getHeadBranch() throws IOException {
+        return FileSystem.getFirstLine(Vcs.getHEAD());
     }
 }

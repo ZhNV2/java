@@ -1,12 +1,14 @@
 package ru.spbau;
 
-import ru.spbau.zhidkov.FileSystem;
+import ru.spbau.zhidkov.vcs.FileSystem;
+import ru.spbau.zhidkov.VcsCommit;
+import ru.spbau.zhidkov.VcsObject;
 
 import java.io.File;
 import java.io.IOException;
 
 /**
- * Created by Нико on 27.03.2017.
+ * Class implementing log command.
  */
 public class Log {
     /**
@@ -20,9 +22,9 @@ public class Log {
     public static StringBuilder log() throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(System.getProperty("line.separator"));
-        stringBuilder.append("On branch ").append(FileSystem.getFirstLine(Vcs.getHEAD())).append(System.getProperty("line.separator"));
+        stringBuilder.append("On branch ").append(Branch.getHeadBranch()).append(System.getProperty("line.separator"));
         stringBuilder.append(System.getProperty("line.separator"));
-        String commitHash = FileSystem.getFirstLine(Vcs.getBranchesDir() + File.separator + FileSystem.getFirstLine(Vcs.getHEAD()));
+        String commitHash = FileSystem.getFirstLine(Vcs.getBranchesDir() + File.separator + Branch.getHeadBranch());
         while (!commitHash.equals(Vcs.getInitialCommitPrevHash())) {
             VcsCommit commit = (VcsCommit) VcsObject.readFromJson(Vcs.getObjectsDir() + File.separator + commitHash, VcsCommit.class);
             commit.print(stringBuilder);
