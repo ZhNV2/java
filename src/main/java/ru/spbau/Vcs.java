@@ -106,7 +106,8 @@ abstract public class Vcs {
      * @throws IOException if something has gone wrong during
      *                     the work with file system
      */
-    public static void init(String authorName) throws IOException {
+    public static void init(String authorName) throws IOException, VcsIllegalStateException {
+        if (hasInitialized()) throw new VcsIllegalStateException("Repository is been already initialized in the current folder");
         FileSystem.createDirectory(ROOT_DIR);
         FileSystem.createDirectory(OBJECTS_DIR);
         FileSystem.createDirectory(BRANCHES_DIR);
@@ -138,7 +139,9 @@ abstract public class Vcs {
      * @throws IOException if something has gone wrong during
      *                     the work with file system
      */
-    public static void add(List<String> fileNames) throws IOException {
+    public static void add(List<String> fileNames) throws IOException, VcsIllegalStateException {
+        if (!hasInitialized()) throw new VcsIllegalStateException("There is no repository found in the current folder."
+                + System.lineSeparator() + "Use init command to initialize repository");
         for (String fileName : fileNames) {
             if (!FileSystem.exists(fileName)) {
                 throw new FileNotFoundException(fileName);
@@ -439,7 +442,6 @@ abstract public class Vcs {
             super(s);
         }
     }
-
 
     public static String getBranchesDir() {
         return BRANCHES_DIR;

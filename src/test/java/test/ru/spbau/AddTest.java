@@ -29,7 +29,7 @@ public class AddTest {
     public TemporaryFolder folder = new TemporaryFolder();
 
     @Test
-    public void addCorrectnessTest() throws IOException {
+    public void addCorrectnessTest() throws IOException, Vcs.VcsIllegalStateException {
         PowerMockito.mockStatic(FileSystem.class);
         ArgumentCaptor<String> stringCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<byte[]> byteCaptor = ArgumentCaptor.forClass(byte[].class);
@@ -47,7 +47,7 @@ public class AddTest {
     }
 
     @Test(expected = FileNotFoundException.class)
-    public void addFileDoesNotExistTest() throws IOException {
+    public void addFileDoesNotExistTest() throws IOException, Vcs.VcsIllegalStateException {
         PowerMockito.mockStatic(FileSystem.class);
         when(FileSystem.exists(eq("a.txt"))).thenReturn(true);
         when(FileSystem.exists(eq("b.txt"))).thenReturn(false);

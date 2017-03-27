@@ -30,7 +30,7 @@ public class JCommanderParser {
          *                     the work with file system
          */
         @Override
-        public void run() throws IOException {
+        public void run() throws IOException, Vcs.VcsIllegalStateException {
             Vcs.init(author);
         }
     }
@@ -51,7 +51,8 @@ public class JCommanderParser {
          *                     the work with file system
          */
         @Override
-        public void run() throws IOException {
+        public void run() throws IOException, Vcs.VcsIllegalStateException {
+            if (files == null || files.size() == 0) throw new ParameterException("Specify files to add");
             Vcs.add(files);
         }
 

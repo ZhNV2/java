@@ -94,24 +94,17 @@ public class Main {
             Command command = commandName.getCommand();
             jc.addCommand(commandName.toString(), command);
         }
+        Vcs.setCurrentFolder(System.getProperty("user.dir"));
+        Vcs.saveWorkingCopy();
         jc.parse(args);
         if (cm.help) {
             jc.usage();
         } else {
-            Vcs.setCurrentFolder(System.getProperty("user.dir"));
-            Vcs.saveWorkingCopy();
             String command = jc.getParsedCommand();
-            if (command == null) {
-                throw new ParameterException("You should specify the command");
-            } else if (command.equals(init.toString()) && Vcs.hasInitialized()) {
-                throw new ParameterException("You have already initialized repository in the current folder");
-            } else if (!command.equals(init.toString()) && !Vcs.hasInitialized()) {
-                throw new ParameterException("You have to initialize repository in the current folder");
-            }
-
+            if (command == null) throw new ParameterException("You should specify the command");
             CommandName.valueOf(command).getCommand().run();
-            Vcs.clearWorkingCopy();
         }
+        Vcs.clearWorkingCopy();
     }
 
     private static void baseErrorHandling() {
