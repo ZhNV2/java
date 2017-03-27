@@ -11,9 +11,10 @@ import org.mockito.ArgumentCaptor;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import ru.spbau.FileSystem;
+import ru.spbau.Init;
+import ru.spbau.zhidkov.FileSystem;
 import ru.spbau.Vcs;
-import ru.spbau.zhidkov.VcsObject;
+import ru.spbau.VcsObject;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -22,7 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({FileSystem.class, VcsObject.class})
+@PrepareForTest({FileSystem.class, VcsObject.class, Init.class})
 public class AddTest {
 
     @Rule
@@ -49,8 +50,11 @@ public class AddTest {
     @Test(expected = FileNotFoundException.class)
     public void addFileDoesNotExistTest() throws IOException, Vcs.VcsIllegalStateException {
         PowerMockito.mockStatic(FileSystem.class);
+        PowerMockito.mockStatic(Init.class);
+
         when(FileSystem.exists(eq("a.txt"))).thenReturn(true);
         when(FileSystem.exists(eq("b.txt"))).thenReturn(false);
+        when(Init.hasInitialized()).thenReturn(true);
         List<String> files = Arrays.asList("a.txt", "b.txt");
         Vcs.add(files);
     }

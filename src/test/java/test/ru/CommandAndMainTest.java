@@ -8,6 +8,7 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import ru.Main;
+import ru.spbau.Init;
 import ru.spbau.Vcs;
 
 import java.io.IOException;
@@ -21,7 +22,6 @@ public class CommandAndMainTest {
     @Before
     public void prepareVcs() throws Exception {
         PowerMockito.mockStatic(Vcs.class);
-        when(Vcs.hasInitialized()).thenReturn(true);
         PowerMockito.doNothing().when(Vcs.class);
     }
 

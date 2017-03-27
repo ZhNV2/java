@@ -1,4 +1,4 @@
-package ru.spbau.zhidkov;
+package ru.spbau;
 
 import com.google.gson.Gson;
 

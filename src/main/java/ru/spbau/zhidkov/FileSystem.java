@@ -1,6 +1,6 @@
-package ru.spbau;
+package ru.spbau.zhidkov;
 
-import ru.spbau.zhidkov.VcsObject;
+import ru.spbau.VcsObject;
 
 import java.io.File;
 import java.io.IOException;
