@@ -7,6 +7,8 @@ import ru.spbau.zhidkov.VcsObject;
 import java.io.File;
 import java.io.IOException;
 
+import static ru.spbau.Init.hasInitialized;
+
 /**
  * Class implementing log command.
  */
@@ -19,7 +21,8 @@ public class Log {
      * @throws IOException if something has gone wrong during
      *                     the work with file system
      */
-    public static StringBuilder log() throws IOException {
+    public static StringBuilder log() throws IOException, Vcs.VcsIncorrectUsageException {
+        if (!hasInitialized()) throw new Vcs.VcsIncorrectUsageException(Vcs.getUninitializedRepoMessage());
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(System.getProperty("line.separator"));
         stringBuilder.append("On branch ").append(Branch.getHeadBranch()).append(System.getProperty("line.separator"));

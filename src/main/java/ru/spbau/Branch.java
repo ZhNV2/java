@@ -5,6 +5,8 @@ import ru.spbau.zhidkov.vcs.FileSystem;
 import java.io.File;
 import java.io.IOException;
 
+import static ru.spbau.Init.hasInitialized;
+
 /**
  * Class implementing branch command.
  */
@@ -17,18 +19,19 @@ public class Branch {
      *                                           the work with file system
      * @throws Vcs.VcsBranchActionForbiddenException when trying to make illegal
      *                                           actions with branch
-     * @throws Vcs.VcsIllegalStateException          when vcs can't perform command because of incorrect
+     * @throws Vcs.VcsIncorrectUsageException          when vcs can't perform command because of incorrect
      *                                           usage
      */
-    public static void createBranch(String branchName) throws IOException, Vcs.VcsBranchActionForbiddenException, Vcs.VcsIllegalStateException {
+    public static void createBranch(String branchName) throws IOException, Vcs.VcsBranchActionForbiddenException, Vcs.VcsIncorrectUsageException {
+        if (!hasInitialized()) throw new Vcs.VcsIncorrectUsageException(Vcs.getUninitializedRepoMessage());
         if (FileSystem.exists(Vcs.getBranchesDir() + File.separator + branchName)) {
             throw new Vcs.VcsBranchActionForbiddenException("Branch with this name is already created");
         }
         if (!FileSystem.getFirstLine(Vcs.getAddList()).equals("")) {
-            throw new Vcs.VcsIllegalStateException("You have several files were added, but haven't committed yet");
+            throw new Vcs.VcsIncorrectUsageException("You have several files were added, but haven't committed yet");
         }
         FileSystem.writeStringToFile(Vcs.getBranchesDir() + File.separator + branchName,
-                FileSystem.getFirstLine(Vcs.getBranchesDir() + File.separator + Branch.getHeadBranch()));
+                getBranchLastCommitHash(getHeadBranch()));
     }
 
     /**
@@ -58,5 +61,9 @@ public class Branch {
 
     public static String getHeadBranch() throws IOException {
         return FileSystem.getFirstLine(Vcs.getHEAD());
+    }
+
+    public static String getBranchLastCommitHash(String branch) throws IOException {
+        return FileSystem.getFirstLine(Vcs.getBranchesDir() + File.separator + branch);
     }
 }

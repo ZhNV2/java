@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import static ru.spbau.Commit.getCommit;
+import static ru.spbau.Init.hasInitialized;
 
 /**
  * Class implementing reset command.
@@ -24,18 +25,18 @@ public class Reset {
      * @param fileName file to reset
      * @throws IOException                  if something has gone wrong during
      *                                      the work with file system
-     * @throws Vcs.VcsIllegalStateException if provided file
+     * @throws Vcs.VcsIncorrectUsageException if provided file
      *                                      is not in repository yet
      */
-    public static void reset(String fileName) throws IOException, Vcs.VcsIllegalStateException {
+    public static void reset(String fileName) throws IOException, Vcs.VcsIncorrectUsageException {
+        if (!hasInitialized()) throw new Vcs.VcsIncorrectUsageException(Vcs.getUninitializedRepoMessage());
         if (!FileSystem.exists(fileName)) throw new FileNotFoundException(fileName);
-        findLastVersion(FileSystem.getFirstLine(Vcs.getBranchesDir() +
-                File.separator + Branch.getHeadBranch()), fileName);
+        findLastVersion(Branch.getBranchLastCommitHash(Branch.getHeadBranch()), fileName);
     }
 
-    private static void findLastVersion(String commitHash, String fileName) throws IOException, Vcs.VcsIllegalStateException {
+    private static void findLastVersion(String commitHash, String fileName) throws IOException, Vcs.VcsIncorrectUsageException {
         VcsCommit commit = getCommit(commitHash);
-        for (Map.Entry<String, String> entry : commit.getChildren().entrySet()) {
+        for (Map.Entry<String, String> entry : commit.getChildrenAdd().entrySet()) {
             if (FileSystem.fileNameEquals(fileName, entry.getKey())) {
                 VcsBlob blob = (VcsBlob) VcsObject.readFromJson(Vcs.getObjectsDir() +
                         File.separator + entry.getValue(), VcsBlob.class);
@@ -43,10 +44,15 @@ public class Reset {
                 return;
             }
         }
+        for (String file : commit.getChildrenRm()) {
+            if (FileSystem.fileNameEquals(file, fileName)) {
+                throw new Vcs.VcsIncorrectUsageException("Provided file does not occur in repository");
+            }
+        }
         if (!commit.getPrevCommitHash().equals(Vcs.getInitialCommitPrevHash())) {
             findLastVersion(commit.getPrevCommitHash(), fileName);
         } else {
-            throw new Vcs.VcsIllegalStateException("Provided file does not occur in repository");
+            throw new Vcs.VcsIncorrectUsageException("Provided file does not occur in repository");
         }
     }
 }

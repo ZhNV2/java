@@ -23,6 +23,7 @@ abstract public class Vcs {
         OBJECTS_DIR = ROOT_DIR + File.separator + "objects";
         BRANCHES_DIR = ROOT_DIR + File.separator + "branches";
         ADD_LIST = ROOT_DIR + File.separator + "addList";
+        RM_LIST = ROOT_DIR + File.separator + "rmList";
         INITIAL_COMMIT_MESSAGE = "Initial commit.";
         ONE_LINE_VARS_DIR = ROOT_DIR + File.separator + "one_lines_vars";
         HEAD = ONE_LINE_VARS_DIR + File.separator + "HEAD";
@@ -38,6 +39,7 @@ abstract public class Vcs {
     private static String OBJECTS_DIR;
     private static String BRANCHES_DIR;
     private static String ADD_LIST;
+    private static String RM_LIST;
     private static String INITIAL_COMMIT_MESSAGE;
     private static String ONE_LINE_VARS_DIR;
     private static String HEAD;
@@ -46,6 +48,13 @@ abstract public class Vcs {
     private static String INITIAL_COMMIT_PREV_HASH;
     private static String MERGE_MESSAGE;
     private static String WORKING_COPY;
+
+    public static String getUninitializedRepoMessage() {
+        return UNINITIALIZED_REPO_MESSAGE;
+    }
+
+    private final static String UNINITIALIZED_REPO_MESSAGE = "There is no repository found in the current folder."
+            + System.lineSeparator() + "Use init command to initialize repository";
 
 
     /**
@@ -86,7 +95,7 @@ abstract public class Vcs {
      * @throws IOException if something has gone wrong during
      *                     the work with file system
      */
-    public static void add(List<String> fileNames) throws IOException, Vcs.VcsIllegalStateException {
+    public static void add(List<String> fileNames) throws IOException, VcsIncorrectUsageException {
         Add.add(fileNames);
     }
 
@@ -94,14 +103,14 @@ abstract public class Vcs {
      * Defines new branch.
      *
      * @param branchName new branch
-     * @throws IOException                       if something has gone wrong during
-     *                                           the work with file system
+     * @throws IOException                           if something has gone wrong during
+     *                                               the work with file system
      * @throws Vcs.VcsBranchActionForbiddenException when trying to make illegal
-     *                                           actions with branch
-     * @throws Vcs.VcsIllegalStateException          when vcs can't perform command because of incorrect
-     *                                           usage
+     *                                               actions with branch
+     * @throws VcsIncorrectUsageException            when vcs can't perform command because of incorrect
+     *                                               usage
      */
-    public static void createBranch(String branchName) throws IOException, Vcs.VcsBranchActionForbiddenException, Vcs.VcsIllegalStateException {
+    public static void createBranch(String branchName) throws IOException, Vcs.VcsBranchActionForbiddenException, VcsIncorrectUsageException {
         Branch.createBranch(branchName);
     }
 
@@ -109,12 +118,12 @@ abstract public class Vcs {
      * Deletes specified branch.
      *
      * @param branchName to delete
-     * @throws IOException                       if something has gone wrong during
-     *                                           the work with file system
+     * @throws IOException                           if something has gone wrong during
+     *                                               the work with file system
      * @throws Vcs.VcsBranchNotFoundException        when trying to access branch
-     *                                           which doesn't exist.
+     *                                               which doesn't exist.
      * @throws Vcs.VcsBranchActionForbiddenException when trying to make illegal
-     *                                           actions with branch
+     *                                               actions with branch
      */
     public static void deleteBranch(String branchName) throws IOException, Vcs.VcsBranchNotFoundException, Vcs.VcsBranchActionForbiddenException {
         Branch.deleteBranch(branchName);
@@ -124,29 +133,29 @@ abstract public class Vcs {
      * Switches current branch to another.
      *
      * @param branchName branch to switch to
-     * @throws IOException                if something has gone wrong during
-     *                                    the work with file system
+     * @throws IOException                    if something has gone wrong during
+     *                                        the work with file system
      * @throws Vcs.VcsBranchNotFoundException when trying to access branch
-     *                                    which doesn't exist.
-     * @throws Vcs.VcsIllegalStateException   when vcs can't perform command because of incorrect
-     *                                    usage
+     *                                        which doesn't exist.
+     * @throws VcsIncorrectUsageException     when vcs can't perform command because of incorrect
+     *                                        usage
      */
-    public static void checkoutBranch(String branchName) throws IOException, Vcs.VcsBranchNotFoundException, Vcs.VcsIllegalStateException {
-       Checkout.checkoutBranch(branchName);
+    public static void checkoutBranch(String branchName) throws IOException, Vcs.VcsBranchNotFoundException, VcsIncorrectUsageException {
+        Checkout.checkoutBranch(branchName);
     }
 
     /**
      * Switches current revision to provided.
      *
      * @param commitHash hash of revision to switch to
-     * @throws IOException                  if something has gone wrong during
-     *                                      the work with file system
+     * @throws IOException                      if something has gone wrong during
+     *                                          the work with file system
      * @throws Vcs.VcsRevisionNotFoundException when trying to access revision
-     *                                      which doesn't exist
-     * @throws Vcs.VcsIllegalStateException     when vcs can't perform command because of incorrect
-     *                                      usage
+     *                                          which doesn't exist
+     * @throws VcsIncorrectUsageException       when vcs can't perform command because of incorrect
+     *                                          usage
      */
-    public static void checkoutRevision(String commitHash) throws IOException, Vcs.VcsRevisionNotFoundException, Vcs.VcsIllegalStateException {
+    public static void checkoutRevision(String commitHash) throws IOException, Vcs.VcsRevisionNotFoundException, VcsIncorrectUsageException {
         Checkout.checkoutRevision(commitHash);
     }
 
@@ -157,7 +166,7 @@ abstract public class Vcs {
      * @throws IOException if something has gone wrong during
      *                     the work with file system
      */
-    public static void commit(String message) throws IOException {
+    public static void commit(String message) throws IOException, VcsIncorrectUsageException {
         Commit.commit(message);
     }
 
@@ -168,7 +177,7 @@ abstract public class Vcs {
      * @throws IOException if something has gone wrong during
      *                     the work with file system
      */
-    public static void init(String authorName) throws IOException, Vcs.VcsIllegalStateException {
+    public static void init(String authorName) throws IOException, VcsIncorrectUsageException {
         Init.init(authorName);
     }
 
@@ -180,7 +189,7 @@ abstract public class Vcs {
      * @throws IOException if something has gone wrong during
      *                     the work with file system
      */
-    public static StringBuilder log() throws IOException {
+    public static StringBuilder log() throws IOException, VcsIncorrectUsageException {
         return Log.log();
     }
 
@@ -189,26 +198,52 @@ abstract public class Vcs {
      * unique files or content equal files.
      *
      * @param branchToMerge branch to merge with
-     * @throws IOException                       if something has gone wrong during
-     *                                           the work with file system
+     * @throws IOException                           if something has gone wrong during
+     *                                               the work with file system
      * @throws Vcs.VcsBranchNotFoundException        when trying to access branch
-     *                                           which doesn't exist.
+     *                                               which doesn't exist.
      * @throws Vcs.VcsConflictException              when conflict during merge was detected
      * @throws Vcs.VcsBranchActionForbiddenException when trying to make illegal
-     *                                           actions with branch
-     * @throws Vcs.VcsIllegalStateException          when vcs can't perform command because of incorrect
-     *                                           usage
+     *                                               actions with branch
+     * @throws VcsIncorrectUsageException            when vcs can't perform command because of incorrect
+     *                                               usage
      */
-    public static void merge(String branchToMerge) throws IOException, Vcs.VcsBranchNotFoundException, Vcs.VcsConflictException, Vcs.VcsBranchActionForbiddenException, Vcs.VcsIllegalStateException {
+    public static void merge(String branchToMerge) throws IOException, Vcs.VcsBranchNotFoundException, Vcs.VcsConflictException, Vcs.VcsBranchActionForbiddenException, VcsIncorrectUsageException {
         Merge.merge(branchToMerge);
     }
 
 
-    public static void reset(String fileName) throws IOException, VcsIllegalStateException {
+    public static void reset(String fileName) throws IOException, VcsIncorrectUsageException {
         Reset.reset(fileName);
     }
 
+    public static void clean() throws IOException, VcsIncorrectUsageException {
+        Clean.clean();
+    }
 
+    public static void remove(String file) throws IOException, VcsIncorrectUsageException {
+        Remove.remove(file);
+    }
+
+    public static StringBuilder status() throws IOException {
+        Status.StatusHolder statusHolder = Status.status();
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("Modified files:").append(System.lineSeparator());
+        stringBuilder.append(listToPrint(statusHolder.modifiedFiles));
+        stringBuilder.append("Added files:").append(System.lineSeparator());
+        stringBuilder.append(listToPrint(statusHolder.addedFiles));
+        stringBuilder.append("Removed files:").append(System.lineSeparator());
+        stringBuilder.append(listToPrint(statusHolder.removedFiles));
+        stringBuilder.append("Foreign files:").append(System.lineSeparator());
+        stringBuilder.append(listToPrint(statusHolder.foreignFiles));
+        return stringBuilder;
+    }
+
+    private static StringBuilder listToPrint(List<String> list) {
+        StringBuilder stringBuilder = new StringBuilder();
+        list.forEach(stringBuilder::append);
+        return stringBuilder;
+    }
 
     /**
      * Abstract class for all throwable by vcs exceptions.
@@ -259,8 +294,8 @@ abstract public class Vcs {
      * Is thrown when vcs can't perform command because of incorrect
      * usage.
      */
-    public static class VcsIllegalStateException extends VcsException {
-        public VcsIllegalStateException(String s) {
+    public static class VcsIncorrectUsageException extends VcsException {
+        public VcsIncorrectUsageException(String s) {
             super(s);
         }
     }
@@ -284,6 +319,8 @@ abstract public class Vcs {
     public static String getAuthorName() {
         return AUTHOR_NAME;
     }
+
+    public static String getRmList() {return RM_LIST; }
 
     public static String getInitialCommitPrevHash() {
         return INITIAL_COMMIT_PREV_HASH;

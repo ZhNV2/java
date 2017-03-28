@@ -44,7 +44,7 @@ public class CommitTest {
         List<String> files = Arrays.asList("a.txt", "b.txt", "c\\d\\e.png");
         String prevCommitHash = "dafja;lsdfja;";
         String message = "hello!";
-
+        when(FileSystem.exists(eq(Vcs.getRootDir()))).thenReturn(true);
         when(FileSystem.getFirstLine(eq(Vcs.getAuthorName()))).thenReturn(AUTHOR_NAME);
         when(FileSystem.readAllLines(eq(Vcs.getAddList()))).thenReturn(files);
         when(FileSystem.getFirstLine(eq(Vcs.getHEAD()))).thenReturn("master");
@@ -68,8 +68,8 @@ public class CommitTest {
         assertEquals(vcsCommit.getPrevCommitHash(), prevCommitHash);
         assertEquals(vcsCommit.getMessage(), message);
         assertEquals(vcsCommit.getAuthor(), AUTHOR_NAME);
-        assertTrue(vcsCommit.getChildren().containsKey("a.txt"));
-        assertTrue(vcsCommit.getChildren().containsKey("b.txt"));
+        assertTrue(vcsCommit.getChildrenAdd().containsKey("a.txt"));
+        assertTrue(vcsCommit.getChildrenAdd().containsKey("b.txt"));
     }
 
 }

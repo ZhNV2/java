@@ -39,6 +39,7 @@ public class TestsStaticData {
         when(FileSystem.getFirstLine(eq(HEAD))).thenReturn("master");
         when(FileSystem.getFirstLine(eq(BRANCHES + File.separator + "master"))).thenReturn("masterHash");
         when(FileSystem.getFirstLine(eq(Vcs.getAddList()))).thenReturn("");
+        when(FileSystem.getFirstLine(eq(Vcs.getRmList()))).thenReturn("");
         when(FileSystem.getFirstLine(eq(AUTHOR_FILE))).thenReturn(AUTHOR_NAME);
     }
 }

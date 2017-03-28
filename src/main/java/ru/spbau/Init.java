@@ -18,13 +18,14 @@ public class Init {
      * @throws IOException if something has gone wrong during
      *                     the work with file system
      */
-    public static void init(String authorName) throws IOException, Vcs.VcsIllegalStateException {
-        if (hasInitialized()) throw new Vcs.VcsIllegalStateException("Repository is been already initialized in the current folder");
+    public static void init(String authorName) throws IOException, Vcs.VcsIncorrectUsageException {
+        if (hasInitialized()) throw new Vcs.VcsIncorrectUsageException("Repository is been already initialized in the current folder");
         FileSystem.createDirectory(Vcs.getRootDir());
         FileSystem.createDirectory(Vcs.getObjectsDir());
         FileSystem.createDirectory(Vcs.getBranchesDir());
         FileSystem.createDirectory(Vcs.getOneLineVarsDir());
         FileSystem.createEmptyFile(Vcs.getAddList());
+        FileSystem.createEmptyFile(Vcs.getRmList());
         FileSystem.createEmptyFile(Vcs.getHEAD());
         FileSystem.createEmptyFile(Vcs.getAuthorName());
         FileSystem.writeStringToFile(Vcs.getAuthorName(), authorName);

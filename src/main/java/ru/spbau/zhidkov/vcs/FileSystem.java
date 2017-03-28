@@ -229,7 +229,9 @@ abstract public class FileSystem {
         return Paths.get(dir).relativize(Paths.get(file)).toString();
     }
 
-    private static String normalize(String file) {
+    public static String normalize(String file) {
+        System.out.println(file);
+        System.out.println(Paths.get(file).toAbsolutePath().normalize().toString());
         return Paths.get(file).toAbsolutePath().normalize().toString();
     }
 
@@ -244,6 +246,14 @@ abstract public class FileSystem {
         String a = normalize(aName);
         String b = normalize(bName);
         return a.equals(b);
+    }
+
+    public static void removeFromFileLine(String file, String line) throws IOException {
+        StringBuilder stringBuilder = new StringBuilder();
+        readAllLines(file).stream()
+                .filter(s -> !fileNameEquals(line, s))
+                .forEach(s -> stringBuilder.append(s).append(System.lineSeparator()));
+        writeStringToFile(file, stringBuilder.toString());
     }
 
     public static Comparator<Path> compByLengthRev = (aName, bName) -> bName.toString().length() - aName.toString().length();

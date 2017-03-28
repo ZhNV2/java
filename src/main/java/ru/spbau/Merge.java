@@ -11,6 +11,7 @@ import java.util.*;
 
 import static ru.spbau.Branch.checkIfBranchExist;
 import static ru.spbau.Commit.getCommit;
+import static ru.spbau.Init.hasInitialized;
 
 /**
  * Class implementing merge command.
@@ -28,21 +29,22 @@ public class Merge {
      * @throws Vcs.VcsConflictException              when conflict during merge was detected
      * @throws Vcs.VcsBranchActionForbiddenException when trying to make illegal
      *                                           actions with branch
-     * @throws Vcs.VcsIllegalStateException          when vcs can't perform command because of incorrect
+     * @throws Vcs.VcsIncorrectUsageException          when vcs can't perform command because of incorrect
      *                                           usage
      */
-    public static void merge(String branchToMerge) throws IOException, Vcs.VcsBranchNotFoundException, Vcs.VcsConflictException, Vcs.VcsBranchActionForbiddenException, Vcs.VcsIllegalStateException {
+    public static void merge(String branchToMerge) throws IOException, Vcs.VcsBranchNotFoundException, Vcs.VcsConflictException, Vcs.VcsBranchActionForbiddenException, Vcs.VcsIncorrectUsageException {
+        if (!hasInitialized()) throw new Vcs.VcsIncorrectUsageException(Vcs.getUninitializedRepoMessage());
         if (branchToMerge.equals(Branch.getHeadBranch())) {
             throw new Vcs.VcsBranchActionForbiddenException("You can't merge branch with itself");
         }
         checkIfBranchExist(branchToMerge);
         if (!FileSystem.getFirstLine(Vcs.getAddList()).equals("")) {
-            throw new Vcs.VcsIllegalStateException("You have several files were added, but haven't committed yet");
+            throw new Vcs.VcsIncorrectUsageException("You have several files were added, but haven't committed yet");
         }
         VcsCommit commit = new VcsCommit(Vcs.getMergeMessage() + branchToMerge, new Date(), FileSystem.getFirstLine(Vcs.getAuthorName()),
-                FileSystem.getFirstLine(Vcs.getBranchesDir() + File.separator + Branch.getHeadBranch()), new HashMap<>());
+                Branch.getBranchLastCommitHash(Branch.getHeadBranch()), new HashMap<>(), new ArrayList<>());
         Collection<String> checked = new HashSet<>();
-        mergeCommit(FileSystem.getFirstLine(Vcs.getBranchesDir() + File.separator + branchToMerge), checked, commit);
+        mergeCommit(Branch.getBranchLastCommitHash(branchToMerge), checked, commit);
 
         FileSystem.writeToFile(Vcs.getObjectsDir(), commit);
         FileSystem.writeStringToFile(Vcs.getBranchesDir() + File.separator + Branch.getHeadBranch(), commit.getHash());
@@ -50,7 +52,7 @@ public class Merge {
 
     private static void mergeCommit(String commitHash, Collection<String> checked, VcsCommit newCommit) throws IOException, Vcs.VcsConflictException {
         VcsCommit commit = getCommit(commitHash);
-        for (Map.Entry<String, String> entry : commit.getChildren().entrySet()) {
+        for (Map.Entry<String, String> entry : commit.getChildrenAdd().entrySet()) {
             if (checked.contains(entry.getKey())) continue;
             String fileName = entry.getKey();
             checked.add(fileName);
@@ -61,9 +63,12 @@ public class Merge {
                     throw new Vcs.VcsConflictException("Can't merge, because file " + fileName + " is different in both branches");
                 }
             } else {
-                newCommit.addToChildren(fileName, blob.getHash());
+                newCommit.addToChildrenAdd(fileName, blob.getHash());
                 FileSystem.writeBytesToFile(fileName, blob.getContent());
             }
+        }
+        for (String file : commit.getChildrenRm()) {
+            checked.add(file);
         }
         if (!commit.getPrevCommitHash().equals(Vcs.getInitialCommitPrevHash())) {
             mergeCommit(commit.getPrevCommitHash(), checked, newCommit);

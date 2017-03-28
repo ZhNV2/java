@@ -25,20 +25,21 @@ public class BranchTest {
     }
 
     @Test(expected = Vcs.VcsBranchActionForbiddenException.class)
-    public void branchExists() throws Vcs.VcsBranchActionForbiddenException, Vcs.VcsIllegalStateException, IOException {
+    public void branchExists() throws Vcs.VcsBranchActionForbiddenException, Vcs.VcsIncorrectUsageException, IOException {
         when(FileSystem.exists(anyString())).thenReturn(true);
         Vcs.createBranch("branch");
     }
 
-    @Test(expected = Vcs.VcsIllegalStateException.class)
-    public void uncommittedChanges() throws Vcs.VcsConflictException, Vcs.VcsBranchActionForbiddenException, Vcs.VcsBranchNotFoundException, Vcs.VcsIllegalStateException, IOException {
+    @Test(expected = Vcs.VcsIncorrectUsageException.class)
+    public void uncommittedChanges() throws Vcs.VcsConflictException, Vcs.VcsBranchActionForbiddenException, Vcs.VcsBranchNotFoundException, Vcs.VcsIncorrectUsageException, IOException {
         when(FileSystem.exists(anyString())).thenReturn(false);
+        when(FileSystem.exists(Vcs.getRootDir())).thenReturn(true);
         when(FileSystem.getFirstLine(anyString())).thenReturn("a.txt");
         Vcs.createBranch("branch");
     }
 
     @Test(expected = Vcs.VcsBranchActionForbiddenException.class)
-    public void mergeSameBranch() throws IOException, Vcs.VcsIllegalStateException, Vcs.VcsBranchActionForbiddenException, Vcs.VcsBranchNotFoundException, Vcs.VcsConflictException {
+    public void mergeSameBranch() throws IOException, Vcs.VcsIncorrectUsageException, Vcs.VcsBranchActionForbiddenException, Vcs.VcsBranchNotFoundException, Vcs.VcsConflictException {
         when(FileSystem.getFirstLine(anyString())).thenReturn("branch");
         Vcs.deleteBranch("branch");
     }

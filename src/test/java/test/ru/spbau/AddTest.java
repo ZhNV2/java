@@ -1,6 +1,7 @@
 package test.ru.spbau;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.Mockito.*;
 
 import org.junit.Rule;
@@ -16,6 +17,7 @@ import ru.spbau.zhidkov.vcs.FileSystem;
 import ru.spbau.Vcs;
 import ru.spbau.zhidkov.VcsObject;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -30,25 +32,27 @@ public class AddTest {
     public TemporaryFolder folder = new TemporaryFolder();
 
     @Test
-    public void addCorrectnessTest() throws IOException, Vcs.VcsIllegalStateException {
+    public void addCorrectnessTest() throws IOException, Vcs.VcsIncorrectUsageException {
         PowerMockito.mockStatic(FileSystem.class);
         ArgumentCaptor<String> stringCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<byte[]> byteCaptor = ArgumentCaptor.forClass(byte[].class);
         when(FileSystem.exists(anyString())).thenReturn(true);
+        when(FileSystem.normalize(anyString())).then(returnsFirstArg());
         List<String> files = Arrays.asList("a.txt", "b.txt", "c\\d\\e.png");
+        Vcs.setCurrentFolder("");
         Vcs.add(files);
         PowerMockito.verifyStatic();
         FileSystem.appendToFile(stringCaptor.capture(), byteCaptor.capture());
         String toAdd = new String(byteCaptor.getValue(), StandardCharsets.UTF_8);
         String realToAdd = "";
         for (String file : files) {
-            realToAdd += file + System.lineSeparator();
+            realToAdd += File.separator + file + System.lineSeparator();
         }
         assertEquals(realToAdd, toAdd);
     }
 
     @Test(expected = FileNotFoundException.class)
-    public void addFileDoesNotExistTest() throws IOException, Vcs.VcsIllegalStateException {
+    public void addFileDoesNotExistTest() throws IOException, Vcs.VcsIncorrectUsageException {
         PowerMockito.mockStatic(FileSystem.class);
         PowerMockito.mockStatic(Init.class);
 

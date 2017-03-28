@@ -30,7 +30,7 @@ public class JCommanderParser {
          *                     the work with file system
          */
         @Override
-        public void run() throws IOException, Vcs.VcsIllegalStateException {
+        public void run() throws IOException, Vcs.VcsIncorrectUsageException {
             Vcs.init(author);
         }
     }
@@ -51,7 +51,7 @@ public class JCommanderParser {
          *                     the work with file system
          */
         @Override
-        public void run() throws IOException, Vcs.VcsIllegalStateException {
+        public void run() throws IOException, Vcs.VcsIncorrectUsageException {
             if (files == null || files.size() == 0) throw new ParameterException("Specify files to add");
             Vcs.add(files);
         }
@@ -74,7 +74,7 @@ public class JCommanderParser {
          *                     the work with file system
          */
         @Override
-        public void run() throws IOException {
+        public void run() throws IOException, Vcs.VcsIncorrectUsageException {
             if (message.equals(Vcs.getInitialCommitMessage())) {
                 throw new IllegalArgumentException("This commit message is reserved for first commit. Please, use another one");
             }
@@ -94,7 +94,7 @@ public class JCommanderParser {
          *                     the work with file system
          */
         @Override
-        public void run() throws IOException {
+        public void run() throws IOException, Vcs.VcsIncorrectUsageException {
             System.out.println(Vcs.log().toString());
         }
     }
@@ -115,7 +115,7 @@ public class JCommanderParser {
          *
          * @throws IOException                      if something has gone wrong during
          *                                          the work with file system
-         * @throws Vcs.VcsIllegalStateException     when vcs can't perform command because of incorrect
+         * @throws Vcs.VcsIncorrectUsageException     when vcs can't perform command because of incorrect
          *                                          usage
          * @throws Vcs.VcsRevisionNotFoundException when trying to access revision
          *                                          which doesn't exist
@@ -123,7 +123,7 @@ public class JCommanderParser {
          *                                          branch which doesn't exist.
          */
         @Override
-        public void run() throws IOException, Vcs.VcsIllegalStateException, Vcs.VcsRevisionNotFoundException, Vcs.VcsBranchNotFoundException {
+        public void run() throws IOException, Vcs.VcsIncorrectUsageException, Vcs.VcsRevisionNotFoundException, Vcs.VcsBranchNotFoundException {
             if (revision == null && branch == null) {
                 throw new ParameterException("You should provide revision or branch to commit");
             } else if (revision != null && branch != null) {
@@ -156,11 +156,11 @@ public class JCommanderParser {
          *                                               with branch
          * @throws Vcs.VcsBranchNotFoundException        when trying to
          *                                               access branch which doesn't exist.
-         * @throws Vcs.VcsIllegalStateException          when vcs can't perform command because of incorrect
+         * @throws Vcs.VcsIncorrectUsageException          when vcs can't perform command because of incorrect
          *                                               usage
          */
         @Override
-        public void run() throws IOException, Vcs.VcsBranchActionForbiddenException, Vcs.VcsBranchNotFoundException, Vcs.VcsIllegalStateException {
+        public void run() throws IOException, Vcs.VcsBranchActionForbiddenException, Vcs.VcsBranchNotFoundException, Vcs.VcsIncorrectUsageException {
             if (branchToCreate == null && branchToDelete == null) {
                 throw new ParameterException("You should specify do you want to create new branch or delete old one");
             } else if (branchToCreate != null && branchToDelete != null) {
@@ -192,11 +192,11 @@ public class JCommanderParser {
          * @throws Vcs.VcsConflictException              when conflict during merge was detected
          * @throws Vcs.VcsBranchNotFoundException        when trying to access
          *                                               branch which doesn't exist.
-         * @throws Vcs.VcsIllegalStateException          when vcs can't perform command because of incorrect
+         * @throws Vcs.VcsIncorrectUsageException          when vcs can't perform command because of incorrect
          *                                               usage
          */
         @Override
-        public void run() throws IOException, Vcs.VcsBranchActionForbiddenException, Vcs.VcsConflictException, Vcs.VcsBranchNotFoundException, Vcs.VcsIllegalStateException {
+        public void run() throws IOException, Vcs.VcsBranchActionForbiddenException, Vcs.VcsConflictException, Vcs.VcsBranchNotFoundException, Vcs.VcsIncorrectUsageException {
             Vcs.merge(branchToMerge);
         }
     }
@@ -215,13 +215,52 @@ public class JCommanderParser {
          *
          * @throws IOException                  if something has gone wrong during
          *                                      the work with file system
-         * @throws Vcs.VcsIllegalStateException when vcs can't perform command because of incorrect
+         * @throws Vcs.VcsIncorrectUsageException when vcs can't perform command because of incorrect
          *                                      usage
          */
         @Override
-        public void run() throws IOException, Vcs.VcsIllegalStateException {
+        public void run() throws IOException, Vcs.VcsIncorrectUsageException {
             Vcs.reset(fileName);
         }
     }
 
+    /**
+     * Class for parse rm command.
+     */
+    @Parameters(commandDescription = "Remove file from repository")
+    public static class CommandRemove implements Command {
+
+        @Parameter(names = {"-f", "--file"}, description = "File to remove", required = true)
+        private String fileToRemove;
+
+
+        @Override
+        public void run() throws IOException, Vcs.VcsIncorrectUsageException {
+            Vcs.remove(fileToRemove);
+        }
+    }
+
+    /**
+     * Class for parse clean command.
+     */
+    @Parameters(commandDescription = "Remove all files not from repository")
+    public static class CommandClean implements Command {
+
+        @Override
+        public void run() throws IOException, Vcs.VcsIncorrectUsageException {
+            Vcs.clean();
+        }
+    }
+
+    /**
+     * Class for parse status command.
+     */
+    @Parameters(commandDescription = "Status of current repository state")
+    public static class CommandStatus implements Command {
+
+        @Override
+        public void run() throws IOException {
+            System.out.println(Vcs.status().toString());
+        }
+    }
 }

@@ -36,23 +36,23 @@ public class MergeTest {
     }
 
     @Test
-    public void mergeBranchBasicCorrectnessTest() throws IOException, Vcs.VcsBranchActionForbiddenException, Vcs.VcsConflictException, Vcs.VcsBranchNotFoundException, Vcs.VcsIllegalStateException {
+    public void mergeBranchBasicCorrectnessTest() throws IOException, Vcs.VcsBranchActionForbiddenException, Vcs.VcsConflictException, Vcs.VcsBranchNotFoundException, Vcs.VcsIncorrectUsageException {
         VcsCommit initialCommit = new VcsCommit(Vcs.getInitialCommitMessage(), new Date(),
-                AUTHOR_NAME, Vcs.getInitialCommitPrevHash(), new HashMap<>());
+                AUTHOR_NAME, Vcs.getInitialCommitPrevHash(), new HashMap<>(), new ArrayList<>());
         HashMap<String, String> firstCommitChildren = new LinkedHashMap<>();
         firstCommitChildren.put("a.txt", "");
         firstCommitChildren.put("c.txt", "");
         firstCommitChildren.put("d.txt", "");
         VcsBlob firstDBlob = new VcsBlob("fd".getBytes());
-        VcsCommit firstCommit = new VcsCommit("first commit", new Date(), AUTHOR_NAME, "", firstCommitChildren);
+        VcsCommit firstCommit = new VcsCommit("first commit", new Date(), AUTHOR_NAME, "", firstCommitChildren, new ArrayList<>());
         HashMap<String, String> secondCommitChildren = new LinkedHashMap<>();
-        VcsCommit secondCommit = new VcsCommit("second commit", new Date(), AUTHOR_NAME, "firstCommitHash", secondCommitChildren);
+        VcsCommit secondCommit = new VcsCommit("second commit", new Date(), AUTHOR_NAME, "firstCommitHash", secondCommitChildren, new ArrayList<>());
         secondCommitChildren.put("a.txt", "");
         secondCommitChildren.put("b.txt", "");
         VcsBlob secondABlob = new VcsBlob("sa".getBytes());
         VcsBlob secondBBlob = new VcsBlob("sb".getBytes());
         HashMap<String, String> thirdCommitChildren = new LinkedHashMap<>();
-        VcsCommit thirdCommit = new VcsCommit("third commit", new Date(), AUTHOR_NAME, "secondCommitHash", thirdCommitChildren);
+        VcsCommit thirdCommit = new VcsCommit("third commit", new Date(), AUTHOR_NAME, "secondCommitHash", thirdCommitChildren, new ArrayList<>() );
         thirdCommitChildren.put("c.txt", "");
         thirdCommitChildren.put("folder/d.txt", "");
         VcsBlob thirdCBlob = new VcsBlob("tc".getBytes());
@@ -103,30 +103,30 @@ public class MergeTest {
         assertEquals(commit.getAuthor(), AUTHOR_NAME);
         assertEquals(commit.getMessage(), "Merged with branch branch");
         assertEquals(commit.getPrevCommitHash(), "masterHash");
-        assertEquals(commit.getChildren().size(), 3);
+        assertEquals(commit.getChildrenAdd().size(), 3);
         for (String file : filesToMerge)
-            assertTrue(commit.getChildren().containsKey(file));
+            assertTrue(commit.getChildrenAdd().containsKey(file));
 
     }
 
     @Test(expected = Vcs.VcsConflictException.class)
-    public void mergeBranchConflictTest() throws IOException, Vcs.VcsBranchActionForbiddenException, Vcs.VcsConflictException, Vcs.VcsBranchNotFoundException, Vcs.VcsIllegalStateException {
+    public void mergeBranchConflictTest() throws IOException, Vcs.VcsBranchActionForbiddenException, Vcs.VcsConflictException, Vcs.VcsBranchNotFoundException, Vcs.VcsIncorrectUsageException {
         VcsCommit initialCommit = new VcsCommit(Vcs.getInitialCommitMessage(), new Date(),
-                AUTHOR_NAME, Vcs.getInitialCommitPrevHash(), new HashMap<>());
+                AUTHOR_NAME, Vcs.getInitialCommitPrevHash(), new HashMap<>(), new ArrayList<>());
         HashMap<String, String> firstCommitChildren = new LinkedHashMap<>();
         firstCommitChildren.put("a.txt", "");
         firstCommitChildren.put("c.txt", "");
         firstCommitChildren.put("d.txt", "");
         VcsBlob firstDBlob = new VcsBlob("fd".getBytes());
-        VcsCommit firstCommit = new VcsCommit("first commit", new Date(), AUTHOR_NAME, "", firstCommitChildren);
+        VcsCommit firstCommit = new VcsCommit("first commit", new Date(), AUTHOR_NAME, "", firstCommitChildren, new ArrayList<>());
         HashMap<String, String> secondCommitChildren = new LinkedHashMap<>();
-        VcsCommit secondCommit = new VcsCommit("second commit", new Date(), AUTHOR_NAME, "firstCommitHash", secondCommitChildren);
+        VcsCommit secondCommit = new VcsCommit("second commit", new Date(), AUTHOR_NAME, "firstCommitHash", secondCommitChildren, new ArrayList<>());
         secondCommitChildren.put("a.txt", "");
         secondCommitChildren.put("b.txt", "");
         VcsBlob secondABlob = new VcsBlob("sa".getBytes());
         VcsBlob secondBBlob = new VcsBlob("sb".getBytes());
         HashMap<String, String> thirdCommitChildren = new LinkedHashMap<>();
-        VcsCommit thirdCommit = new VcsCommit("third commit", new Date(), AUTHOR_NAME, "secondCommitHash", thirdCommitChildren);
+        VcsCommit thirdCommit = new VcsCommit("third commit", new Date(), AUTHOR_NAME, "secondCommitHash", thirdCommitChildren, new ArrayList<>());
         thirdCommitChildren.put("c.txt", "");
         thirdCommitChildren.put("folder/d.txt", "");
         VcsBlob thirdCBlob = new VcsBlob("tc".getBytes());
@@ -153,13 +153,13 @@ public class MergeTest {
     }
 
     @Test(expected = Vcs.VcsBranchActionForbiddenException.class)
-    public void mergeSameBranch() throws IOException, Vcs.VcsIllegalStateException, Vcs.VcsBranchActionForbiddenException, Vcs.VcsBranchNotFoundException, Vcs.VcsConflictException {
+    public void mergeSameBranch() throws IOException, Vcs.VcsIncorrectUsageException, Vcs.VcsBranchActionForbiddenException, Vcs.VcsBranchNotFoundException, Vcs.VcsConflictException {
         when(FileSystem.getFirstLine(anyString())).thenReturn("branch");
         Vcs.merge("branch");
     }
 
-    @Test(expected = Vcs.VcsIllegalStateException.class)
-    public void uncommittedChanges() throws Vcs.VcsConflictException, Vcs.VcsBranchActionForbiddenException, Vcs.VcsBranchNotFoundException, Vcs.VcsIllegalStateException, IOException {
+    @Test(expected = Vcs.VcsIncorrectUsageException.class)
+    public void uncommittedChanges() throws Vcs.VcsConflictException, Vcs.VcsBranchActionForbiddenException, Vcs.VcsBranchNotFoundException, Vcs.VcsIncorrectUsageException, IOException {
         when(FileSystem.getFirstLine(anyString())).thenReturn("master").thenReturn("a.txt");
         Vcs.merge("branch");
     }

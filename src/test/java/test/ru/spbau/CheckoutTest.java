@@ -35,23 +35,23 @@ public class CheckoutTest {
     }
 
     @Test
-    public void checkoutBranchBasicCorrectnessTest() throws IOException, Vcs.VcsBranchNotFoundException, Vcs.VcsIllegalStateException {
+    public void checkoutBranchBasicCorrectnessTest() throws IOException, Vcs.VcsBranchNotFoundException, Vcs.VcsIncorrectUsageException {
         VcsCommit initialCommit = new VcsCommit(Vcs.getInitialCommitMessage(), new Date(),
-                AUTHOR_NAME, Vcs.getInitialCommitPrevHash(), new HashMap<>());
+                AUTHOR_NAME, Vcs.getInitialCommitPrevHash(), new HashMap<>(), new ArrayList<>());
         HashMap<String, String> firstCommitChildren = new LinkedHashMap<>();
         firstCommitChildren.put("a.txt", "");
         firstCommitChildren.put("c.txt", "");
         firstCommitChildren.put("d.txt", "");
         VcsBlob firstDBlob = new VcsBlob("fd".getBytes());
-        VcsCommit firstCommit = new VcsCommit("first commit", new Date(), AUTHOR_NAME, "", firstCommitChildren);
+        VcsCommit firstCommit = new VcsCommit("first commit", new Date(), AUTHOR_NAME, "", firstCommitChildren, new ArrayList<>());
         HashMap<String, String> secondCommitChildren = new LinkedHashMap<>();
-        VcsCommit secondCommit = new VcsCommit("second commit", new Date(), AUTHOR_NAME, "firstCommitHash", secondCommitChildren);
+        VcsCommit secondCommit = new VcsCommit("second commit", new Date(), AUTHOR_NAME, "firstCommitHash", secondCommitChildren, new ArrayList<>());
         secondCommitChildren.put("a.txt", "");
         secondCommitChildren.put("b.txt", "");
         VcsBlob secondABlob = new VcsBlob("sa".getBytes());
         VcsBlob secondBBlob = new VcsBlob("sb".getBytes());
         HashMap<String, String> thirdCommitChildren = new LinkedHashMap<>();
-        VcsCommit thirdCommit = new VcsCommit("third commit", new Date(), AUTHOR_NAME, "secondCommitHash", thirdCommitChildren);
+        VcsCommit thirdCommit = new VcsCommit("third commit", new Date(), AUTHOR_NAME, "secondCommitHash", thirdCommitChildren, new ArrayList<>());
         thirdCommitChildren.put("c.txt", "");
         thirdCommitChildren.put("folder/d.txt", "");
         VcsBlob thirdCBlob = new VcsBlob("tc".getBytes());
@@ -91,14 +91,14 @@ public class CheckoutTest {
     }
 
     @Test
-    public void checkoutRevisionDeletingNecessaryFilesTest() throws IOException, Vcs.VcsIllegalStateException, Vcs.VcsRevisionNotFoundException {
+    public void checkoutRevisionDeletingNecessaryFilesTest() throws IOException, Vcs.VcsIncorrectUsageException, Vcs.VcsRevisionNotFoundException {
         VcsCommit initialCommit = new VcsCommit(Vcs.getInitialCommitMessage(), new Date(),
-                AUTHOR_NAME, Vcs.getInitialCommitPrevHash(), new HashMap<>());
+                AUTHOR_NAME, Vcs.getInitialCommitPrevHash(), new HashMap<>(), new ArrayList<>());
         HashMap<String, String> firstCommitChildren = new HashMap<>();
         firstCommitChildren.put("ff/sf/a.txt", "");
-        VcsCommit firstCommit = new VcsCommit("first commit", new Date(), AUTHOR_NAME, "", firstCommitChildren);
+        VcsCommit firstCommit = new VcsCommit("first commit", new Date(), AUTHOR_NAME, "", firstCommitChildren, new ArrayList<>());
         HashMap<String, String> secondCommitChildren = new HashMap<>();
-        VcsCommit secondCommit = new VcsCommit("second commit", new Date(), AUTHOR_NAME, "firstCommitHash", secondCommitChildren);
+        VcsCommit secondCommit = new VcsCommit("second commit", new Date(), AUTHOR_NAME, "firstCommitHash", secondCommitChildren, new ArrayList<>());
         secondCommitChildren.put("ff/sf/a.txt", "");
         secondCommitChildren.put("b.txt", "");
         when(VcsObject.readFromJson(anyString(), any()))
@@ -127,19 +127,21 @@ public class CheckoutTest {
     }
 
     @Test(expected = Vcs.VcsBranchNotFoundException.class)
-    public void branchDoesNotExistTest() throws IOException, Vcs.VcsBranchNotFoundException, Vcs.VcsIllegalStateException {
+    public void branchDoesNotExistTest() throws IOException, Vcs.VcsBranchNotFoundException, Vcs.VcsIncorrectUsageException {
         when(FileSystem.exists(anyString())).thenReturn(false);
+        when(FileSystem.exists(Vcs.getRootDir())).thenReturn(true);
         Vcs.checkoutBranch("branch");
     }
 
     @Test(expected = Vcs.VcsRevisionNotFoundException.class)
-    public void revisionDoesNotExistTest() throws IOException, Vcs.VcsIllegalStateException, Vcs.VcsRevisionNotFoundException {
+    public void revisionDoesNotExistTest() throws IOException, Vcs.VcsIncorrectUsageException, Vcs.VcsRevisionNotFoundException {
         when(FileSystem.exists(anyString())).thenReturn(false);
+        when(FileSystem.exists(Vcs.getRootDir())).thenReturn(true);
         Vcs.checkoutRevision("revision");
     }
 
-    @Test(expected = Vcs.VcsIllegalStateException.class)
-    public void uncommittedChanges() throws IOException, Vcs.VcsBranchNotFoundException, Vcs.VcsIllegalStateException {
+    @Test(expected = Vcs.VcsIncorrectUsageException.class)
+    public void uncommittedChanges() throws IOException, Vcs.VcsBranchNotFoundException, Vcs.VcsIncorrectUsageException {
         when(FileSystem.exists(anyString())).thenReturn(true);
         when(FileSystem.getFirstLine(anyString())).thenReturn("branch").thenReturn("master")
                 .thenReturn("hash").thenReturn("a.txt");
