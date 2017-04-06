@@ -9,8 +9,6 @@ import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
 
-import static ru.Main.CommandName.init;
-
 /**
  * Main class for all application for parsing command line arguments
  * and call appropriate method from vcs.
@@ -34,20 +32,20 @@ public class Main {
         /**
          * Initializes enum elements with corresponding parser. It
          * should be called every time before you run {@link
-         * #execute(String[]) execute(String[])}.
+         * #execute(Vcs, String[]) execute(Vcs, String[])}.
          */
-        public static void initialize() {
-            init.command = new JCommanderParser.CommandInit();
-            add.command = new JCommanderParser.CommandAdd();
-            commit.command = new JCommanderParser.CommandCommit();
-            log.command = new JCommanderParser.CommandLog();
-            checkout.command = new JCommanderParser.CommandCheckout();
-            branch.command = new JCommanderParser.CommandBranch();
-            merge.command = new JCommanderParser.CommandMerge();
-            reset.command = new JCommanderParser.CommandReset();
-            rm.command = new JCommanderParser.CommandRemove();
-            clean.command = new JCommanderParser.CommandClean();
-            status.command = new JCommanderParser.CommandStatus();
+        public static void initialize(JCommanderParser jcp) {
+            init.command = jcp.new CommandInit();
+            add.command = jcp.new CommandAdd();
+            commit.command = jcp.new CommandCommit();
+            log.command = jcp.new CommandLog();
+            checkout.command = jcp.new CommandCheckout();
+            branch.command = jcp.new CommandBranch();
+            merge.command = jcp.new CommandMerge();
+            reset.command = jcp.new CommandReset();
+            rm.command = jcp.new CommandRemove();
+            clean.command = jcp.new CommandClean();
+            status.command = jcp.new CommandStatus();
         }
     }
 
@@ -58,25 +56,34 @@ public class Main {
      * @param args command line args
      */
     public static void main(String[] args) {
-        try {
-            execute(args);
+        Vcs vcs;
+        try{
+            vcs = new Vcs(System.getProperty("user.dir"));
+        } catch (IOException e) {
+            System.out.println("System can't start because of " + e.getMessage());
+            System.out.println("Please contact developers");
+            e.printStackTrace();
+            return;
+        }
+        try  {
+            execute(vcs, args);
         } catch (Vcs.VcsException | ParameterException e) {
             System.out.println(e.getMessage());
-            baseErrorHandling();
+            baseErrorHandling(vcs);
         } catch (FileNotFoundException | NoSuchFileException e) {
             System.out.println("File not found: " + e.getMessage() + "." + System.getProperty("line.separator") +
                     "Probably you have deleted this file, " +
                     "specified wrong one or forgot to init the repository");
-            baseErrorHandling();
+            baseErrorHandling(vcs);
         } catch (AccessDeniedException e) {
             System.out.println("Access to file " + e.getMessage() + " is forbidden. Check your permission rights");
-            baseErrorHandling();
+            baseErrorHandling(vcs);
         } catch (Exception e) {
             System.out.println("If you see this message, then something has gone completely wrong.");
             System.out.println("Please report this bug to the developers:");
             System.out.println(e.getClass());
             System.out.println(e.getMessage());
-            baseErrorHandling();
+            baseErrorHandling(vcs);
         }
     }
 
@@ -90,17 +97,17 @@ public class Main {
      * @throws Vcs.VcsException if something has gone wrong
      *                          during the vcs work
      */
-    public static void execute(String[] args) throws IOException, Vcs.VcsException {
-        JCommanderParser cm = new JCommanderParser();
+    public static void execute(Vcs vcs, String[] args) throws IOException, Vcs.VcsException {
+        JCommanderParser cm = new JCommanderParser(vcs);
         JCommander jc = new JCommander(cm);
-        CommandName.initialize();
+        CommandName.initialize(cm);
         for (CommandName commandName : CommandName.values()) {
             Command command = commandName.getCommand();
             jc.addCommand(commandName.toString(), command);
         }
-        Vcs.setCurrentFolder(System.getProperty("user.dir"));
-        Vcs.saveWorkingCopy();
-        jc.parse(args);
+
+        vcs.saveWorkingCopy();
+            jc.parse(args);
         if (cm.help) {
             jc.usage();
         } else {
@@ -108,13 +115,13 @@ public class Main {
             if (command == null) throw new ParameterException("You should specify the command");
             CommandName.valueOf(command).getCommand().run();
         }
-        Vcs.clearWorkingCopy();
+        vcs.clearWorkingCopy();
     }
 
-    private static void baseErrorHandling() {
+    private static void baseErrorHandling(Vcs vcs) {
         System.out.println(HELP);
         try {
-            Vcs.restoreWorkingCopy();
+            vcs.restoreWorkingCopy();
         } catch (IOException e) {
             System.out.println("Can't restore working copy, because of:");
             System.out.println(e.getClass());

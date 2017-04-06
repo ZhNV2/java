@@ -1,48 +1,62 @@
 package ru.spbau;
 
-import ru.spbau.zhidkov.VcsBlob;
-import ru.spbau.zhidkov.VcsCommit;
-import ru.spbau.zhidkov.VcsObject;
-import ru.spbau.zhidkov.vcs.FileSystem;
+import ru.spbau.zhidkov.BranchHandler;
+import ru.spbau.zhidkov.ExternalFileHandler;
+import ru.spbau.zhidkov.VcsFileHandler;
+import ru.spbau.zhidkov.vcs.VcsBlob;
+import ru.spbau.zhidkov.vcs.VcsCommit;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static ru.spbau.Commit.getCommit;
 
-public class Status {
+public class StatusCommand {
 
-    public static StatusHolder status() throws IOException {
-        List<String> modifiedFiles = new ArrayList<>();
-        List<String> removedFiles = FileSystem.readAllLines(Vcs.getRmList());
-        List<String> addedFiles = FileSystem.readAllLines(Vcs.getAddList());
+    private VcsFileHandler vcsFileHandler;
+    private ExternalFileHandler externalFileHandler;
+    private BranchHandler branchHandler;
 
-        List<String> curFiles = FileSystem.readAllFiles(Vcs.getCurrentFolder()).stream()
-                .filter(v -> !v.startsWith(Vcs.getRootDir()))
-                .filter(v -> !v.startsWith(Vcs.getWorkingCopy()))
-                .map(Path::toString)
-                .filter(v -> !FileSystem.isDirectory(v))
-                .collect(Collectors.toList());
-
-        status(Branch.getBranchLastCommitHash(Branch.getHeadBranch()), curFiles, new TreeSet<>(), removedFiles,
-                addedFiles, modifiedFiles);
-        return new StatusHolder(modifiedFiles, addedFiles, removedFiles, curFiles);
+    public StatusCommand(VcsFileHandler vcsFileHandler, ExternalFileHandler externalFileHandler, BranchHandler branchHandler) {
+        this.vcsFileHandler = vcsFileHandler;
+        this.externalFileHandler = externalFileHandler;
+        this.branchHandler = branchHandler;
     }
 
-    private static void status(String commitHash, Collection<String> curFiles, Collection<String> checked,
+    public StatusHolder status() throws IOException {
+        List<String> modifiedFiles = new ArrayList<>();
+        List<String> removedFiles = vcsFileHandler.getList(VcsFileHandler.ListWithFiles.RM_LIST);
+        List<String> addedFiles = vcsFileHandler.getList(VcsFileHandler.ListWithFiles.ADD_LIST);
+
+        List<String> externalFiles = externalFileHandler.readAllExternalFiles().stream()
+                .map(Path::toString)
+                .filter(v -> !externalFileHandler.isDirectory(v))
+                .collect(Collectors.toList());
+
+        for (String file : addedFiles) {
+            externalFiles.remove(file);
+        }
+        for (String file : removedFiles) {
+            externalFiles.remove(file);
+        }
+
+        status(branchHandler.getHeadLastCommitHash(), externalFiles, new TreeSet<>(), removedFiles,
+                addedFiles, modifiedFiles);
+        return new StatusHolder(modifiedFiles, addedFiles, removedFiles, externalFiles);
+    }
+
+    private void status(String commitHash, Collection<String> curFiles, Collection<String> checked,
                         List<String> removedFiles, List<String> addedFiles,
                         List<String> modifiedFiles) throws IOException {
-        VcsCommit commit = getCommit(commitHash);
+        VcsCommit commit = vcsFileHandler.getCommit(commitHash);
         for (Map.Entry<String, String> entry : commit.getChildrenAdd().entrySet()) {
             String fileName = entry.getKey();
             if (checked.contains(fileName)) continue;
             checked.add(fileName);
             if (curFiles.contains(fileName)) {
-                byte[] content1 = FileSystem.readAllBytes(fileName);
-                VcsBlob blob = (VcsBlob) VcsObject.readFromJson(Vcs.getObjectsDir() + File.separator + entry.getValue(), VcsBlob.class);
+                byte[] content1 = externalFileHandler.readAllBytes(fileName);
+                VcsBlob blob = vcsFileHandler.getBlob(entry.getValue());
                 if (!Arrays.equals(content1, blob.getContent())) {
                     if (!addedFiles.contains(fileName)) {
                         modifiedFiles.add(fileName);

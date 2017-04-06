@@ -2,6 +2,7 @@ package ru;
 
 import com.beust.jcommander.*;
 import ru.spbau.Vcs;
+import ru.spbau.zhidkov.CommitHandler;
 
 import java.io.IOException;
 import java.util.List;
@@ -9,17 +10,24 @@ import java.util.List;
 @SuppressWarnings("WeakerAccess")
 public class JCommanderParser {
 
+    private Vcs vcs;
+
     /**
      * If the --help option was chosen.
      */
     @Parameter(names = "--help", help = true)
     public boolean help;
 
+    public JCommanderParser(Vcs vcs) {
+        this.vcs = vcs;
+    }
+
+
     /**
      * Class for parse init command.
      */
     @Parameters(commandDescription = "Initialize empty repository in the current folder")
-    public static class CommandInit implements Command {
+    public class CommandInit implements Command {
         @Parameter(names = "--author", required = true, description = "Author's name")
         private String author;
 
@@ -31,7 +39,7 @@ public class JCommanderParser {
          */
         @Override
         public void run() throws IOException, Vcs.VcsIncorrectUsageException {
-            Vcs.init(author);
+            vcs.init(author);
         }
     }
 
@@ -39,7 +47,7 @@ public class JCommanderParser {
      * Class for parse add command.
      */
     @Parameters(commandDescription = "Add file contents to the index")
-    public static class CommandAdd implements Command {
+    public class CommandAdd implements Command {
 
         @Parameter(description = "Files to add to the index")
         private List<String> files;
@@ -53,7 +61,7 @@ public class JCommanderParser {
         @Override
         public void run() throws IOException, Vcs.VcsIncorrectUsageException {
             if (files == null || files.size() == 0) throw new ParameterException("Specify files to add");
-            Vcs.add(files);
+            vcs.add(files);
         }
 
     }
@@ -62,7 +70,7 @@ public class JCommanderParser {
      * Class for parse commit command.
      */
     @Parameters(commandDescription = "Record changes to the repository")
-    public static class CommandCommit implements Command {
+    public class CommandCommit implements Command {
 
         @Parameter(names = {"-m", "--message"}, description = "Commit message", required = true)
         private String message;
@@ -75,10 +83,10 @@ public class JCommanderParser {
          */
         @Override
         public void run() throws IOException, Vcs.VcsIncorrectUsageException {
-            if (message.equals(Vcs.getInitialCommitMessage())) {
+            if (message.equals(CommitHandler.getInitialCommitMessage())) {
                 throw new IllegalArgumentException("This commit message is reserved for first commit. Please, use another one");
             }
-            Vcs.commit(message);
+            vcs.commit(message);
         }
     }
 
@@ -86,7 +94,7 @@ public class JCommanderParser {
      * Class for parse log command.
      */
     @Parameters(commandDescription = "Print log containing information about commits")
-    public static class CommandLog implements Command {
+    public class CommandLog implements Command {
         /**
          * Runs necessary action after parsing args.
          *
@@ -95,7 +103,7 @@ public class JCommanderParser {
          */
         @Override
         public void run() throws IOException, Vcs.VcsIncorrectUsageException {
-            System.out.println(Vcs.log().toString());
+            System.out.println(vcs.log().toString());
         }
     }
 
@@ -103,7 +111,7 @@ public class JCommanderParser {
      * Class for parse checkout command.
      */
     @Parameters(commandDescription = "Alert your repository to required revision or branch")
-    public static class CommandCheckout implements Command {
+    public class CommandCheckout implements Command {
         @Parameter(names = {"-r", "--revision"}, description = "Revision to checkout")
         private String revision;
 
@@ -129,9 +137,9 @@ public class JCommanderParser {
             } else if (revision != null && branch != null) {
                 throw new ParameterException("You should provide only branch or revision not both together");
             } else if (revision != null) {
-                Vcs.checkoutRevision(revision);
+                vcs.checkoutRevision(revision);
             } else {
-                Vcs.checkoutBranch(branch);
+                vcs.checkoutBranch(branch);
             }
         }
     }
@@ -140,7 +148,7 @@ public class JCommanderParser {
      * Class for parse branch command.
      */
     @Parameters(commandDescription = "Create or delete your branch")
-    public static class CommandBranch implements Command {
+    public class CommandBranch implements Command {
         @Parameter(names = {"-n", "--new"}, description = "Name of new branch")
         private String branchToCreate;
 
@@ -166,9 +174,9 @@ public class JCommanderParser {
             } else if (branchToCreate != null && branchToDelete != null) {
                 throw new ParameterException("You can only delete branch or create new one not both actions together");
             } else if (branchToCreate != null) {
-                Vcs.createBranch(branchToCreate);
+                vcs.createBranch(branchToCreate);
             } else {
-                Vcs.deleteBranch(branchToDelete);
+                vcs.deleteBranch(branchToDelete);
             }
         }
     }
@@ -177,7 +185,7 @@ public class JCommanderParser {
      * Class for parse merge command.
      */
     @Parameters(commandDescription = "Merge current branch with specified one")
-    public static class CommandMerge implements Command {
+    public class CommandMerge implements Command {
 
         @Parameter(names = {"-b", "--branch"}, description = "Branch to merge", required = true)
         private String branchToMerge;
@@ -197,7 +205,7 @@ public class JCommanderParser {
          */
         @Override
         public void run() throws IOException, Vcs.VcsBranchActionForbiddenException, Vcs.VcsConflictException, Vcs.VcsBranchNotFoundException, Vcs.VcsIncorrectUsageException {
-            Vcs.merge(branchToMerge);
+            vcs.merge(branchToMerge);
         }
     }
 
@@ -205,7 +213,7 @@ public class JCommanderParser {
      * Class for parse reset command.
      */
     @Parameters(commandDescription = "Reset specified file with the last version in repository")
-    public static class CommandReset implements Command {
+    public class CommandReset implements Command {
 
         @Parameter(names = {"-f", "--file"}, description = "File to reset", required = true)
         private String fileName;
@@ -220,7 +228,7 @@ public class JCommanderParser {
          */
         @Override
         public void run() throws IOException, Vcs.VcsIncorrectUsageException {
-            Vcs.reset(fileName);
+            vcs.reset(fileName);
         }
     }
 
@@ -228,15 +236,16 @@ public class JCommanderParser {
      * Class for parse rm command.
      */
     @Parameters(commandDescription = "Remove file from repository")
-    public static class CommandRemove implements Command {
+    public class CommandRemove implements Command {
 
-        @Parameter(names = {"-f", "--file"}, description = "File to remove", required = true)
-        private String fileToRemove;
+        @Parameter(description = "Files to remove from the repo")
+        private List<String> files;
 
 
         @Override
         public void run() throws IOException, Vcs.VcsIncorrectUsageException {
-            Vcs.remove(fileToRemove);
+            if (files == null || files.size() == 0) throw new ParameterException("Specify files to remove");
+            vcs.remove(files);
         }
     }
 
@@ -244,11 +253,11 @@ public class JCommanderParser {
      * Class for parse clean command.
      */
     @Parameters(commandDescription = "Remove all files not from repository")
-    public static class CommandClean implements Command {
+    public class CommandClean implements Command {
 
         @Override
         public void run() throws IOException, Vcs.VcsIncorrectUsageException {
-            Vcs.clean();
+            vcs.clean();
         }
     }
 
@@ -256,11 +265,11 @@ public class JCommanderParser {
      * Class for parse status command.
      */
     @Parameters(commandDescription = "Status of current repository state")
-    public static class CommandStatus implements Command {
+    public class CommandStatus implements Command {
 
         @Override
-        public void run() throws IOException {
-            System.out.println(Vcs.status().toString());
+        public void run() throws IOException, Vcs.VcsIncorrectUsageException {
+            System.out.println(vcs.status().toString());
         }
     }
 }

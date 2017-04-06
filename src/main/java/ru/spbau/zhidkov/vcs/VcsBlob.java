@@ -1,4 +1,4 @@
-package ru.spbau.zhidkov;
+package ru.spbau.zhidkov.vcs;
 
 /**
  * Vcs object providing usual file (blob) structure.

@@ -1,0 +1,57 @@
+package ru.spbau.zhidkov;
+
+import ru.spbau.Vcs;
+import ru.spbau.zhidkov.vcs.VcsCommit;
+
+import java.io.IOException;
+import java.util.*;
+
+/**
+ * Created by Нико on 30.03.2017.
+ */
+public class CommitHandler {
+    private VcsFileHandler vcsFileHandler;
+    private static final String INITIAL_COMMIT_MESSAGE = "Initial commit.";
+    private static final String INITIAL_COMMIT_PREV_HASH = "";
+
+    public CommitHandler(VcsFileHandler vcsFileHandler) {
+        this.vcsFileHandler = vcsFileHandler;
+    }
+
+    public static String getInitialCommitMessage() {
+        return INITIAL_COMMIT_MESSAGE;
+    }
+
+    public void assertRevisionExists(String commitHash) throws Vcs.VcsBranchNotFoundException, IOException {
+        if (!vcsFileHandler.commitExists(commitHash)) {
+            throw new Vcs.VcsBranchNotFoundException("Provided revision doesn't exist");
+        }
+    }
+
+    public static String getInitialCommitPrevHash() {
+        return INITIAL_COMMIT_PREV_HASH;
+    }
+
+    public List<String> getAllActiveFilesInRevision(String hash) throws IOException {
+        List<String> repFiles = new ArrayList<>();
+        getAllActiveFilesInCurrentRevision(hash,
+                new TreeSet<>(), repFiles);
+        return repFiles;
+    }
+
+    private void getAllActiveFilesInCurrentRevision(String commitHash, Collection<String> checked,
+                                                           List<String> repFiles) throws IOException {
+        VcsCommit commitHandler = vcsFileHandler.getCommit(commitHash);
+        for (Map.Entry<String, String> entry : commitHandler.getChildrenAdd().entrySet()) {
+            if (checked.contains(entry.getKey())) continue;
+            repFiles.add(entry.getKey());
+            checked.add(entry.getKey());
+        }
+        for (String file : commitHandler.getChildrenRm()) {
+            checked.add(file);
+        }
+        if (!commitHandler.getPrevCommitHash().equals(INITIAL_COMMIT_PREV_HASH)) {
+            getAllActiveFilesInCurrentRevision(commitHandler.getPrevCommitHash(), checked, repFiles);
+        }
+    }
+}
