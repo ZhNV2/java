@@ -10,6 +10,7 @@ import ru.spbau.zhidkov.vcs.VcsObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
@@ -77,13 +78,13 @@ public class CheckoutCommand {
         vcsFileHandler.assertListEmpty(VcsFileHandler.ListWithFiles.ADD_LIST);
         vcsFileHandler.assertListEmpty(VcsFileHandler.ListWithFiles.RM_LIST);
         deleteCommittedFiles(lastCommitHash);
-        Collection<String> restored = new HashSet<>();
+        Collection<Path> restored = new HashSet<>();
         restore(commitHash, restored);
     }
 
     private void deleteCommittedFiles(String commitHash) throws IOException {
         VcsCommit commit = vcsFileHandler.getCommit(commitHash);
-        for (Map.Entry<String, String> entry : commit.getChildrenAdd().entrySet()) {
+        for (Map.Entry<Path, String> entry : commit.getChildrenAdd().entrySet()) {
             externalFileHandler.deleteIfExists(entry.getKey());
         }
         if (!commit.getPrevCommitHash().equals(CommitHandler.getInitialCommitPrevHash())) {
@@ -91,9 +92,9 @@ public class CheckoutCommand {
         }
     }
 
-    private void restore(String commitHash, Collection<String> restored) throws IOException {
+    private void restore(String commitHash, Collection<Path> restored) throws IOException {
         VcsCommit commit = vcsFileHandler.getCommit(commitHash);
-        for (Map.Entry<String, String> entry : commit.getChildrenAdd().entrySet()) {
+        for (Map.Entry<Path, String> entry : commit.getChildrenAdd().entrySet()) {
             if (!restored.contains(entry.getKey())) {
                 VcsBlob blob = vcsFileHandler.getBlob(entry.getValue());
                 //VcsBlob blob = (VcsBlob) VcsObject.readFromJson(Vcs.getObjectsDir() + File.separator + entry.getValue(), VcsBlob.class);
@@ -101,7 +102,7 @@ public class CheckoutCommand {
                 restored.add(entry.getKey());
             }
         }
-        for (String fileRm : commit.getChildrenRm()) {
+        for (Path fileRm : commit.getChildrenRm()) {
             restored.add(fileRm);
         }
         if (!commit.getPrevCommitHash().equals(CommitHandler.getInitialCommitPrevHash())) {

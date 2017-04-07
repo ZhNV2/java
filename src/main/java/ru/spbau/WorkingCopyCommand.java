@@ -42,7 +42,7 @@ public class WorkingCopyCommand {
                 .sorted(FileSystem.compByLengthRev)
                 .collect(Collectors.toList());
         for (Path fileName : filesInRevOrd) {
-            externalFileHandler.deleteIfExists(fileName.toString());
+            externalFileHandler.deleteIfExists(fileName);
         }
         workingCopyHandler.restoreFiles();
         clearWorkingCopy();

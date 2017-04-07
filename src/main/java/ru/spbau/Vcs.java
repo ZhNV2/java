@@ -6,6 +6,7 @@ import ru.spbau.zhidkov.vcs.FileSystem;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.*;
 
 
@@ -29,7 +30,7 @@ public class Vcs {
     private StatusCommand statusCommand;
     private WorkingCopyCommand workingCopyCommand;
 
-    public Vcs(String dir) throws IOException {
+    public Vcs(Path dir) throws IOException {
 
         /*
       Sets the folder with which it will work to {@param currentFolder}
@@ -103,7 +104,7 @@ public class Vcs {
      * @throws IOException if something has gone wrong during
      *                     the work with file system
      */
-    public void add(List<String> fileNames) throws IOException, VcsIncorrectUsageException {
+    public void add(List<Path> fileNames) throws IOException, VcsIncorrectUsageException {
         assertInitialized();
         addCommand.add(fileNames);
     }
@@ -232,7 +233,7 @@ public class Vcs {
     }
 
 
-    public void reset(String fileName) throws IOException, VcsIncorrectUsageException {
+    public void reset(Path fileName) throws IOException, VcsIncorrectUsageException {
         assertInitialized();
         resetCommand.reset(fileName);
     }
@@ -242,7 +243,7 @@ public class Vcs {
         cleanCommand.clean();
     }
 
-    public void remove(List<String> files) throws IOException, VcsIncorrectUsageException {
+    public void remove(List<Path> files) throws IOException, VcsIncorrectUsageException {
         assertInitialized();
         removeCommand.remove(files);
     }
@@ -267,7 +268,7 @@ public class Vcs {
             throw new VcsIncorrectUsageException(UNINITIALIZED_REPO_MESSAGE);
     }
 
-    private StringBuilder listToPrint(List<String> list) {
+    private StringBuilder listToPrint(List<Path> list) {
         StringBuilder stringBuilder = new StringBuilder();
         list.forEach(s->{stringBuilder.append(s).append(System.lineSeparator());});
         return stringBuilder;

@@ -4,6 +4,7 @@ import ru.spbau.zhidkov.vcs.FileSystem;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -12,7 +13,7 @@ import java.util.stream.Collectors;
  */
 public class ExternalFileHandler {
 
-    private static final String CURRENT_DIR = ".";
+    private static final Path CURRENT_DIR = Paths.get(".");
 
     private FileSystem fileSystem;
     private WorkingCopyHandler workingCopyHandler;
@@ -25,27 +26,27 @@ public class ExternalFileHandler {
     }
 
 
-    public boolean exists(String fileName) throws IOException {
+    public boolean exists(Path fileName) throws IOException {
         return fileSystem.exists(fileName);
     }
 
-    public boolean isDirectory(String fileName) {
+    public boolean isDirectory(Path fileName) {
         return fileSystem.isDirectory(fileName);
     }
 
-    public void deleteIfExists(String key) throws IOException {
+    public void deleteIfExists(Path key) throws IOException {
         fileSystem.deleteIfExists(key);
     }
 
-    public void writeBytesToFile(String key, byte[] content) throws IOException {
+    public void writeBytesToFile(Path key, byte[] content) throws IOException {
         fileSystem.writeBytesToFile(key, content);
     }
 
-    public byte[] readAllBytes(String file) throws IOException {
+    public byte[] readAllBytes(Path file) throws IOException {
         return fileSystem.readAllBytes(file);
     }
 
-    public void deleteFolder(String fileName) throws IOException {
+    public void deleteFolder(Path fileName) throws IOException {
         fileSystem.deleteFolder(fileName);
     }
 
@@ -58,11 +59,11 @@ public class ExternalFileHandler {
 
     }
 
-    public List<String> normalize(List<String> files) {
+    public List<Path> normalize(List<Path> files) {
         return fileSystem.normalize(files);
     }
 
-    public String normalize(String fileName) {
+    public Path normalize(Path fileName) {
         return fileSystem.normalize(fileName);
     }
 }

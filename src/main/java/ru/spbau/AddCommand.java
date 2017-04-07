@@ -5,6 +5,7 @@ import ru.spbau.zhidkov.VcsFileHandler;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 
 /**
@@ -29,15 +30,15 @@ public class AddCommand {
      * @throws IOException if something has gone wrong during
      *                     the work with file system
      */
-    public void add(List<String> fileNames) throws IOException, Vcs.VcsIncorrectUsageException {
+    public void add(List<Path> fileNames) throws IOException, Vcs.VcsIncorrectUsageException {
 //        fileNames = fileNames.stream()
 //                .map(s-> Vcs.getCurrentFolder() + File.separator + s)
 //                .map(FileSystem::normalize)
 //                .collect(Collectors.toList());
 
-        for (String fileName : fileNames) {
+        for (Path fileName : fileNames) {
             if (!externalFileHandler.exists(fileName)) {
-                throw new FileNotFoundException(fileName);
+                throw new FileNotFoundException(fileName.toString());
             }
             if (externalFileHandler.isDirectory(fileName)) {
                 throw new Vcs.VcsIncorrectUsageException("You may add only files");

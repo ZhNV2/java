@@ -1,5 +1,6 @@
 package ru.spbau.zhidkov.vcs;
 
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -19,13 +20,13 @@ public class VcsCommit extends VcsObject {
 
     private String author;
     private String prevCommitHash;
-    private Map<String, String> childrenAdd = new HashMap<>();
+    private Map<Path, String> childrenAdd = new HashMap<>();
 
-    public List<String> getChildrenRm() {
+    public List<Path> getChildrenRm() {
         return childrenRm;
     }
 
-    private List<String> childrenRm = new ArrayList<>();
+    private List<Path> childrenRm = new ArrayList<>();
 
 
 
@@ -40,27 +41,28 @@ public class VcsCommit extends VcsObject {
 *                       were added before this commit and maps their
      * @param childrenRm
      */
-    public VcsCommit(String message, Date date, String author, String prevCommitHash, Map<String, String> childrenAdd, List<String> childrenRm) {
+    public VcsCommit(String message, Date date, String author, String prevCommitHash, Map<Path, String> childrenAdd, List<Path> childrenRm) {
         this.message = message;
         this.date = date;
         this.author = author;
         this.prevCommitHash = prevCommitHash;
         this.childrenAdd = childrenAdd;
+        this.childrenRm = childrenRm;
     }
 
     public String getPrevCommitHash() {
         return prevCommitHash;
     }
 
-    public Map<String, String> getChildrenAdd() {
+    public Map<Path, String> getChildrenAdd() {
         return childrenAdd;
     }
 
-    public void addToChildrenAdd(String file, String hash) {
+    public void addToChildrenAdd(Path file, String hash) {
         childrenAdd.put(file, hash);
     }
 
-    public void addToChildrenRm(String file) {
+    public void addToChildrenRm(Path file) {
         childrenRm.add(file);
     }
 

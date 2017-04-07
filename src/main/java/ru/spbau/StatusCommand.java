@@ -25,19 +25,18 @@ public class StatusCommand {
     }
 
     public StatusHolder status() throws IOException {
-        List<String> modifiedFiles = new ArrayList<>();
-        List<String> removedFiles = vcsFileHandler.getList(VcsFileHandler.ListWithFiles.RM_LIST);
-        List<String> addedFiles = vcsFileHandler.getList(VcsFileHandler.ListWithFiles.ADD_LIST);
+        List<Path> modifiedFiles = new ArrayList<>();
+        List<Path> removedFiles = vcsFileHandler.getList(VcsFileHandler.ListWithFiles.RM_LIST);
+        List<Path> addedFiles = vcsFileHandler.getList(VcsFileHandler.ListWithFiles.ADD_LIST);
 
-        List<String> externalFiles = externalFileHandler.readAllExternalFiles().stream()
-                .map(Path::toString)
+        List<Path> externalFiles = externalFileHandler.readAllExternalFiles().stream()
                 .filter(v -> !externalFileHandler.isDirectory(v))
                 .collect(Collectors.toList());
 
-        for (String file : addedFiles) {
+        for (Path file : addedFiles) {
             externalFiles.remove(file);
         }
-        for (String file : removedFiles) {
+        for (Path file : removedFiles) {
             externalFiles.remove(file);
         }
 
@@ -46,12 +45,12 @@ public class StatusCommand {
         return new StatusHolder(modifiedFiles, addedFiles, removedFiles, externalFiles);
     }
 
-    private void status(String commitHash, Collection<String> curFiles, Collection<String> checked,
-                        List<String> removedFiles, List<String> addedFiles,
-                        List<String> modifiedFiles) throws IOException {
+    private void status(String commitHash, Collection<Path> curFiles, Collection<Path> checked,
+                        List<Path> removedFiles, List<Path> addedFiles,
+                        List<Path> modifiedFiles) throws IOException {
         VcsCommit commit = vcsFileHandler.getCommit(commitHash);
-        for (Map.Entry<String, String> entry : commit.getChildrenAdd().entrySet()) {
-            String fileName = entry.getKey();
+        for (Map.Entry<Path, String> entry : commit.getChildrenAdd().entrySet()) {
+            Path fileName = entry.getKey();
             if (checked.contains(fileName)) continue;
             checked.add(fileName);
             if (curFiles.contains(fileName)) {
@@ -69,19 +68,19 @@ public class StatusCommand {
                 }
             }
         }
-        for (String fileName : commit.getChildrenRm()) {
+        for (Path fileName : commit.getChildrenRm()) {
             checked.add(fileName);
         }
     }
 
     public static class StatusHolder {
-        public List<String> modifiedFiles;
-        public List<String> addedFiles;
-        public List<String> removedFiles;
-        public List<String> foreignFiles;
+        public List<Path> modifiedFiles;
+        public List<Path> addedFiles;
+        public List<Path> removedFiles;
+        public List<Path> foreignFiles;
 
 
-        public StatusHolder(List<String> modifiedFiles, List<String> addedFiles, List<String> removedFiles, List<String> foreignFiles) {
+        public StatusHolder(List<Path> modifiedFiles, List<Path> addedFiles, List<Path> removedFiles, List<Path> foreignFiles) {
             this.modifiedFiles = modifiedFiles;
             this.addedFiles = addedFiles;
             this.removedFiles = removedFiles;

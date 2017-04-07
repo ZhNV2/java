@@ -8,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.Paths;
 
 /**
  * Main class for all application for parsing command line arguments
@@ -58,7 +59,7 @@ public class Main {
     public static void main(String[] args) {
         Vcs vcs;
         try{
-            vcs = new Vcs(System.getProperty("user.dir"));
+            vcs = new Vcs(Paths.get(System.getProperty("user.dir")));
         } catch (IOException e) {
             System.out.println("System can't start because of " + e.getMessage());
             System.out.println("Please contact developers");
@@ -83,6 +84,7 @@ public class Main {
             System.out.println("Please report this bug to the developers:");
             System.out.println(e.getClass());
             System.out.println(e.getMessage());
+            e.printStackTrace();
             baseErrorHandling(vcs);
         }
     }

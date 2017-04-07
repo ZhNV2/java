@@ -15,16 +15,16 @@ import java.util.stream.Collectors;
 @SuppressWarnings("WeakerAccess")
 public class FileSystem {
 
-    private String currentDir;
+    private Path currentDir;
 
-    public FileSystem(String currentDir) {
+    public FileSystem(Path currentDir) {
         this.currentDir = currentDir;
     }
 
-    public String getCurrentDir() { return currentDir; }
+    public Path getCurrentDir() { return currentDir; }
 
-    public String toWrite(String file) {
-        return currentDir + File.separator + file;
+    public Path toWrite(Path file) {
+        return currentDir.resolve(file);
     }
 
     /**
@@ -36,9 +36,7 @@ public class FileSystem {
      * @throws IOException if something has gone wrong during
      *                     the work with file system
      */
-    public void writeToFile(String dir, VcsObject vcsObject) throws IOException {
-        vcsObject.writeAsJson(vcsObject.getPath(toWrite(dir)));
-    }
+
 
     /**
      * Writes byte array to file.
@@ -48,8 +46,8 @@ public class FileSystem {
      * @throws IOException if something has gone wrong during
      *                     the work with file system
      */
-    public void writeBytesToFile(String fileName, byte[] content) throws IOException {
-        Files.write(Paths.get(toWrite(fileName)), content);
+    public void writeBytesToFile(Path fileName, byte[] content) throws IOException {
+        Files.write(toWrite(fileName), content);
     }
 
     /**
@@ -60,8 +58,8 @@ public class FileSystem {
      * @throws IOException if something has gone wrong during
      *                     the work with file system
      */
-    public void writeStringToFile(String fileName, String text) throws IOException {
-        Files.write(Paths.get(toWrite(fileName)), text.getBytes());
+    public void writeStringToFile(Path fileName, String text) throws IOException {
+        Files.write(toWrite(fileName), text.getBytes());
     }
 
     /**
@@ -71,9 +69,9 @@ public class FileSystem {
      * @throws IOException if something has gone wrong during
      *                     the work with file system
      */
-    public void createEmptyFile(String fileName) throws IOException {
-        Files.deleteIfExists(Paths.get(toWrite(fileName)));
-        Files.createFile(Paths.get(toWrite(fileName)));
+    public void createEmptyFile(Path fileName) throws IOException {
+        Files.deleteIfExists(toWrite(fileName));
+        Files.createFile(toWrite(fileName));
     }
 
     /**
@@ -83,8 +81,8 @@ public class FileSystem {
      * @throws IOException if something has gone wrong during
      *                     the work with file system
      */
-    public void createDirectory(String dirName) throws IOException {
-        Files.createDirectory(Paths.get(toWrite(dirName)));
+    public void createDirectory(Path dirName) throws IOException {
+        Files.createDirectory(toWrite(dirName));
     }
 
     /**
@@ -95,8 +93,8 @@ public class FileSystem {
      * @throws IOException if something has gone wrong during
      *                     the work with file system
      */
-    public void appendToFile(String fileName, byte[] content) throws IOException {
-        Files.write(Paths.get(toWrite(fileName)), content, StandardOpenOption.APPEND);
+    public void appendToFile(Path fileName, byte[] content) throws IOException {
+        Files.write(toWrite(fileName), content, StandardOpenOption.APPEND);
     }
 
     /**
@@ -107,8 +105,8 @@ public class FileSystem {
      * @throws IOException if something has gone wrong during
      *                     the work with file system
      */
-    public String getFirstLine(String fileName) throws IOException {
-        return Files.lines(Paths.get(toWrite(fileName))).findFirst().orElse("");
+    public String getFirstLine(Path fileName) throws IOException {
+        return Files.lines(toWrite(fileName)).findFirst().orElse("");
     }
 
     /**
@@ -118,8 +116,8 @@ public class FileSystem {
      * @throws IOException if something has gone wrong during
      *                     the work with file system
      */
-    public void deleteIfExists(String fileName) throws IOException {
-        Files.deleteIfExists(Paths.get(toWrite(fileName)));
+    public void deleteIfExists(Path fileName) throws IOException {
+        Files.deleteIfExists(toWrite(fileName));
     }
 
     /**
@@ -130,8 +128,8 @@ public class FileSystem {
      * @throws IOException if something has gone wrong during
      *                     the work with file system
      */
-    public byte[] readAllBytes(String fileName) throws IOException {
-        return Files.readAllBytes(Paths.get(toWrite(fileName)));
+    public byte[] readAllBytes(Path fileName) throws IOException {
+        return Files.readAllBytes(toWrite(fileName));
     }
 
     /**
@@ -142,8 +140,8 @@ public class FileSystem {
      * @throws IOException if something has gone wrong during
      *                     the work with file system
      */
-    public boolean exists(String fileName) throws IOException {
-        return Files.exists(Paths.get(toWrite(fileName)));
+    public boolean exists(Path fileName) throws IOException {
+        return Files.exists(toWrite(fileName));
     }
 
     /**
@@ -154,8 +152,8 @@ public class FileSystem {
      * @throws IOException if something has gone wrong during
      *                     the work with file system
      */
-    public List<String> readAllLines(String fileName) throws IOException {
-        return Files.lines(Paths.get(toWrite(fileName))).distinct().collect(Collectors.toList());
+    public List<String> readAllLines(Path fileName) throws IOException {
+        return Files.lines(toWrite(fileName)).distinct().collect(Collectors.toList());
     }
 
     /**
@@ -166,11 +164,9 @@ public class FileSystem {
      * @throws IOException if something has gone wrong during
      *                     the work with file system
      */
-    public List<Path> readAllFiles(String fileName) throws IOException {
-        return Files.walk(Paths.get(toWrite(fileName)))
-                .map(Path::toString)
+    public List<Path> readAllFiles(Path fileName) throws IOException {
+        return Files.walk(toWrite(fileName))
                 .map(this::normalize)
-                .map(Paths::get)
                 .collect(Collectors.toList());
     }
 
@@ -182,8 +178,8 @@ public class FileSystem {
      * @throws IOException if something has gone wrong during
      *                     the work with file system
      */
-    public void copy(String source, String target) throws IOException {
-        Files.copy(Paths.get(toWrite(source)), Paths.get(toWrite(target)));
+    public void copy(Path source, Path target) throws IOException {
+        Files.copy(toWrite(source), toWrite(target));
     }
 
     /**
@@ -193,7 +189,7 @@ public class FileSystem {
      * @throws IOException if something has gone wrong during
      *                     the work with file system
      */
-    public void deleteFolder(String folder) throws IOException {
+    public void deleteFolder(Path folder) throws IOException {
         List<Path> filesInRevOrd = readAllFiles(folder).stream()
                 .sorted(compByLengthRev)
                 .collect(Collectors.toList());
@@ -208,23 +204,23 @@ public class FileSystem {
      * @param dir to check
      * @return if the file is folder.
      */
-    public boolean isDirectory(String dir) {
-        return Files.isDirectory(Paths.get(toWrite(dir)));
+    public boolean isDirectory(Path dir) {
+        return Files.isDirectory(toWrite(dir));
     }
 
-    public void copyFilesToDir(String sourceDir, List<Path> files, String targetDir) throws IOException {
+    public void copyFilesToDir(Path sourceDir, List<Path> files, Path targetDir) throws IOException {
         files = files.stream().sorted(compByLength).collect(Collectors.toList());
         for (Path fileName : files) {
-            if (isDirectory(fileName.toString())) {
-                String newDir = targetDir + File.separator + relativePath(fileName.toString(), sourceDir);
+            if (isDirectory(fileName)) {
+                Path newDir = targetDir.resolve(relativePath(fileName, sourceDir));
                 if (!exists(newDir)) {
                     createDirectory(newDir);
                 }
             }
         }
         for (Path fileName : files) {
-            if (!isDirectory(fileName.toString())) {
-                copy(fileName.toString(), targetDir + File.separator + relativePath(fileName.toString(), sourceDir));
+            if (!isDirectory(fileName)) {
+                copy(fileName, targetDir.resolve(relativePath(fileName, sourceDir)));
             }
         }
     }
@@ -237,9 +233,9 @@ public class FileSystem {
      * @param dir  in which does file lie.
      * @return relative path to file
      */
-    public String relativePath(String file, String dir) {
-        if (dir.equals("")) return file;
-        return Paths.get(dir).relativize(Paths.get(file)).toString();
+    public Path relativePath(Path file, Path dir) {
+        if (dir.toString().equals("")) return file;
+        return dir.relativize(file);
     }
 
 
@@ -265,12 +261,12 @@ public class FileSystem {
 //    }
 
 
-    public String normalize(String file) {
-        file =  Paths.get(file).toAbsolutePath().normalize().toString();
-        return Paths.get(getCurrentDir()).relativize(Paths.get(file)).toString();
+    public Path normalize(Path file) {
+        file =  file.toAbsolutePath().normalize();
+        return getCurrentDir().relativize(file);
     }
 
-    public List<String> normalize(List<String> files) {
+    public List<Path> normalize(List<Path> files) {
         return files.stream()
                 .map(this::normalize)
                 .collect(Collectors.toList());

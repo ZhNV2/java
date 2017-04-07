@@ -9,6 +9,7 @@ import ru.spbau.zhidkov.vcs.VcsCommit;
 
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.*;
 
 
@@ -35,20 +36,20 @@ public class CommitCommand {
      *                     the work with file system
      */
     public void commit(String message) throws IOException, Vcs.VcsIncorrectUsageException {
-        List<String> filesToAdd = vcsFileHandler.getList(VcsFileHandler.ListWithFiles.ADD_LIST);
-        List<String> filesToRm = vcsFileHandler.getList(VcsFileHandler.ListWithFiles.RM_LIST);
+        List<Path> filesToAdd = vcsFileHandler.getList(VcsFileHandler.ListWithFiles.ADD_LIST);
+        List<Path> filesToRm = vcsFileHandler.getList(VcsFileHandler.ListWithFiles.RM_LIST);
         VcsCommit commit = new VcsCommit(message, new Date(), vcsFileHandler.getAuthorName(),
                 message.equals(CommitHandler.getInitialCommitMessage()) ? CommitHandler.getInitialCommitPrevHash() :
                         branchHandler.getHeadLastCommitHash(),
                         new HashMap<>(), new ArrayList<>());
 
         Collection<VcsBlob> blobs = new ArrayList<>();
-        for (String file : filesToAdd) {
+        for (Path file : filesToAdd) {
             VcsBlob blob = new VcsBlob(externalFileHandler.readAllBytes(file));
             commit.addToChildrenAdd(file, blob.getHash());
             blobs.add(blob);
         }
-        for (String file : filesToRm) {
+        for (Path file : filesToRm) {
             commit.addToChildrenRm(file);
         }
         for (VcsBlob blob : blobs) {

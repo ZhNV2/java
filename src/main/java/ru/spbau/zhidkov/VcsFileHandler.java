@@ -9,6 +9,7 @@ import ru.spbau.zhidkov.vcs.VcsObject;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,43 +22,42 @@ public class VcsFileHandler {
     
     public VcsFileHandler(FileSystem fileSystem) {
         this.fileSystem = fileSystem;
-        String CURRENT_FOLDER = "";
-        ROOT_DIR = CURRENT_FOLDER + ".vcs";
-        OBJECTS_DIR = ROOT_DIR + File.separator + "objects";
-        BRANCHES_DIR = ROOT_DIR + File.separator + "branches";
-        ADD_LIST = ROOT_DIR + File.separator + "addList";
-        RM_LIST = ROOT_DIR + File.separator + "rmList";
-        ONE_LINE_VARS_DIR = ROOT_DIR + File.separator + "one_lines_vars";
-        HEAD = ONE_LINE_VARS_DIR + File.separator + "HEAD";
+        ROOT_DIR = Paths.get(".vcs");
+        OBJECTS_DIR = ROOT_DIR.resolve("objects");
+        BRANCHES_DIR = ROOT_DIR.resolve("branches");
+        ADD_LIST = ROOT_DIR.resolve("addList");
+        RM_LIST = ROOT_DIR.resolve("rmList");
+        ONE_LINE_VARS_DIR = ROOT_DIR.resolve("one_lines_vars");
+        HEAD = ONE_LINE_VARS_DIR.resolve("HEAD");
         MASTER = "master";
-        AUTHOR_NAME = ONE_LINE_VARS_DIR + File.separator + "AUTHOR_NAME";
+        AUTHOR_NAME = ONE_LINE_VARS_DIR.resolve("AUTHOR_NAME");
     }
 
-    private final String ROOT_DIR;
-    private final String OBJECTS_DIR;
-    private final String BRANCHES_DIR;
-    private final String ADD_LIST;
-    private final String RM_LIST;
-    private final String ONE_LINE_VARS_DIR;
-    private final String HEAD;
+    private final Path ROOT_DIR;
+    private final Path OBJECTS_DIR;
+    private final Path BRANCHES_DIR;
+    private final Path ADD_LIST;
+    private final Path RM_LIST;
+    private final Path ONE_LINE_VARS_DIR;
+    private final Path HEAD;
     private final String MASTER;
-    private final String AUTHOR_NAME;
+    private final Path AUTHOR_NAME;
 
     public boolean commitExists(String commitHash) throws IOException {
-        return fileSystem.exists(OBJECTS_DIR + File.separator + commitHash);
+        return fileSystem.exists(OBJECTS_DIR.resolve(commitHash));
     }
 
     public boolean branchExists(String branchName) throws IOException {
-        return fileSystem.exists(BRANCHES_DIR + File.separator + branchName);
+        return fileSystem.exists(BRANCHES_DIR.resolve(branchName));
         
     }
 
     public void setBranchCommit(String branchName, String commitHash) throws IOException {
-        fileSystem.writeStringToFile(BRANCHES_DIR + File.separator + branchName, commitHash);
+        fileSystem.writeStringToFile(BRANCHES_DIR.resolve(branchName), commitHash);
     }
 
     public VcsCommit getBranchCommit(String branchName) throws IOException {
-        return getCommit(fileSystem.getFirstLine(BRANCHES_DIR + File.separator + branchName));
+        return getCommit(fileSystem.getFirstLine(BRANCHES_DIR.resolve(branchName)));
     }
 
     public String getHeadBranch() throws IOException {
@@ -65,7 +65,7 @@ public class VcsFileHandler {
     }
 
     public void deleteBranch(String branchName) throws IOException {
-        fileSystem.deleteIfExists(BRANCHES_DIR + File.separator + branchName);
+        fileSystem.deleteIfExists(BRANCHES_DIR.resolve(branchName));
     }
 
     public void setHeadBranch(String headBranch) throws IOException {
@@ -76,7 +76,7 @@ public class VcsFileHandler {
         ADD_LIST, RM_LIST;
     }
 
-    private String getListEnum(ListWithFiles listWithFiles) {
+    private Path getListEnum(ListWithFiles listWithFiles) {
         switch (listWithFiles) {
             case ADD_LIST: return ADD_LIST;
             case RM_LIST: return RM_LIST;
@@ -84,16 +84,20 @@ public class VcsFileHandler {
         throw new IllegalArgumentException();
     }
     
-    public void removeFromList(ListWithFiles listWithFiles, List<String> files) throws IOException {
-        fileSystem.writeStringToFile(getListEnum(listWithFiles), connectFilesToString(siftedList(fileSystem.readAllLines(getListEnum(listWithFiles)), files)));
+    public void removeFromList(ListWithFiles listWithFiles, List<Path> files) throws IOException {
+        fileSystem.writeStringToFile(getListEnum(listWithFiles),
+                connectPathsToString(siftedList(fileSystem.readAllLines(getListEnum(listWithFiles))
+                        .stream()
+                        .map(Paths::get)
+                        .collect(Collectors.toList()), files)));
     }
 
-    public void addToList(ListWithFiles listWithFiles, List<String> files) throws IOException {
-        fileSystem.appendToFile(getListEnum(listWithFiles), connectFilesToString(fileSystem.normalize(files)).getBytes());
+    public void addToList(ListWithFiles listWithFiles, List<Path> files) throws IOException {
+        fileSystem.appendToFile(getListEnum(listWithFiles), connectPathsToString(fileSystem.normalize(files)).getBytes());
     }
 
-    public List<String> getList(ListWithFiles listWithFiles) throws IOException {
-        return fileSystem.readAllLines(getListEnum(listWithFiles));
+    public List<Path> getList(ListWithFiles listWithFiles) throws IOException {
+        return fileSystem.readAllLines(getListEnum(listWithFiles)).stream().map(Paths::get).collect(Collectors.toList());
     }
 
     public void assertListEmpty(ListWithFiles listWithFiles) throws IOException, Vcs.VcsIncorrectUsageException {
@@ -114,11 +118,11 @@ public class VcsFileHandler {
     }
 
     public void writeBlob(VcsBlob blob) throws IOException {
-        blob.writeAsJson(OBJECTS_DIR + File.separator + blob.getHash());
+        blob.writeAsJson(OBJECTS_DIR.resolve(blob.getHash()));
     }
 
     public void writeCommit(VcsCommit commit) throws IOException {
-        commit.writeAsJson(OBJECTS_DIR + File.separator + commit.getHash());
+        commit.writeAsJson(OBJECTS_DIR.resolve(commit.getHash()));
     }
 
     public void init(String authorName) throws IOException {
@@ -139,11 +143,11 @@ public class VcsFileHandler {
     }
 
     public VcsBlob getBlob(String blobHash) throws IOException {
-        return  (VcsBlob) VcsObject.readFromJson(OBJECTS_DIR + File.separator + blobHash, VcsBlob.class);
+        return  (VcsBlob) VcsObject.readFromJson(OBJECTS_DIR.resolve(blobHash), VcsBlob.class);
     }
 
     public VcsCommit getCommit(String commitHash) throws IOException {
-        return  (VcsCommit) VcsObject.readFromJson(OBJECTS_DIR + File.separator + commitHash, VcsCommit.class);
+        return  (VcsCommit) VcsObject.readFromJson(OBJECTS_DIR.resolve(commitHash), VcsCommit.class);
     }
 
 
@@ -152,15 +156,15 @@ public class VcsFileHandler {
     }
 
 
-    private String connectFilesToString(List<String> files) {
+    private String connectPathsToString(List<Path> files) {
         String res = "";
-        for (String file : files) {
+        for (Path file : files) {
             res += file + System.lineSeparator();
         }
         return res;
     }
 
-    private List<String> siftedList(List<String> basicFiles, List<String> filesToDelete) {
+    private List<Path> siftedList(List<Path> basicFiles, List<Path> filesToDelete) {
         return basicFiles.stream()
                 .filter(x -> !filesToDelete.contains(x))
                 .collect(Collectors.toList());

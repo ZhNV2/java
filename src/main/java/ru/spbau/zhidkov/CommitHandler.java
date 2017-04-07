@@ -4,6 +4,7 @@ import ru.spbau.Vcs;
 import ru.spbau.zhidkov.vcs.VcsCommit;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -32,22 +33,22 @@ public class CommitHandler {
         return INITIAL_COMMIT_PREV_HASH;
     }
 
-    public List<String> getAllActiveFilesInRevision(String hash) throws IOException {
-        List<String> repFiles = new ArrayList<>();
+    public List<Path> getAllActiveFilesInRevision(String hash) throws IOException {
+        List<Path> repFiles = new ArrayList<>();
         getAllActiveFilesInCurrentRevision(hash,
                 new TreeSet<>(), repFiles);
         return repFiles;
     }
 
-    private void getAllActiveFilesInCurrentRevision(String commitHash, Collection<String> checked,
-                                                           List<String> repFiles) throws IOException {
+    private void getAllActiveFilesInCurrentRevision(String commitHash, Collection<Path> checked,
+                                                           List<Path> repFiles) throws IOException {
         VcsCommit commitHandler = vcsFileHandler.getCommit(commitHash);
-        for (Map.Entry<String, String> entry : commitHandler.getChildrenAdd().entrySet()) {
+        for (Map.Entry<Path, String> entry : commitHandler.getChildrenAdd().entrySet()) {
             if (checked.contains(entry.getKey())) continue;
             repFiles.add(entry.getKey());
             checked.add(entry.getKey());
         }
-        for (String file : commitHandler.getChildrenRm()) {
+        for (Path file : commitHandler.getChildrenRm()) {
             checked.add(file);
         }
         if (!commitHandler.getPrevCommitHash().equals(INITIAL_COMMIT_PREV_HASH)) {

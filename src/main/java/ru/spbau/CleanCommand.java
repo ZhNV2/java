@@ -30,10 +30,9 @@ public class CleanCommand {
     public void clean() throws IOException, Vcs.VcsIncorrectUsageException {
         vcsFileHandler.assertListEmpty(VcsFileHandler.ListWithFiles.ADD_LIST);
         vcsFileHandler.assertListEmpty(VcsFileHandler.ListWithFiles.RM_LIST);
-        List<String> repFiles = commitHandler.getAllActiveFilesInRevision(branchHandler.getHeadLastCommitHash());
-        for (String fileName : externalFileHandler.readAllExternalFiles().stream()
+        List<Path> repFiles = commitHandler.getAllActiveFilesInRevision(branchHandler.getHeadLastCommitHash());
+        for (Path fileName : externalFileHandler.readAllExternalFiles().stream()
                 .sorted(FileSystem.compByLengthRev)
-                .map(Path::toString)
                 .collect(Collectors.toList())) {
             if (!repFiles.contains(fileName)) {
                 if (externalFileHandler.isDirectory(fileName)) {

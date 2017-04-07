@@ -9,6 +9,7 @@ import ru.spbau.zhidkov.vcs.VcsCommit;
 import ru.spbau.zhidkov.vcs.FileSystem;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
@@ -39,24 +40,24 @@ public class ResetCommand {
      * @throws Vcs.VcsIncorrectUsageException if provided file
      *                                      is not in repository yet
      */
-    public void reset(String fileName) throws Vcs.VcsIncorrectUsageException, IOException {
+    public void reset(Path fileName) throws Vcs.VcsIncorrectUsageException, IOException {
         //if (!FileSystem.exists(fileName)) throw new FileNotFoundException(fileName);
         findLastVersion(branchHandler.getHeadLastCommitHash(), fileName);
         vcsFileHandler.removeFromList(VcsFileHandler.ListWithFiles.ADD_LIST, Collections.singletonList(fileName));
         vcsFileHandler.removeFromList(VcsFileHandler.ListWithFiles.RM_LIST, Collections.singletonList(fileName));
     }
 
-    private void findLastVersion(String commitHash, String fileName) throws Vcs.VcsIncorrectUsageException, IOException {
+    private void findLastVersion(String commitHash, Path fileName) throws Vcs.VcsIncorrectUsageException, IOException {
         fileName = externalFileHandler.normalize(fileName);
         VcsCommit commit = vcsFileHandler.getCommit(commitHash);
-        for (Map.Entry<String, String> entry : commit.getChildrenAdd().entrySet()) {
+        for (Map.Entry<Path, String> entry : commit.getChildrenAdd().entrySet()) {
             if (fileName.equals(entry.getKey())) {
                 VcsBlob blob = vcsFileHandler.getBlob(entry.getValue());
                 externalFileHandler.writeBytesToFile(fileName, blob.getContent());
                 return;
             }
         }
-        for (String file : commit.getChildrenRm()) {
+        for (Path file : commit.getChildrenRm()) {
             if (fileName.equals(file)) {
                 throw new Vcs.VcsIncorrectUsageException("Provided file is not been storing in the current repository, try to reset it from necessary revision");
             }

@@ -5,6 +5,7 @@ import ru.spbau.Vcs;
 import ru.spbau.zhidkov.CommitHandler;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 
 @SuppressWarnings("WeakerAccess")
@@ -50,7 +51,7 @@ public class JCommanderParser {
     public class CommandAdd implements Command {
 
         @Parameter(description = "Files to add to the index")
-        private List<String> files;
+        private List<Path> files;
 
         /**
          * Runs necessary action after parsing args.
@@ -216,7 +217,7 @@ public class JCommanderParser {
     public class CommandReset implements Command {
 
         @Parameter(names = {"-f", "--file"}, description = "File to reset", required = true)
-        private String fileName;
+        private Path fileName;
 
         /**
          * Runs necessary action after parsing args.
@@ -235,11 +236,11 @@ public class JCommanderParser {
     /**
      * Class for parse rm command.
      */
-    @Parameters(commandDescription = "Remove file from repository")
+    @Parameters(commandDescription = "Remove files from repository")
     public class CommandRemove implements Command {
 
         @Parameter(description = "Files to remove from the repo")
-        private List<String> files;
+        private List<Path> files;
 
 
         @Override

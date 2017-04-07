@@ -7,6 +7,7 @@ import ru.spbau.zhidkov.VcsFileHandler;
 import ru.spbau.zhidkov.vcs.FileSystem;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 
 
@@ -24,16 +25,16 @@ public class RemoveCommand {
         this.branchHandler = branchHandler;
     }
 
-    public void remove(List<String> files) throws IOException, Vcs.VcsIncorrectUsageException {
+    public void remove(List<Path> files) throws IOException, Vcs.VcsIncorrectUsageException {
         files = externalFileHandler.normalize(files);
         //file = FileSystem.normalize(Vcs.getCurrentFolder() + File.separator + file);
-        List<String> allFilesInRevision = commitHandler.getAllActiveFilesInRevision(branchHandler.getHeadLastCommitHash());
-        for (String file : files) {
+        List<Path> allFilesInRevision = commitHandler.getAllActiveFilesInRevision(branchHandler.getHeadLastCommitHash());
+        for (Path file : files) {
             if (!allFilesInRevision.contains(file)) {
                 throw new Vcs.VcsIncorrectUsageException("Specified file has never occurred in repository");
             }
         }
-        for (String file : files) {
+        for (Path file : files) {
             externalFileHandler.deleteIfExists(file);
         }
         vcsFileHandler.removeFromList(VcsFileHandler.ListWithFiles.ADD_LIST, files);

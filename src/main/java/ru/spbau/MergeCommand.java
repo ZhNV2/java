@@ -8,6 +8,7 @@ import ru.spbau.zhidkov.vcs.VcsBlob;
 import ru.spbau.zhidkov.vcs.VcsCommit;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.*;
 
 
@@ -52,7 +53,7 @@ public class MergeCommand {
         VcsCommit commit = new VcsCommit(MERGE_MESSAGE + branchToMerge, new Date(),
                 vcsFileHandler.getAuthorName(), branchHandler.getHeadLastCommitHash(),
                 new HashMap<>(), new ArrayList<>());
-        Collection<String> checked = new HashSet<>();
+        Collection<Path> checked = new HashSet<>();
         mergeCommit(branchHandler.getBranchCommit(branchToMerge).getHash(), checked, commit);
 
         vcsFileHandler.writeCommit(commit);
@@ -61,11 +62,11 @@ public class MergeCommand {
         //FileSystem.writeStringToFile(Vcs.getBranchesDir() + File.separator + BranchCommand.getHeadBranch(), commit.getHash());
     }
 
-    private void mergeCommit(String commitHash, Collection<String> checked, VcsCommit newCommit) throws IOException, Vcs.VcsConflictException {
+    private void mergeCommit(String commitHash, Collection<Path> checked, VcsCommit newCommit) throws IOException, Vcs.VcsConflictException {
         VcsCommit commit = vcsFileHandler.getCommit(commitHash);
-        for (Map.Entry<String, String> entry : commit.getChildrenAdd().entrySet()) {
+        for (Map.Entry<Path, String> entry : commit.getChildrenAdd().entrySet()) {
             if (checked.contains(entry.getKey())) continue;
-            String fileName = entry.getKey();
+            Path fileName = entry.getKey();
             checked.add(fileName);
             VcsBlob blob = vcsFileHandler.getBlob(entry.getValue());
             //VcsBlob blob = (VcsBlob) VcsObject.readFromJson(Vcs.getObjectsDir() + File.separator + entry.getValue(), VcsBlob.class);
@@ -80,7 +81,7 @@ public class MergeCommand {
                 //FileSystem.writeBytesToFile(fileName, blob.getContent());
             }
         }
-        for (String file : commit.getChildrenRm()) {
+        for (Path file : commit.getChildrenRm()) {
             checked.add(file);
         }
         if (!commit.getPrevCommitHash().equals(CommitHandler.getInitialCommitPrevHash())) {

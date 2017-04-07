@@ -6,6 +6,7 @@ import ru.spbau.zhidkov.vcs.FileSystem;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 /**
@@ -14,8 +15,8 @@ import java.util.List;
 public class WorkingCopyHandler {
 
     private FileSystem fileSystem;
-    private static final String WORKING_COPY = ".wc";
-    private static final String CURRENT_DIR = "";
+    private static final Path WORKING_COPY = Paths.get(".wc");
+    private static final Path CURRENT_DIR = Paths.get("");
 
     public WorkingCopyHandler(FileSystem fileSystem) throws IOException {
         this.fileSystem = fileSystem;

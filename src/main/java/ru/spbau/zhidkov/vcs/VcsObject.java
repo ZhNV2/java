@@ -1,8 +1,11 @@
 package ru.spbau.zhidkov.vcs;
 
-import com.google.gson.Gson;
+import com.google.gson.*;
 
 import java.io.*;
+import java.lang.reflect.Type;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Formatter;
@@ -36,9 +39,12 @@ public abstract class VcsObject {
      * @throws IOException if something has gone wrong during
      *                     the work with file system
      */
-    public void writeAsJson(String fileName) throws IOException {
-        Gson gson = new Gson();
-        FileWriter fileWriter = new FileWriter(fileName);
+    public void writeAsJson(Path fileName) throws IOException {
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.registerTypeAdapter(Path.class, new PathDeserializer());
+        gsonBuilder.registerTypeAdapter(Path.class, new PathSerializer());
+        Gson gson = buildGson();
+        FileWriter fileWriter = new FileWriter(fileName.toString());
         gson.toJson(this, fileWriter);
         fileWriter.close();
     }
@@ -53,9 +59,9 @@ public abstract class VcsObject {
      * @throws IOException if something has gone wrong during
      *                     the work with file system
      */
-    public static VcsObject readFromJson(String fileName, Class<? extends VcsObject> VcsObjectClass) throws IOException {
-        Gson gson = new Gson();
-        FileReader fileReader = new FileReader(fileName);
+    public static VcsObject readFromJson(Path fileName, Class<? extends VcsObject> VcsObjectClass) throws IOException {
+        Gson gson = buildGson();
+        FileReader fileReader = new FileReader(fileName.toString());
         VcsObject vcsObject = gson.fromJson(fileReader, VcsObjectClass);
         fileReader.close();
         return vcsObject;
@@ -69,9 +75,28 @@ public abstract class VcsObject {
         return formatter.toString();
     }
 
-    public String getPath(String objectsDir) {
-        return objectsDir + File.separator + getHash();
+    private static Gson buildGson() {
+        return new GsonBuilder()
+                .registerTypeAdapter(Path.class, new PathSerializer())
+                .registerTypeAdapter(Path.class, new PathDeserializer())
+                .create();
     }
+
+    private static class PathDeserializer implements JsonDeserializer<Path> {
+        @Override
+        public Path deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+                throws JsonParseException {
+            return Paths.get(json.getAsJsonPrimitive().getAsString());
+        }
+    }
+
+    private static class PathSerializer implements JsonSerializer<Path> {
+        @Override
+        public JsonElement serialize(Path src, Type typeOfSrc, JsonSerializationContext context) {
+            return new JsonPrimitive(src.toString());
+        }
+    }
+
 
 
 }
