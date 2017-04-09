@@ -2,21 +2,34 @@ package ru;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
+import com.google.gson.Gson;
+import com.sun.istack.internal.NotNull;
 import ru.spbau.Vcs;
+import ru.spbau.zhidkov.vcs.VcsCommit;
+import ru.spbau.zhidkov.vcs.VcsObject;
+import ru.spbau.zhidkov.vcs.file.FileSystem;
+import ru.spbau.zhidkov.vcs.file.ObjectDeserializer;
+import ru.spbau.zhidkov.vcs.file.ObjectSerializer;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 /**
  * Main class for all application for parsing command line arguments
  * and call appropriate method from vcs.
  */
 public class Main {
-
-    private static String HELP = System.getProperty("line.separator") + "Use --help for more information about available commands";
+    private static final Logger logger = LogManager.getLogger(Main.class);
 
     /**
      * Enum containing all possible command line commands.
@@ -57,29 +70,26 @@ public class Main {
      * @param args command line args
      */
     public static void main(String[] args) {
-        Vcs vcs;
-        try{
-            vcs = new Vcs(Paths.get(System.getProperty("user.dir")));
-        } catch (IOException e) {
-            System.out.println("System can't start because of " + e.getMessage());
-            System.out.println("Please contact developers");
-            e.printStackTrace();
-            return;
-        }
+        logger.info("Main has started with following args: {}", Arrays.stream(args).collect(Collectors.joining(" ")));
+        Vcs vcs = new Vcs(Paths.get(System.getProperty("user.dir")));
         try  {
             execute(vcs, args);
         } catch (Vcs.VcsException | ParameterException e) {
+            logger.error("vcsException or parameter exception has been caught in main");
             System.out.println(e.getMessage());
             baseErrorHandling(vcs);
         } catch (FileNotFoundException | NoSuchFileException e) {
-            System.out.println("File not found: " + e.getMessage() + "." + System.getProperty("line.separator") +
+            logger.error("file not found exception has been caught in main");
+            System.out.println("File not found: " + e.getMessage() + "." + "\n" +
                     "Probably you have deleted this file, " +
                     "specified wrong one or forgot to init the repository");
             baseErrorHandling(vcs);
         } catch (AccessDeniedException e) {
+            logger.error("access denied exception has been caught in main");
             System.out.println("Access to file " + e.getMessage() + " is forbidden. Check your permission rights");
             baseErrorHandling(vcs);
         } catch (Exception e) {
+            logger.fatal("{} has been caught in main because of {}", e.getClass().getName(), e.getMessage());
             System.out.println("If you see this message, then something has gone completely wrong.");
             System.out.println("Please report this bug to the developers:");
             System.out.println(e.getClass());
@@ -99,7 +109,7 @@ public class Main {
      * @throws Vcs.VcsException if something has gone wrong
      *                          during the vcs work
      */
-    public static void execute(Vcs vcs, String[] args) throws IOException, Vcs.VcsException {
+    public static void execute(@NotNull Vcs vcs, String[] args) throws IOException, Vcs.VcsException {
         JCommanderParser cm = new JCommanderParser(vcs);
         JCommander jc = new JCommander(cm);
         CommandName.initialize(cm);
@@ -107,9 +117,8 @@ public class Main {
             Command command = commandName.getCommand();
             jc.addCommand(commandName.toString(), command);
         }
-
         vcs.saveWorkingCopy();
-            jc.parse(args);
+        jc.parse(args);
         if (cm.help) {
             jc.usage();
         } else {
@@ -120,7 +129,9 @@ public class Main {
         vcs.clearWorkingCopy();
     }
 
-    private static void baseErrorHandling(Vcs vcs) {
+    private static void baseErrorHandling(@NotNull Vcs vcs) {
+        logger.warn("base error handling has started");
+        String HELP = "\n" + "Use --help for more information about available commands";
         System.out.println(HELP);
         try {
             vcs.restoreWorkingCopy();
@@ -130,6 +141,7 @@ public class Main {
             System.out.println(e.getMessage());
         }
     }
+
 
 
 }

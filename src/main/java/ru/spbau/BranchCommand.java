@@ -1,5 +1,7 @@
 package ru.spbau;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.spbau.zhidkov.BranchHandler;
 import ru.spbau.zhidkov.VcsFileHandler;
 
@@ -9,6 +11,7 @@ import java.io.IOException;
  * Class implementing branchHandler command.
  */
 public class BranchCommand {
+    private static final Logger logger = LogManager.getLogger(BranchCommand.class);
 
     private BranchHandler branchHandler;
     private VcsFileHandler vcsFileHandler;
@@ -30,12 +33,15 @@ public class BranchCommand {
      *                                           usage
      */
     public void createBranch(String branchName) throws IOException, Vcs.VcsBranchActionForbiddenException, Vcs.VcsIncorrectUsageException {
+        logger.traceEntry();
         if (branchHandler.exists(branchName)) {
+            logger.error("branch {} was already created", branchName);
             throw new Vcs.VcsBranchActionForbiddenException("Branch with this name is already created");
         }
         vcsFileHandler.assertListEmpty(VcsFileHandler.ListWithFiles.ADD_LIST);
         vcsFileHandler.assertListEmpty(VcsFileHandler.ListWithFiles.RM_LIST);
         branchHandler.setCommitHash(branchName, branchHandler.getHeadLastCommitHash());
+        logger.traceExit();
     }
 
     /**
@@ -50,25 +56,13 @@ public class BranchCommand {
      *                                           actions with branchHandler
      */
     public void deleteBranch(String branchName) throws IOException, Vcs.VcsBranchNotFoundException, Vcs.VcsBranchActionForbiddenException {
+        logger.traceEntry();
         if (branchHandler.getHeadName().equals(branchName)) {
+            logger.error("Trying to delete current branch {}", branchName);
             throw new Vcs.VcsBranchActionForbiddenException("You can't remove current branch");
         }
         branchHandler.assertBranchExists(branchName);
         branchHandler.deleteBranch(branchName);
-
+        logger.traceExit();
     }
-
-    /*public void checkIfBranchExist(String branchName) throws IOException, Vcs.VcsBranchNotFoundException {
-        if (!FileSystem.exists(Vcs.getBranchesDir() + File.separator + branchName)) {
-            throw new Vcs.VcsBranchNotFoundException("Provided branchHandler doesn't exist");
-        }
-    }
-
-    public String getHeadBranch() throws IOException {
-        return FileSystem.getFirstLine(Vcs.getHEAD());
-    }
-
-    public String getBranchLastCommitHash(String branchHandler) throws IOException {
-        return FileSystem.getFirstLine(Vcs.getBranchesDir() + File.separator + branchHandler);
-    }*/
 }

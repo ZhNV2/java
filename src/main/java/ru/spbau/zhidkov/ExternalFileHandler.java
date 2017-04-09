@@ -1,11 +1,13 @@
 package ru.spbau.zhidkov;
 
-import ru.spbau.zhidkov.vcs.FileSystem;
+import com.sun.istack.internal.NotNull;
+import ru.spbau.zhidkov.vcs.file.FileSystem;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -50,14 +52,18 @@ public class ExternalFileHandler {
         fileSystem.deleteFolder(fileName);
     }
 
-    public List<Path> readAllExternalFiles() throws IOException {
+    public @NotNull List<Path> readAllExternalFiles() throws IOException {
         return fileSystem.readAllFiles(CURRENT_DIR).stream()
-                .filter(s -> !workingCopyHandler.from(s))
-                .filter(s -> !vcsFileHandler.from(s))
+                .filter(((Predicate<Path>) workingCopyHandler::from).negate())
+                .filter(((Predicate<Path>) vcsFileHandler::from).negate())
                 .filter(s -> !s.toString().equals(""))
                 .collect(Collectors.toList());
-
     }
+
+    public @NotNull List<Path> readAllFiles(Path path) throws IOException {
+        return fileSystem.readAllFiles(path);
+    }
+
 
     public List<Path> normalize(List<Path> files) {
         return fileSystem.normalize(files);

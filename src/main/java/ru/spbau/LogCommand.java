@@ -28,19 +28,19 @@ public class LogCommand {
      * @throws IOException if something has gone wrong during
      *                     the work with file system
      */
-    public StringBuilder log() throws IOException {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(System.getProperty("line.separator"));
-        stringBuilder.append("On branch ").append(branchHandler.getHeadName()).append(System.getProperty("line.separator"));
-        stringBuilder.append(System.getProperty("line.separator"));
+    public String log() throws IOException {
+        String log = "";
+        log += ("\n");
+        log += ("On branch ") + (branchHandler.getHeadName()) + ("\n");
+        log += ("\n");
         String commitHash = branchHandler.getHeadLastCommitHash();
         //String commitHash = FileSystem.getFirstLine(Vcs.getBranchesDir() + File.separator + BranchCommand.getHeadBranch());
         while (!commitHash.equals(CommitHandler.getInitialCommitPrevHash())) {
             VcsCommit commit = vcsFileHandler.getCommit(commitHash);//(VcsCommit) VcsObject.readFromJson(Vcs.getObjectsDir() + File.separator + commitHash, VcsCommit.class);
-            commit.print(stringBuilder);
+            log = commit.print(log);
             commitHash = commit.getPrevCommitHash();
         }
-        return stringBuilder;
+        return log;
     }
 
 }

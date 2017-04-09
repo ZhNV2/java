@@ -1,11 +1,13 @@
 package ru.spbau;
 
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.spbau.zhidkov.BranchHandler;
 import ru.spbau.zhidkov.CommitHandler;
 import ru.spbau.zhidkov.ExternalFileHandler;
 import ru.spbau.zhidkov.VcsFileHandler;
-import ru.spbau.zhidkov.vcs.FileSystem;
+import ru.spbau.zhidkov.vcs.file.FileSystem;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -14,6 +16,7 @@ import java.util.stream.Collectors;
 
 
 public class CleanCommand {
+    private static final Logger logger = LogManager.getLogger(CleanCommand.class);
 
     private VcsFileHandler vcsFileHandler;
     private BranchHandler branchHandler;
@@ -28,26 +31,26 @@ public class CleanCommand {
     }
 
     public void clean() throws IOException, Vcs.VcsIncorrectUsageException {
+        logger.traceEntry();
         vcsFileHandler.assertListEmpty(VcsFileHandler.ListWithFiles.ADD_LIST);
         vcsFileHandler.assertListEmpty(VcsFileHandler.ListWithFiles.RM_LIST);
         List<Path> repFiles = commitHandler.getAllActiveFilesInRevision(branchHandler.getHeadLastCommitHash());
-        for (Path fileName : externalFileHandler.readAllExternalFiles().stream()
-                .sorted(FileSystem.compByLengthRev)
-                .collect(Collectors.toList())) {
+        for (Path fileName : externalFileHandler.readAllExternalFiles()) {
             if (!repFiles.contains(fileName)) {
-                if (externalFileHandler.isDirectory(fileName)) {
-                    //try {
-                        externalFileHandler.deleteFolder(fileName);
-                    //} catch (DirectoryNotEmptyException e) {
-                        // It's ok
-                    //}
-                } else {
+                if (!externalFileHandler.isDirectory(fileName)) {
                     externalFileHandler.deleteIfExists(fileName);
                 }
             }
         }
+        for (Path fileName : externalFileHandler.readAllExternalFiles()
+                .stream()
+                .sorted(FileSystem.compByLengthRev)
+                .collect(Collectors.toList())) {
+            if (!externalFileHandler.isDirectory(fileName)) continue;
+            if (externalFileHandler.readAllFiles(fileName).size() == 1) {
+                externalFileHandler.deleteFolder(fileName);
+            }
+        }
+        logger.traceExit();
     }
-
-
-
 }

@@ -1,5 +1,7 @@
 package ru.spbau;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.spbau.zhidkov.VcsFileHandler;
 
 import java.io.IOException;
@@ -8,6 +10,9 @@ import java.io.IOException;
  * Created by Нико on 05.04.2017.
  */
 public class InitChecker {
+
+    private static final Logger logger = LogManager.getLogger(InitChecker.class);
+
 
     private VcsFileHandler vcsFileHandler;
 
@@ -23,7 +28,8 @@ public class InitChecker {
      *                     the work with file system
      */
     public boolean hasInitialized() throws IOException {
-        return vcsFileHandler.repoExists();
-        //return FileSystem.exists(Vcs.getRootDir());
+        boolean hasInitialized = vcsFileHandler.repoExists();
+        logger.info("hasInitialized = {}", hasInitialized);
+        return hasInitialized;
     }
 }

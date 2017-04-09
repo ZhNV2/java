@@ -1,5 +1,9 @@
 package ru.spbau.zhidkov.vcs;
 
+import ru.spbau.zhidkov.vcs.file.FileSystem;
+import ru.spbau.zhidkov.vcs.file.ObjectSerializer;
+
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
 
@@ -26,7 +30,7 @@ public class VcsCommit extends VcsObject {
         return childrenRm;
     }
 
-    private List<Path> childrenRm = new ArrayList<>();
+    private  List<Path> childrenRm = new ArrayList<>();
 
 
 
@@ -41,7 +45,8 @@ public class VcsCommit extends VcsObject {
 *                       were added before this commit and maps their
      * @param childrenRm
      */
-    public VcsCommit(String message, Date date, String author, String prevCommitHash, Map<Path, String> childrenAdd, List<Path> childrenRm) {
+    public VcsCommit(FileSystem fileSystem, ObjectSerializer objectSerializer, String message, Date date, String author, String prevCommitHash, Map<Path, String> childrenAdd, List<Path> childrenRm) {
+        super(fileSystem, objectSerializer);
         this.message = message;
         this.date = date;
         this.author = author;
@@ -70,39 +75,17 @@ public class VcsCommit extends VcsObject {
      * Represents commit in test format providing its
      * message, author, date and message.
      *
-     * @param stringBuilder to which commit will add its test
      *                      representation
      */
-    public void print(StringBuilder stringBuilder) {
-        stringBuilder.append("Commit: ").append(getHash()).append(System.getProperty("line.separator"));
-        stringBuilder.append("Author: ").append(author).append(System.getProperty("line.separator"));
-        stringBuilder.append("Date: ").append(date).append(System.getProperty("line.separator"));
-        stringBuilder.append(System.getProperty("line.separator"));
-        stringBuilder.append("   ").append(message).append(System.getProperty("line.separator"));
-        stringBuilder.append(System.getProperty("line.separator"));
+    public String print(String log) throws IOException {
+        log += ("Commit: ") + (getHash()) + ("\n");
+        log += ("Author: ") + (author) + ("\n");
+        log += ("Date: ") + (date) + ("\n");
+        log += ("\n");
+        log += ("   ") + (message) + ("\n");
+        log += ("\n");
+        return log;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        VcsCommit commit = (VcsCommit) o;
-
-        if (message != null ? !message.equals(commit.message) : commit.message != null) return false;
-        if (author != null ? !author.equals(commit.author) : commit.author != null) return false;
-        if (prevCommitHash != null ? !prevCommitHash.equals(commit.prevCommitHash) : commit.prevCommitHash != null)
-            return false;
-        return childrenAdd != null ? childrenAdd.equals(commit.childrenAdd) : commit.childrenAdd == null;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = message != null ? message.hashCode() : 0;
-        result = 31 * result + (date != null ? date.hashCode() : 0);
-        result = 31 * result + (author != null ? author.hashCode() : 0);
-        result = 31 * result + (prevCommitHash != null ? prevCommitHash.hashCode() : 0);
-        result = 31 * result + (childrenAdd != null ? childrenAdd.hashCode() : 0);
-        return result;
-    }
+    
 }

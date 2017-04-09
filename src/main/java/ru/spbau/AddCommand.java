@@ -1,5 +1,8 @@
 package ru.spbau;
 
+import com.sun.istack.internal.NotNull;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.spbau.zhidkov.ExternalFileHandler;
 import ru.spbau.zhidkov.VcsFileHandler;
 
@@ -12,6 +15,7 @@ import java.util.List;
  * Class implementing add command.
  */
 public class AddCommand {
+    private static final Logger logger= LogManager.getLogger(AddCommand.class);
 
     private ExternalFileHandler externalFileHandler;
     private VcsFileHandler vcsFileHandler;
@@ -30,23 +34,22 @@ public class AddCommand {
      * @throws IOException if something has gone wrong during
      *                     the work with file system
      */
-    public void add(List<Path> fileNames) throws IOException, Vcs.VcsIncorrectUsageException {
-//        fileNames = fileNames.stream()
-//                .map(s-> Vcs.getCurrentFolder() + File.separator + s)
-//                .map(FileSystem::normalize)
-//                .collect(Collectors.toList());
-
+    public void add(@NotNull List<Path> fileNames) throws IOException, Vcs.VcsIncorrectUsageException {
+        logger.traceEntry();
+        fileNames = externalFileHandler.normalize(fileNames);
         for (Path fileName : fileNames) {
             if (!externalFileHandler.exists(fileName)) {
+                logger.error("file {} doesn't exist", fileName.toString());
                 throw new FileNotFoundException(fileName.toString());
             }
             if (externalFileHandler.isDirectory(fileName)) {
+                logger.error("dir {} was given", fileName.toString());
                 throw new Vcs.VcsIncorrectUsageException("You may add only files");
             }
         }
-        //StringBuilder stringBuilder = new StringBuilder();
         vcsFileHandler.removeFromList(VcsFileHandler.ListWithFiles.RM_LIST, fileNames);
         vcsFileHandler.addToList(VcsFileHandler.ListWithFiles.ADD_LIST, fileNames);
+        logger.traceExit();
     }
 
 }

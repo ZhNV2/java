@@ -1,9 +1,7 @@
 package ru.spbau.zhidkov;
 
-import ru.spbau.Vcs;
-import ru.spbau.zhidkov.vcs.FileSystem;
+import ru.spbau.zhidkov.vcs.file.FileSystem;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -18,9 +16,8 @@ public class WorkingCopyHandler {
     private static final Path WORKING_COPY = Paths.get(".wc");
     private static final Path CURRENT_DIR = Paths.get("");
 
-    public WorkingCopyHandler(FileSystem fileSystem) throws IOException {
+    public WorkingCopyHandler(FileSystem fileSystem) {
         this.fileSystem = fileSystem;
-        fileSystem.createDirectory(WORKING_COPY);
     }
 
     public boolean from(Path s) {
@@ -32,6 +29,7 @@ public class WorkingCopyHandler {
     }
 
     public void saveFiles(List<Path> files) throws IOException {
+        fileSystem.createDirectory(WORKING_COPY);
         fileSystem.copyFilesToDir(CURRENT_DIR, files, WORKING_COPY);
     }
 

@@ -1,5 +1,8 @@
 package ru.spbau;
 
+import com.sun.istack.internal.NotNull;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.spbau.zhidkov.BranchHandler;
 import ru.spbau.zhidkov.CommitHandler;
 import ru.spbau.zhidkov.ExternalFileHandler;
@@ -20,6 +23,8 @@ import java.util.Map;
  * Class implementing checkout command.
  */
 public class CheckoutCommand {
+
+    private static final Logger logger = LogManager.getLogger(CheckoutCommand.class);
 
     private BranchHandler branchHandler;
     private CommitHandler commitHandler;
@@ -45,12 +50,13 @@ public class CheckoutCommand {
      *                                    usage
      */
     public void checkoutBranch(String branchName) throws IOException, Vcs.VcsBranchNotFoundException, Vcs.VcsIncorrectUsageException {
+        logger.traceEntry();
         branchHandler.assertBranchExists(branchName);
         String commitHash = branchHandler.getBranchCommit(branchName).getHash();
         checkout(commitHash);
 
         branchHandler.setHead(branchName);
-        //FileSystem.writeStringToFile(Vcs.getHEAD(), branchName);
+        logger.traceExit();
     }
 
     /**
@@ -64,12 +70,13 @@ public class CheckoutCommand {
      * @throws Vcs.VcsIncorrectUsageException     when vcs can't perform command because of incorrect
      *                                      usage
      */
-    public void checkoutRevision(String commitHash) throws Vcs.VcsBranchNotFoundException, IOException, Vcs.VcsIncorrectUsageException {
+    public void checkoutRevision(String commitHash) throws IOException, Vcs.VcsIncorrectUsageException, Vcs.VcsRevisionNotFoundException {
+        logger.traceEntry();
         commitHandler.assertRevisionExists(commitHash);
         checkout(commitHash);
 
         branchHandler.setCommitHash(branchHandler.getHeadName(), commitHash);
-//        FileSystem.writeStringToFile(Vcs.getBranchesDir() + File.separator + BranchCommand.getHeadBranch(), commitHash);
+        logger.traceExit();
     }
 
     private void checkout(String commitHash) throws IOException, Vcs.VcsIncorrectUsageException {
@@ -77,27 +84,31 @@ public class CheckoutCommand {
         if (lastCommitHash.equals(commitHash)) return;
         vcsFileHandler.assertListEmpty(VcsFileHandler.ListWithFiles.ADD_LIST);
         vcsFileHandler.assertListEmpty(VcsFileHandler.ListWithFiles.RM_LIST);
-        deleteCommittedFiles(lastCommitHash);
+        deleteCommittedFiles(lastCommitHash, new HashSet<>());
         Collection<Path> restored = new HashSet<>();
         restore(commitHash, restored);
     }
 
-    private void deleteCommittedFiles(String commitHash) throws IOException {
+    private void deleteCommittedFiles(String commitHash, @NotNull Collection<Path> checked) throws IOException {
         VcsCommit commit = vcsFileHandler.getCommit(commitHash);
         for (Map.Entry<Path, String> entry : commit.getChildrenAdd().entrySet()) {
+            if (checked.contains(entry.getKey())) continue;
+            checked.add(entry.getKey());
             externalFileHandler.deleteIfExists(entry.getKey());
         }
+        for (Path path : commit.getChildrenRm()) {
+            checked.add(path);
+        }
         if (!commit.getPrevCommitHash().equals(CommitHandler.getInitialCommitPrevHash())) {
-            deleteCommittedFiles(commit.getPrevCommitHash());
+            deleteCommittedFiles(commit.getPrevCommitHash(), checked);
         }
     }
 
-    private void restore(String commitHash, Collection<Path> restored) throws IOException {
+    private void restore(String commitHash, @NotNull Collection<Path> restored) throws IOException {
         VcsCommit commit = vcsFileHandler.getCommit(commitHash);
         for (Map.Entry<Path, String> entry : commit.getChildrenAdd().entrySet()) {
             if (!restored.contains(entry.getKey())) {
                 VcsBlob blob = vcsFileHandler.getBlob(entry.getValue());
-                //VcsBlob blob = (VcsBlob) VcsObject.readFromJson(Vcs.getObjectsDir() + File.separator + entry.getValue(), VcsBlob.class);
                 externalFileHandler.writeBytesToFile(entry.getKey(), blob.getContent());
                 restored.add(entry.getKey());
             }
@@ -109,10 +120,4 @@ public class CheckoutCommand {
             restore(commit.getPrevCommitHash(), restored);
         }
     }
-
-//    private void checkIfRevisionExist(String commitHash) throws IOException, Vcs.VcsRevisionNotFoundException {
-//        if (!FileSystem.exists(Vcs.getObjectsDir() + File.separator + commitHash)) {
-//            throw new Vcs.VcsRevisionNotFoundException("Provided revision doesn't exist");
-//        }
-//    }
 }

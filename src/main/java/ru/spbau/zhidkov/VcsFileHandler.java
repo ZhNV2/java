@@ -1,27 +1,34 @@
 package ru.spbau.zhidkov;
 
+import com.sun.istack.internal.NotNull;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import ru.spbau.ResetCommand;
 import ru.spbau.Vcs;
-import ru.spbau.zhidkov.vcs.FileSystem;
-import ru.spbau.zhidkov.vcs.VcsBlob;
-import ru.spbau.zhidkov.vcs.VcsCommit;
-import ru.spbau.zhidkov.vcs.VcsObject;
+import ru.spbau.zhidkov.vcs.*;
+import ru.spbau.zhidkov.vcs.file.FileSystem;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
  * Created by Нико on 30.03.2017.
  */
 public class VcsFileHandler {
-    
+    private static final Logger logger = LogManager.getLogger(VcsFileHandler.class);
+
     private FileSystem fileSystem;
+    private VcsObjectHandler vcsObjectHandler;
     
-    public VcsFileHandler(FileSystem fileSystem) {
+    public VcsFileHandler(FileSystem fileSystem, VcsObjectHandler vcsObjectHandler) {
         this.fileSystem = fileSystem;
+        this.vcsObjectHandler = vcsObjectHandler;
         ROOT_DIR = Paths.get(".vcs");
         OBJECTS_DIR = ROOT_DIR.resolve("objects");
         BRANCHES_DIR = ROOT_DIR.resolve("branches");
@@ -93,16 +100,17 @@ public class VcsFileHandler {
     }
 
     public void addToList(ListWithFiles listWithFiles, List<Path> files) throws IOException {
-        fileSystem.appendToFile(getListEnum(listWithFiles), connectPathsToString(fileSystem.normalize(files)).getBytes());
+        fileSystem.appendToFile(getListEnum(listWithFiles), connectPathsToString(files).getBytes());
     }
 
-    public List<Path> getList(ListWithFiles listWithFiles) throws IOException {
+    public @NotNull List<Path> getList(ListWithFiles listWithFiles) throws IOException {
         return fileSystem.readAllLines(getListEnum(listWithFiles)).stream().map(Paths::get).collect(Collectors.toList());
     }
 
     public void assertListEmpty(ListWithFiles listWithFiles) throws IOException, Vcs.VcsIncorrectUsageException {
         if (!fileSystem.getFirstLine(getListEnum(listWithFiles)).equals("")) {
-            throw new Vcs.VcsIncorrectUsageException("You have several files were added, but haven't committed yet");
+            logger.error("uncommitted changes");
+            throw new Vcs.VcsIncorrectUsageException("You have several files were added/removed, but haven't committed yet");
         }
     }
 
@@ -139,15 +147,27 @@ public class VcsFileHandler {
     }
 
     public boolean repoExists() throws IOException {
-        return fileSystem.exists(ROOT_DIR);
+        return fileSystem.exists(ROOT_DIR) && fileSystem.exists(HEAD);
     }
+
 
     public VcsBlob getBlob(String blobHash) throws IOException {
-        return  (VcsBlob) VcsObject.readFromJson(OBJECTS_DIR.resolve(blobHash), VcsBlob.class);
+        return (VcsBlob) vcsObjectHandler.readFromJson(OBJECTS_DIR.resolve(blobHash), VcsBlob.class);
     }
 
+    public VcsBlob buildBlob(Path file) throws IOException {
+        return vcsObjectHandler.buildBlob(file);
+    }
+
+
+
+
     public VcsCommit getCommit(String commitHash) throws IOException {
-        return  (VcsCommit) VcsObject.readFromJson(OBJECTS_DIR.resolve(commitHash), VcsCommit.class);
+        return (VcsCommit) vcsObjectHandler.readFromJson(OBJECTS_DIR.resolve(commitHash), VcsCommit.class);
+    }
+
+    public VcsCommit buildCommit(String message, Date date, String author, String prevCommitHash, Map<Path, String> childrenAdd, List<Path> childrenRm) {
+        return vcsObjectHandler.buildCommit(message, date, author, prevCommitHash, childrenAdd, childrenRm);
     }
 
 
@@ -166,7 +186,7 @@ public class VcsFileHandler {
 
     private List<Path> siftedList(List<Path> basicFiles, List<Path> filesToDelete) {
         return basicFiles.stream()
-                .filter(x -> !filesToDelete.contains(x))
+                .filter(((Predicate<Path>) filesToDelete::contains).negate())
                 .collect(Collectors.toList());
     }
 }

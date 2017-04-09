@@ -1,10 +1,11 @@
 package ru.spbau;
 
-import ru.Command;
 import ru.spbau.zhidkov.*;
-import ru.spbau.zhidkov.vcs.FileSystem;
+import ru.spbau.zhidkov.vcs.VcsObjectHandler;
+import ru.spbau.zhidkov.vcs.file.FileSystem;
+import ru.spbau.zhidkov.vcs.file.ObjectDeserializer;
+import ru.spbau.zhidkov.vcs.file.ObjectSerializer;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
@@ -30,15 +31,18 @@ public class Vcs {
     private StatusCommand statusCommand;
     private WorkingCopyCommand workingCopyCommand;
 
-    public Vcs(Path dir) throws IOException {
+    public Vcs(Path dir) {
 
         /*
       Sets the folder with which it will work to {@param currentFolder}
 
       */
         FileSystem fileSystem = new FileSystem(dir);
+        ObjectDeserializer objectDeserializer = new ObjectDeserializer();
+        ObjectSerializer objectSerializer = new ObjectSerializer();
+        VcsObjectHandler vcsObjectHandler = new VcsObjectHandler(fileSystem, objectDeserializer, objectSerializer);
 
-        VcsFileHandler vcsFileHandler = new VcsFileHandler(fileSystem);
+        VcsFileHandler vcsFileHandler = new VcsFileHandler(fileSystem, vcsObjectHandler);
         WorkingCopyHandler workingCopyHandler = new WorkingCopyHandler(fileSystem);
         ExternalFileHandler externalFileHandler = new ExternalFileHandler(fileSystem, workingCopyHandler, vcsFileHandler);
         CommitHandler commitHandler = new CommitHandler(vcsFileHandler);
@@ -48,7 +52,7 @@ public class Vcs {
         branchCommand = new BranchCommand(branchHandler, vcsFileHandler);
         checkoutCommand = new CheckoutCommand(branchHandler, commitHandler, vcsFileHandler, externalFileHandler);
         cleanCommand = new CleanCommand(vcsFileHandler, branchHandler, externalFileHandler, commitHandler);
-        commitCommand = new CommitCommand(vcsFileHandler, branchHandler, externalFileHandler);
+        commitCommand = new CommitCommand(vcsFileHandler, branchHandler);
         initChecker = new InitChecker(vcsFileHandler);
         initCommand = new InitCommand(vcsFileHandler, commitCommand);
         logCommand = new LogCommand(branchHandler, vcsFileHandler);
@@ -207,7 +211,7 @@ public class Vcs {
      * @throws IOException if something has gone wrong during
      *                     the work with file system
      */
-    public StringBuilder log() throws IOException, VcsIncorrectUsageException {
+    public String log() throws IOException, VcsIncorrectUsageException {
         assertInitialized();
         return logCommand.log();
     }
@@ -248,19 +252,19 @@ public class Vcs {
         removeCommand.remove(files);
     }
 
-    public StringBuilder status() throws IOException, VcsIncorrectUsageException {
+    public String status() throws IOException, VcsIncorrectUsageException {
         assertInitialized();
         StatusCommand.StatusHolder statusHolder = statusCommand.status();
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("Modified files:").append(System.lineSeparator());
-        stringBuilder.append(listToPrint(statusHolder.modifiedFiles));
-        stringBuilder.append("Added files:").append(System.lineSeparator());
-        stringBuilder.append(listToPrint(statusHolder.addedFiles));
-        stringBuilder.append("Removed files:").append(System.lineSeparator());
-        stringBuilder.append(listToPrint(statusHolder.removedFiles));
-        stringBuilder.append("Foreign files:").append(System.lineSeparator());
-        stringBuilder.append(listToPrint(statusHolder.foreignFiles));
-        return stringBuilder;
+        String status = "";
+        status += ("Modified files:") + (System.lineSeparator());
+        status += (listToPrint(statusHolder.modifiedFiles));
+        status += ("Added files:") + (System.lineSeparator());
+        status += (listToPrint(statusHolder.addedFiles));
+        status += ("Removed files:") + (System.lineSeparator());
+        status += (listToPrint(statusHolder.removedFiles));
+        status += ("Foreign files:") + (System.lineSeparator());
+        status += (listToPrint(statusHolder.foreignFiles));
+        return status;
     }
 
     private void assertInitialized() throws IOException, VcsIncorrectUsageException {
@@ -268,10 +272,12 @@ public class Vcs {
             throw new VcsIncorrectUsageException(UNINITIALIZED_REPO_MESSAGE);
     }
 
-    private StringBuilder listToPrint(List<Path> list) {
-        StringBuilder stringBuilder = new StringBuilder();
-        list.forEach(s->{stringBuilder.append(s).append(System.lineSeparator());});
-        return stringBuilder;
+    private String listToPrint(List<Path> list) {
+        String listToPrint = "";
+        for (Path s : list) {
+            listToPrint += s + System.lineSeparator();
+        }
+        return listToPrint;
     }
 
     /**

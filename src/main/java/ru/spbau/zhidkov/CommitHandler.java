@@ -1,5 +1,9 @@
 package ru.spbau.zhidkov;
 
+import com.sun.istack.internal.NotNull;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import ru.spbau.ResetCommand;
 import ru.spbau.Vcs;
 import ru.spbau.zhidkov.vcs.VcsCommit;
 
@@ -11,6 +15,7 @@ import java.util.*;
  * Created by Нико on 30.03.2017.
  */
 public class CommitHandler {
+    private static final Logger logger = LogManager.getLogger(CommitHandler.class);
     private VcsFileHandler vcsFileHandler;
     private static final String INITIAL_COMMIT_MESSAGE = "Initial commit.";
     private static final String INITIAL_COMMIT_PREV_HASH = "";
@@ -23,9 +28,10 @@ public class CommitHandler {
         return INITIAL_COMMIT_MESSAGE;
     }
 
-    public void assertRevisionExists(String commitHash) throws Vcs.VcsBranchNotFoundException, IOException {
+    public void assertRevisionExists(String commitHash) throws Vcs.VcsRevisionNotFoundException, IOException {
         if (!vcsFileHandler.commitExists(commitHash)) {
-            throw new Vcs.VcsBranchNotFoundException("Provided revision doesn't exist");
+            logger.error("revision {} doesn't exist", commitHash);
+            throw new Vcs.VcsRevisionNotFoundException("Provided revision doesn't exist");
         }
     }
 
@@ -33,15 +39,15 @@ public class CommitHandler {
         return INITIAL_COMMIT_PREV_HASH;
     }
 
-    public List<Path> getAllActiveFilesInRevision(String hash) throws IOException {
+    public @NotNull List<Path> getAllActiveFilesInRevision(String hash) throws IOException {
         List<Path> repFiles = new ArrayList<>();
         getAllActiveFilesInCurrentRevision(hash,
                 new TreeSet<>(), repFiles);
         return repFiles;
     }
 
-    private void getAllActiveFilesInCurrentRevision(String commitHash, Collection<Path> checked,
-                                                           List<Path> repFiles) throws IOException {
+    private void getAllActiveFilesInCurrentRevision(String commitHash, @NotNull Collection<Path> checked,
+                                                           @NotNull List<Path> repFiles) throws IOException {
         VcsCommit commitHandler = vcsFileHandler.getCommit(commitHash);
         for (Map.Entry<Path, String> entry : commitHandler.getChildrenAdd().entrySet()) {
             if (checked.contains(entry.getKey())) continue;

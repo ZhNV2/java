@@ -1,7 +1,8 @@
-package ru.spbau.zhidkov.vcs;
+package ru.spbau.zhidkov.vcs.file;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.file.*;
 import java.util.Comparator;
 import java.util.List;
@@ -13,18 +14,12 @@ import java.util.stream.Collectors;
  * with file system.
  */
 @SuppressWarnings("WeakerAccess")
-public class FileSystem {
+public class FileSystem implements Serializable {
 
     private Path currentDir;
 
     public FileSystem(Path currentDir) {
         this.currentDir = currentDir;
-    }
-
-    public Path getCurrentDir() { return currentDir; }
-
-    public Path toWrite(Path file) {
-        return currentDir.resolve(file);
     }
 
     /**
@@ -47,6 +42,9 @@ public class FileSystem {
      *                     the work with file system
      */
     public void writeBytesToFile(Path fileName, byte[] content) throws IOException {
+        if (!exists(fileName)) {
+            createEmptyFile(fileName);
+        }
         Files.write(toWrite(fileName), content);
     }
 
@@ -59,6 +57,9 @@ public class FileSystem {
      *                     the work with file system
      */
     public void writeStringToFile(Path fileName, String text) throws IOException {
+        if (!exists(fileName)) {
+            createEmptyFile(fileName);
+        }
         Files.write(toWrite(fileName), text.getBytes());
     }
 
@@ -71,6 +72,7 @@ public class FileSystem {
      */
     public void createEmptyFile(Path fileName) throws IOException {
         Files.deleteIfExists(toWrite(fileName));
+        com.google.common.io.Files.createParentDirs(new File(toWrite(fileName).toString()));
         Files.createFile(toWrite(fileName));
     }
 
@@ -82,7 +84,9 @@ public class FileSystem {
      *                     the work with file system
      */
     public void createDirectory(Path dirName) throws IOException {
-        Files.createDirectory(toWrite(dirName));
+        if (!exists(toWrite(dirName))) {
+            Files.createDirectory(toWrite(dirName));
+        }
     }
 
     /**
@@ -194,7 +198,7 @@ public class FileSystem {
                 .sorted(compByLengthRev)
                 .collect(Collectors.toList());
         for (Path file : filesInRevOrd) {
-            Files.deleteIfExists(file);
+            Files.deleteIfExists(toWrite(file));
         }
     }
 
@@ -238,33 +242,11 @@ public class FileSystem {
         return dir.relativize(file);
     }
 
-
-//    /**
-//     * Checks if the provided strings represent the same file name.
-//     *
-//     * @param aName first file name
-//     * @param bName second file name
-//     * @return whether first file name is the same is the second one
-//     */
-//    public static boolean fileNameEquals(String aName, String bName) {
-//        String a = normalize(aName);
-//        String b = normalize(bName);
-//        return a.equals(b);
-//    }
-
-//    public void removeFromFileLine(String file, String line) throws IOException {
-//        StringBuilder stringBuilder = new StringBuilder();
-//        readAllLines(file).stream()
-//                .filter(s -> !s.equals(line))
-//                .forEach(s -> stringBuilder.append(s).append(System.lineSeparator()));
-//        writeStringToFile(file, stringBuilder.toString());
-//    }
-
-
     public Path normalize(Path file) {
         file =  file.toAbsolutePath().normalize();
-        return getCurrentDir().relativize(file);
+        return currentDir.relativize(file);
     }
+
 
     public List<Path> normalize(List<Path> files) {
         return files.stream()
@@ -272,7 +254,10 @@ public class FileSystem {
                 .collect(Collectors.toList());
     }
 
-    public static Comparator<Path> compByLength = (aName, bName) -> aName.toString().length() - bName.toString().length();
-    public static Comparator<Path> compByLengthRev = (aName, bName) -> bName.toString().length() - aName.toString().length();
+    public static Comparator<Path> compByLength = Comparator.comparingInt(aName -> aName.toString().length());
+    public static Comparator<Path> compByLengthRev = compByLength.reversed();
 
+    private Path toWrite(Path file) {
+        return currentDir.resolve(file);
+    }
 }

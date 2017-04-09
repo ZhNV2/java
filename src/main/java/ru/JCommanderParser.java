@@ -1,6 +1,7 @@
 package ru;
 
 import com.beust.jcommander.*;
+import com.beust.jcommander.internal.Nullable;
 import ru.spbau.Vcs;
 import ru.spbau.zhidkov.CommitHandler;
 
@@ -51,7 +52,7 @@ public class JCommanderParser {
     public class CommandAdd implements Command {
 
         @Parameter(description = "Files to add to the index")
-        private List<Path> files;
+        private @Nullable List<Path> files;
 
         /**
          * Runs necessary action after parsing args.
@@ -104,7 +105,7 @@ public class JCommanderParser {
          */
         @Override
         public void run() throws IOException, Vcs.VcsIncorrectUsageException {
-            System.out.println(vcs.log().toString());
+            System.out.println(vcs.log());
         }
     }
 
@@ -240,7 +241,7 @@ public class JCommanderParser {
     public class CommandRemove implements Command {
 
         @Parameter(description = "Files to remove from the repo")
-        private List<Path> files;
+        private @Nullable List<Path> files;
 
 
         @Override
@@ -270,7 +271,7 @@ public class JCommanderParser {
 
         @Override
         public void run() throws IOException, Vcs.VcsIncorrectUsageException {
-            System.out.println(vcs.status().toString());
+            System.out.println(vcs.status());
         }
     }
 }

@@ -1,5 +1,8 @@
 package ru.spbau;
 
+import com.sun.istack.internal.NotNull;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.spbau.zhidkov.BranchHandler;
 import ru.spbau.zhidkov.CommitHandler;
 import ru.spbau.zhidkov.ExternalFileHandler;
@@ -16,7 +19,8 @@ import java.util.*;
  * Class implementing merge command.
  */
 public class MergeCommand {
-    private static final String MERGE_MESSAGE = "Merged with branch ";;
+    private static final Logger logger = LogManager.getLogger(MergeCommand.class);
+    private static final String MERGE_MESSAGE = "Merged with branch ";
 
     private BranchHandler branchHandler;
     private VcsFileHandler vcsFileHandler;
@@ -43,42 +47,42 @@ public class MergeCommand {
      * @throws Vcs.VcsIncorrectUsageException          when vcs can't perform command because of incorrect
      *                                           usage
      */
-    public void merge(String branchToMerge) throws Vcs.VcsBranchActionForbiddenException, Vcs.VcsBranchNotFoundException, IOException, Vcs.VcsConflictException, Vcs.VcsIncorrectUsageException {
+    public void merge(String branchToMerge) throws IOException, Vcs.VcsIncorrectUsageException, Vcs.VcsBranchNotFoundException, Vcs.VcsBranchActionForbiddenException, Vcs.VcsConflictException {
+        logger.traceEntry();
         if (branchToMerge.equals(branchHandler.getHeadName())) {
+            logger.error("branch {} can not be merged with itself", branchToMerge);
             throw new Vcs.VcsBranchActionForbiddenException("You can't merge branch with itself");
         }
         branchHandler.assertBranchExists(branchToMerge);
         vcsFileHandler.assertListEmpty(VcsFileHandler.ListWithFiles.ADD_LIST);
         vcsFileHandler.assertListEmpty(VcsFileHandler.ListWithFiles.RM_LIST);
-        VcsCommit commit = new VcsCommit(MERGE_MESSAGE + branchToMerge, new Date(),
+        VcsCommit commit = vcsFileHandler.buildCommit(MERGE_MESSAGE + branchToMerge, new Date(),
                 vcsFileHandler.getAuthorName(), branchHandler.getHeadLastCommitHash(),
                 new HashMap<>(), new ArrayList<>());
         Collection<Path> checked = new HashSet<>();
         mergeCommit(branchHandler.getBranchCommit(branchToMerge).getHash(), checked, commit);
 
         vcsFileHandler.writeCommit(commit);
-        //FileSystem.writeToFile(Vcs.getObjectsDir(), commit);
         branchHandler.setCommitHash(branchHandler.getHeadName(), commit.getHash());
-        //FileSystem.writeStringToFile(Vcs.getBranchesDir() + File.separator + BranchCommand.getHeadBranch(), commit.getHash());
+        logger.traceExit();
     }
 
-    private void mergeCommit(String commitHash, Collection<Path> checked, VcsCommit newCommit) throws IOException, Vcs.VcsConflictException {
+    private void mergeCommit(String commitHash, @NotNull Collection<Path> checked, VcsCommit newCommit) throws IOException, Vcs.VcsConflictException {
         VcsCommit commit = vcsFileHandler.getCommit(commitHash);
         for (Map.Entry<Path, String> entry : commit.getChildrenAdd().entrySet()) {
             if (checked.contains(entry.getKey())) continue;
             Path fileName = entry.getKey();
             checked.add(fileName);
             VcsBlob blob = vcsFileHandler.getBlob(entry.getValue());
-            //VcsBlob blob = (VcsBlob) VcsObject.readFromJson(Vcs.getObjectsDir() + File.separator + entry.getValue(), VcsBlob.class);
             if (externalFileHandler.exists(fileName)) {
                 byte[] fileBytes = externalFileHandler.readAllBytes(fileName);
                 if (!Arrays.equals(fileBytes, blob.getContent())) {
+                    logger.error("conflict was detected with {}", fileName);
                     throw new Vcs.VcsConflictException("Can't merge, because file " + fileName + " is different in both branches");
                 }
             } else {
                 newCommit.addToChildrenAdd(fileName, blob.getHash());
                 externalFileHandler.writeBytesToFile(fileName, blob.getContent());
-                //FileSystem.writeBytesToFile(fileName, blob.getContent());
             }
         }
         for (Path file : commit.getChildrenRm()) {
