@@ -1,6 +1,6 @@
 package ru.spbau.zhidkov.vcs;
 
-import com.sun.istack.internal.NotNull;
+import org.jetbrains.annotations.NotNull;
 import ru.spbau.zhidkov.vcs.file.FileSystem;
 import ru.spbau.zhidkov.vcs.file.ObjectDeserializer;
 import ru.spbau.zhidkov.vcs.file.ObjectSerializer;

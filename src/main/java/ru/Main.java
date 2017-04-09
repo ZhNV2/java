@@ -3,7 +3,7 @@ package ru;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import com.google.gson.Gson;
-import com.sun.istack.internal.NotNull;
+import org.jetbrains.annotations.NotNull;
 import ru.spbau.Vcs;
 import ru.spbau.zhidkov.vcs.VcsCommit;
 import ru.spbau.zhidkov.vcs.VcsObject;

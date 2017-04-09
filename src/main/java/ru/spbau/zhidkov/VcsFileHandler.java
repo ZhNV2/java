@@ -1,6 +1,6 @@
 package ru.spbau.zhidkov;
 
-import com.sun.istack.internal.NotNull;
+import org.jetbrains.annotations.NotNull;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import ru.spbau.ResetCommand;

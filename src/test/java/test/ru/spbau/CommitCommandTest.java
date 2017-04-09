@@ -1,7 +1,7 @@
 package test.ru.spbau;
 
 import com.google.common.collect.ImmutableMap;
-import com.sun.istack.internal.NotNull;
+import org.jetbrains.annotations.NotNull;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.junit.Test;

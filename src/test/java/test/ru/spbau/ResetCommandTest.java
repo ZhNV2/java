@@ -1,7 +1,7 @@
 package test.ru.spbau;
 
 import com.google.common.collect.ImmutableMap;
-import com.sun.istack.internal.NotNull;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;

@@ -1,6 +1,6 @@
 package ru.spbau.zhidkov;
 
-import com.sun.istack.internal.NotNull;
+import org.jetbrains.annotations.NotNull;
 import ru.spbau.zhidkov.vcs.file.FileSystem;
 
 import java.io.IOException;
