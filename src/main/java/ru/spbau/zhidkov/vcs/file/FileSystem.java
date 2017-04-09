@@ -2,7 +2,6 @@ package ru.spbau.zhidkov.vcs.file;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.nio.file.*;
 import java.util.Comparator;
 import java.util.List;
@@ -14,24 +13,13 @@ import java.util.stream.Collectors;
  * with file system.
  */
 @SuppressWarnings("WeakerAccess")
-public class FileSystem implements Serializable {
+public class FileSystem {
 
     private Path currentDir;
 
     public FileSystem(Path currentDir) {
         this.currentDir = currentDir;
     }
-
-    /**
-     * Prints <tt>VcsObject</tt> to file in provided
-     * folder with its hash.
-     *
-     * @param dir       folder to write in
-     * @param vcsObject to be written
-     * @throws IOException if something has gone wrong during
-     *                     the work with file system
-     */
-
 
     /**
      * Writes byte array to file.
@@ -64,7 +52,8 @@ public class FileSystem implements Serializable {
     }
 
     /**
-     * Creates empty file.
+     * Creates empty file. Also creates all parent
+     * directories if needed.
      *
      * @param fileName to create
      * @throws IOException if something has gone wrong during
@@ -77,7 +66,8 @@ public class FileSystem implements Serializable {
     }
 
     /**
-     * Creates empty directory.
+     * Creates empty directory. Does nothing if it has
+     * already existed.
      *
      * @param dirName to create
      * @throws IOException if something has gone wrong during
@@ -212,6 +202,15 @@ public class FileSystem implements Serializable {
         return Files.isDirectory(toWrite(dir));
     }
 
+    /**
+     * Copies all files from one dir to another.
+     *
+     * @param sourceDir dir to copy from
+     * @param files     files to copy
+     * @param targetDir dir to copy to
+     * @throws IOException if something has gone wrong during
+     *                     the work with file system
+     */
     public void copyFilesToDir(Path sourceDir, List<Path> files, Path targetDir) throws IOException {
         files = files.stream().sorted(compByLength).collect(Collectors.toList());
         for (Path fileName : files) {
@@ -242,19 +241,36 @@ public class FileSystem implements Serializable {
         return dir.relativize(file);
     }
 
+    /**
+     * Returns normalized form of path regarding current
+     * working folder.
+     *
+     * @param file to normalize
+     * @return normalized <tt>Path</tt>
+     */
     public Path normalize(Path file) {
-        file =  file.toAbsolutePath().normalize();
+        file = file.toAbsolutePath().normalize();
         return currentDir.relativize(file);
     }
 
 
+    /**
+     * Applies {@link FileSystem#normalize(Path) normalize(Path)}
+     * to <tt>List</tt>
+     *
+     * @param files to normalize
+     * @return <tt>List</tt> of normalized files
+     */
     public List<Path> normalize(List<Path> files) {
         return files.stream()
                 .map(this::normalize)
                 .collect(Collectors.toList());
     }
 
+    /**Compares paths by their length */
     public static Comparator<Path> compByLength = Comparator.comparingInt(aName -> aName.toString().length());
+
+    /**Compares paths by their length in rev order */
     public static Comparator<Path> compByLengthRev = compByLength.reversed();
 
     private Path toWrite(Path file) {

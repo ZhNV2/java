@@ -14,7 +14,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
+/**Class implementing clean command */
 public class CleanCommand {
     private static final Logger logger = LogManager.getLogger(CleanCommand.class);
 
@@ -23,13 +23,31 @@ public class CleanCommand {
     private ExternalFileHandler externalFileHandler;
     private CommitHandler commitHandler;
 
-    public CleanCommand(VcsFileHandler vcsFileHandler, BranchHandler branchHandler, ExternalFileHandler externalFileHandler, CommitHandler commitHandler) {
+    /**
+     * Builds <tt>CleanCommand</tt> with provided args
+     *
+     * @param vcsFileHandler      vcsFileHandler
+     * @param branchHandler       branchHandler
+     * @param externalFileHandler externalFileHandler
+     * @param commitHandler       commitHandler
+     */
+    public CleanCommand(VcsFileHandler vcsFileHandler, BranchHandler branchHandler,
+                        ExternalFileHandler externalFileHandler, CommitHandler commitHandler) {
         this.vcsFileHandler = vcsFileHandler;
         this.branchHandler = branchHandler;
         this.externalFileHandler = externalFileHandler;
         this.commitHandler = commitHandler;
     }
 
+    /**
+     * Deletes all files that are not been storing in the
+     * current repo state
+     *
+     * @throws IOException                    if something has gone wrong during
+     *                                        the work with file system
+     * @throws Vcs.VcsIncorrectUsageException when vcs can't perform command because of incorrect
+     *                                        usage
+     */
     public void clean() throws IOException, Vcs.VcsIncorrectUsageException {
         logger.traceEntry();
         vcsFileHandler.assertListEmpty(VcsFileHandler.ListWithFiles.ADD_LIST);

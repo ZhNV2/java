@@ -4,7 +4,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import ru.spbau.zhidkov.BranchHandler;
 import ru.spbau.zhidkov.CommitHandler;
-import ru.spbau.zhidkov.ExternalFileHandler;
 import ru.spbau.zhidkov.VcsFileHandler;
 import ru.spbau.zhidkov.vcs.VcsBlob;
 import ru.spbau.zhidkov.vcs.VcsCommit;
@@ -15,9 +14,7 @@ import java.nio.file.Path;
 import java.util.*;
 
 
-/**
- * Class implementing commitHandler command.
- */
+/**Class implementing commitHandler command */
 public class CommitCommand {
     private static final Logger logger = LogManager.getLogger(CommitCommand.class);
 
@@ -25,15 +22,22 @@ public class CommitCommand {
     private VcsFileHandler vcsFileHandler;
     private BranchHandler branchHandler;
 
+    /**
+     * Builds <tt>CommitCommand</tt> with provided
+     * <tt>VcsFileHandler</tt> and <tt>BranchHandler</tt>
+     *
+     * @param vcsFileHandler vcsFileHandler
+     * @param branchHandler  branchHandler
+     */
     public CommitCommand(VcsFileHandler vcsFileHandler, BranchHandler branchHandler) {
         this.vcsFileHandler = vcsFileHandler;
         this.branchHandler = branchHandler;
     }
 
     /**
-     * CommitCommand all files that were added after last commitHandler.
+     * CommitCommand all files that were added after last commit.
      *
-     * @param message commitHandler message
+     * @param message commit message
      * @throws IOException if something has gone wrong during
      *                     the work with file system
      */
@@ -44,7 +48,7 @@ public class CommitCommand {
         VcsCommit commit = vcsFileHandler.buildCommit(message, new Date(), vcsFileHandler.getAuthorName(),
                 message.equals(CommitHandler.getInitialCommitMessage()) ? CommitHandler.getInitialCommitPrevHash() :
                         branchHandler.getHeadLastCommitHash(),
-                        new HashMap<>(), new ArrayList<>());
+                new HashMap<>(), new ArrayList<>());
 
         Collection<VcsBlob> blobs = new ArrayList<>();
         for (Path file : filesToAdd) {

@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 
+/**Class implementing work with working copy */
+@SuppressWarnings("WeakerAccess")
 public class WorkingCopyCommand {
 
     private static final Logger logger = LogManager.getLogger(StatusCommand.class);
@@ -19,6 +21,12 @@ public class WorkingCopyCommand {
     private WorkingCopyHandler workingCopyHandler;
     private ExternalFileHandler externalFileHandler;
 
+    /**
+     * Builds <tt>WorkingCopy</tt> with provided args
+     *
+     * @param workingCopyHandler  workingCopyHandler
+     * @param externalFileHandler externalFileHandler
+     */
     public WorkingCopyCommand(WorkingCopyHandler workingCopyHandler, ExternalFileHandler externalFileHandler) {
         this.workingCopyHandler = workingCopyHandler;
         this.externalFileHandler = externalFileHandler;

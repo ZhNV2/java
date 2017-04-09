@@ -4,10 +4,7 @@ package ru.spbau.zhidkov.vcs.file;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.lang.reflect.Array;
 import java.lang.reflect.Type;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -16,15 +13,24 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Created by Нико on 08.04.2017.
- */
+/**Class for deserializing json-serialized objects */
 public class ObjectDeserializer {
 
+    /**
+     * Deserializes provided json-formatted <tt>String</tt>
+     * with provided <tt>Class</tt>
+     *
+     * @param content json <tt>String</tt> to deserialize
+     * @param clazz   to deserialize in
+     * @return built object
+     * @throws IOException if something has gone wrong during
+     *                     the work with file system
+     */
     public Object deserialize(String content, Class<?> clazz) throws IOException {
         return new GsonBuilder()
                 .registerTypeAdapter(Path.class, new PathDeserializer())
-                .registerTypeAdapter(new TypeToken<List<Path>>() {}.getType(), new ListDeserializer())
+                .registerTypeAdapter(new TypeToken<List<Path>>() {
+                }.getType(), new ListDeserializer())
                 .create()
                 .fromJson(content, clazz);
     }

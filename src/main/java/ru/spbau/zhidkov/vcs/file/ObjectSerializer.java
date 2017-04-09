@@ -9,15 +9,22 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Created by Нико on 08.04.2017.
- */
+/**Class for serializing objects*/
 public class ObjectSerializer {
-    public String serialize(Object o) throws IOException {
 
+    /**
+     * Serializes provided object to json
+     *
+     * @param o object to serialize
+     * @return <tt>String</tt> json representation
+     * @throws IOException if something has gone wrong during
+     *                     the work with file system
+     */
+    public String serialize(Object o) throws IOException {
         return new GsonBuilder()
                 .registerTypeAdapter(Path.class, new PathSerializer())
-                .registerTypeAdapter(new TypeToken<List<Path>>() {}.getType(), new ListSerializer())
+                .registerTypeAdapter(new TypeToken<List<Path>>() {
+                }.getType(), new ListSerializer())
                 .create()
                 .toJson(o);
     }
@@ -28,6 +35,7 @@ public class ObjectSerializer {
             return new JsonPrimitive(src.toString());
         }
     }
+
     private static class ListSerializer implements JsonSerializer<List<Path>> {
         @Override
         public JsonElement serialize(List<Path> src, Type typeOfSrc, JsonSerializationContext context) {

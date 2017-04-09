@@ -2,28 +2,21 @@ package ru;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
-import com.google.gson.Gson;
 import org.jetbrains.annotations.NotNull;
 import ru.spbau.Vcs;
-import ru.spbau.zhidkov.vcs.VcsCommit;
-import ru.spbau.zhidkov.vcs.VcsObject;
-import ru.spbau.zhidkov.vcs.file.FileSystem;
-import ru.spbau.zhidkov.vcs.file.ObjectDeserializer;
-import ru.spbau.zhidkov.vcs.file.ObjectSerializer;
+
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 /**
  * Main class for all application for parsing command line arguments
  * and call appropriate method from vcs.
@@ -47,6 +40,8 @@ public class Main {
          * Initializes enum elements with corresponding parser. It
          * should be called every time before you run {@link
          * #execute(Vcs, String[]) execute(Vcs, String[])}.
+         *
+         * @param jcp base parser
          */
         public static void initialize(JCommanderParser jcp) {
             init.command = jcp.new CommandInit();
@@ -72,7 +67,7 @@ public class Main {
     public static void main(String[] args) {
         logger.info("Main has started with following args: {}", Arrays.stream(args).collect(Collectors.joining(" ")));
         Vcs vcs = new Vcs(Paths.get(System.getProperty("user.dir")));
-        try  {
+        try {
             execute(vcs, args);
         } catch (Vcs.VcsException | ParameterException e) {
             logger.error("vcsException or parameter exception has been caught in main");
@@ -103,6 +98,7 @@ public class Main {
      * Method that parses args and calls appropriate methods
      * in vcs.
      *
+     * @param vcs  vcs
      * @param args command line args to be parsed
      * @throws IOException      if something has gone wrong during
      *                          the work with file system
@@ -141,7 +137,6 @@ public class Main {
             System.out.println(e.getMessage());
         }
     }
-
 
 
 }

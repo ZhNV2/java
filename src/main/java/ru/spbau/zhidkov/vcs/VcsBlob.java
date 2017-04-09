@@ -12,6 +12,14 @@ public class VcsBlob extends VcsObject {
 
     private byte[] content = null;
 
+    /**
+     * Builds blob with provided <tt>FileSystem</tt>,
+     * <tt>ObjectSerializer</tt>, content
+     *
+     * @param fileSystem       file system
+     * @param objectSerializer object serializer
+     * @param content          blob content
+     */
     public VcsBlob(FileSystem fileSystem, ObjectSerializer objectSerializer, byte[] content) {
         super(fileSystem, objectSerializer);
         this.content = content;

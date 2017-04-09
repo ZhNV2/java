@@ -21,7 +21,7 @@ import static org.mockito.Mockito.mock;
  * Created by Нико on 09.04.2017.
  */
 
-public class SerializeTest {
+public class SerializationTest {
 
     @Test
     public void serializeDeserializeCommitTest() throws IOException {

@@ -9,9 +9,7 @@ import ru.spbau.zhidkov.ExternalFileHandler;
 import ru.spbau.zhidkov.VcsFileHandler;
 import ru.spbau.zhidkov.vcs.VcsBlob;
 import ru.spbau.zhidkov.vcs.VcsCommit;
-import ru.spbau.zhidkov.vcs.VcsObject;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collection;
@@ -19,9 +17,7 @@ import java.util.HashSet;
 import java.util.Map;
 
 
-/**
- * Class implementing checkout command.
- */
+/**Class implementing checkout command */
 public class CheckoutCommand {
 
     private static final Logger logger = LogManager.getLogger(CheckoutCommand.class);
@@ -31,7 +27,16 @@ public class CheckoutCommand {
     private VcsFileHandler vcsFileHandler;
     private ExternalFileHandler externalFileHandler;
 
-    public CheckoutCommand(BranchHandler branchHandler, CommitHandler commitHandler, VcsFileHandler vcsFileHandler, ExternalFileHandler externalFileHandler) {
+    /**
+     * Builds <tt>CheckoutCommand</tt> with provided args
+     *
+     * @param branchHandler       branchHandler
+     * @param commitHandler       commitHandler
+     * @param vcsFileHandler      vcsFileHandler
+     * @param externalFileHandler externalFileHandler
+     */
+    public CheckoutCommand(BranchHandler branchHandler, CommitHandler commitHandler, VcsFileHandler vcsFileHandler,
+                           ExternalFileHandler externalFileHandler) {
         this.branchHandler = branchHandler;
         this.commitHandler = commitHandler;
         this.vcsFileHandler = vcsFileHandler;
@@ -39,17 +44,18 @@ public class CheckoutCommand {
     }
 
     /**
-     * Switches current branchHandler to another.
+     * Switches current branch to another one
      *
-     * @param branchName branchHandler to switch to
-     * @throws IOException                if something has gone wrong during
-     *                                    the work with file system
-     * @throws Vcs.VcsBranchNotFoundException when trying to access branchHandler
-     *                                    which doesn't exist.
-     * @throws Vcs.VcsIncorrectUsageException   when vcs can't perform command because of incorrect
-     *                                    usage
+     * @param branchName branch to switch to
+     * @throws IOException                    if something has gone wrong during
+     *                                        the work with file system
+     * @throws Vcs.VcsBranchNotFoundException when trying to access branch
+     *                                        which doesn't exist.
+     * @throws Vcs.VcsIncorrectUsageException when vcs can't perform command because of incorrect
+     *                                        usage
      */
-    public void checkoutBranch(String branchName) throws IOException, Vcs.VcsBranchNotFoundException, Vcs.VcsIncorrectUsageException {
+    public void checkoutBranch(String branchName) throws IOException, Vcs.VcsBranchNotFoundException,
+            Vcs.VcsIncorrectUsageException {
         logger.traceEntry();
         branchHandler.assertBranchExists(branchName);
         String commitHash = branchHandler.getBranchCommit(branchName).getHash();
@@ -60,17 +66,18 @@ public class CheckoutCommand {
     }
 
     /**
-     * Switches current revision to provided.
+     * Switches current revision to provided one
      *
      * @param commitHash hash of revision to switch to
-     * @throws IOException                  if something has gone wrong during
-     *                                      the work with file system
+     * @throws IOException                      if something has gone wrong during
+     *                                          the work with file system
      * @throws Vcs.VcsRevisionNotFoundException when trying to access revision
-     *                                      which doesn't exist
-     * @throws Vcs.VcsIncorrectUsageException     when vcs can't perform command because of incorrect
-     *                                      usage
+     *                                          which doesn't exist
+     * @throws Vcs.VcsIncorrectUsageException   when vcs can't perform command because of incorrect
+     *                                          usage
      */
-    public void checkoutRevision(String commitHash) throws IOException, Vcs.VcsIncorrectUsageException, Vcs.VcsRevisionNotFoundException {
+    public void checkoutRevision(String commitHash) throws IOException, Vcs.VcsIncorrectUsageException,
+            Vcs.VcsRevisionNotFoundException {
         logger.traceEntry();
         commitHandler.assertRevisionExists(commitHash);
         checkout(commitHash);

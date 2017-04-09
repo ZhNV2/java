@@ -15,10 +15,9 @@ import java.nio.file.Path;
 import java.util.*;
 
 
-/**
- * Class implementing merge command.
- */
+/**Class implementing merge command */
 public class MergeCommand {
+
     private static final Logger logger = LogManager.getLogger(MergeCommand.class);
     private static final String MERGE_MESSAGE = "Merged with branch ";
 
@@ -26,7 +25,15 @@ public class MergeCommand {
     private VcsFileHandler vcsFileHandler;
     private ExternalFileHandler externalFileHandler;
 
-    public MergeCommand(BranchHandler branchHandler, VcsFileHandler vcsFileHandler, ExternalFileHandler externalFileHandler) {
+    /**
+     * Builds <tt>MergeCommand</tt> with provided args
+     *
+     * @param branchHandler       branchHandler
+     * @param vcsFileHandler      vcsFileHandler
+     * @param externalFileHandler externalFileHandler
+     */
+    public MergeCommand(BranchHandler branchHandler, VcsFileHandler vcsFileHandler,
+                        ExternalFileHandler externalFileHandler) {
         this.branchHandler = branchHandler;
         this.vcsFileHandler = vcsFileHandler;
         this.externalFileHandler = externalFileHandler;
@@ -37,17 +44,18 @@ public class MergeCommand {
      * unique files or content equal files.
      *
      * @param branchToMerge branch to merge with
-     * @throws IOException                       if something has gone wrong during
-     *                                           the work with file system
+     * @throws IOException                           if something has gone wrong during
+     *                                               the work with file system
      * @throws Vcs.VcsBranchNotFoundException        when trying to access branch
-     *                                           which doesn't exist.
+     *                                               which doesn't exist.
      * @throws Vcs.VcsConflictException              when conflict during merge was detected
      * @throws Vcs.VcsBranchActionForbiddenException when trying to make illegal
-     *                                           actions with branch
-     * @throws Vcs.VcsIncorrectUsageException          when vcs can't perform command because of incorrect
-     *                                           usage
+     *                                               actions with branch
+     * @throws Vcs.VcsIncorrectUsageException        when vcs can't perform command because of incorrect
+     *                                               usage
      */
-    public void merge(String branchToMerge) throws IOException, Vcs.VcsIncorrectUsageException, Vcs.VcsBranchNotFoundException, Vcs.VcsBranchActionForbiddenException, Vcs.VcsConflictException {
+    public void merge(String branchToMerge) throws IOException, Vcs.VcsIncorrectUsageException,
+            Vcs.VcsBranchNotFoundException, Vcs.VcsBranchActionForbiddenException, Vcs.VcsConflictException {
         logger.traceEntry();
         if (branchToMerge.equals(branchHandler.getHeadName())) {
             logger.error("branch {} can not be merged with itself", branchToMerge);
@@ -92,10 +100,4 @@ public class MergeCommand {
             mergeCommit(commit.getPrevCommitHash(), checked, newCommit);
         }
     }
-
-
-
-
-
-
 }

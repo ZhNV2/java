@@ -17,18 +17,35 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 
+/**Class implementing status command */
 public class StatusCommand {
+
     private static final Logger logger = LogManager.getLogger(StatusCommand.class);
     private VcsFileHandler vcsFileHandler;
     private ExternalFileHandler externalFileHandler;
     private BranchHandler branchHandler;
 
-    public StatusCommand(VcsFileHandler vcsFileHandler, ExternalFileHandler externalFileHandler, BranchHandler branchHandler) {
+    /**
+     * Builds <tt>StatusCommand</tt> with provided args
+     *
+     * @param vcsFileHandler      vcsFileHandler
+     * @param externalFileHandler externalFileHandler
+     * @param branchHandler       branchHandler
+     */
+    public StatusCommand(VcsFileHandler vcsFileHandler, ExternalFileHandler externalFileHandler,
+                         BranchHandler branchHandler) {
         this.vcsFileHandler = vcsFileHandler;
         this.externalFileHandler = externalFileHandler;
         this.branchHandler = branchHandler;
     }
 
+    /**
+     * Returns status of files in repo
+     *
+     * @return status of files in repo
+     * @throws IOException if something has gone wrong during
+     *                     the work with file system
+     */
     public StatusHolder status() throws IOException {
         logger.traceEntry();
         List<Path> modifiedFiles = new ArrayList<>();
@@ -83,14 +100,23 @@ public class StatusCommand {
         }
     }
 
+    /**Class representing status info */
     public static class StatusHolder {
+        /**Modified files that are now in repo, but have not added/removed */
         public List<Path> modifiedFiles;
+
+        /**Files were added */
         public List<Path> addedFiles;
+
+        /**Files were removed */
         public List<Path> removedFiles;
+
+        /**Files that are not in repo and have not added/removed */
         public List<Path> foreignFiles;
 
-
-        public StatusHolder(List<Path> modifiedFiles, List<Path> addedFiles, List<Path> removedFiles, List<Path> foreignFiles) {
+        @SuppressWarnings("WeakerAccess")
+        public StatusHolder(List<Path> modifiedFiles, List<Path> addedFiles, List<Path> removedFiles,
+                            List<Path> foreignFiles) {
             this.modifiedFiles = modifiedFiles;
             this.addedFiles = addedFiles;
             this.removedFiles = removedFiles;

@@ -6,16 +6,20 @@ import ru.spbau.zhidkov.VcsFileHandler;
 
 import java.io.IOException;
 
-/**
- * Created by Нико on 05.04.2017.
- */
+/**Class checking whether repo has been initialized */
+@SuppressWarnings("WeakerAccess")
 public class InitChecker {
 
     private static final Logger logger = LogManager.getLogger(InitChecker.class);
 
-
     private VcsFileHandler vcsFileHandler;
 
+    /**
+     * Builds <tt>InitChecker</tt> with provided
+     * <tt>VcsFileHandler</tt>
+     *
+     * @param vcsFileHandler vcsFileHandler
+     */
     public InitChecker(VcsFileHandler vcsFileHandler) {
         this.vcsFileHandler = vcsFileHandler;
     }

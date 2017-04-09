@@ -14,10 +14,7 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
 
-
-/**
- * Class implementing reset command.
- */
+/**Class implementing reset command */
 public class ResetCommand {
     private static final Logger logger = LogManager.getLogger(ResetCommand.class);
 
@@ -25,6 +22,13 @@ public class ResetCommand {
     private ExternalFileHandler externalFileHandler;
     private BranchHandler branchHandler;
 
+    /**
+     * Builds <tt>ResetCommand</tt> with provided args
+     *
+     * @param vcsFileHandler      vcsFileHandler
+     * @param externalFileHandler externalFileHandler
+     * @param branchHandler       branchHandler
+     */
     public ResetCommand(VcsFileHandler vcsFileHandler, ExternalFileHandler externalFileHandler, BranchHandler branchHandler) {
         this.vcsFileHandler = vcsFileHandler;
         this.externalFileHandler = externalFileHandler;
@@ -36,10 +40,10 @@ public class ResetCommand {
      * storing in repository.
      *
      * @param fileName file to reset
-     * @throws IOException                  if something has gone wrong during
-     *                                      the work with file system
+     * @throws IOException                    if something has gone wrong during
+     *                                        the work with file system
      * @throws Vcs.VcsIncorrectUsageException if provided file
-     *                                      is not in repository yet
+     *                                        is not in repository yet
      */
     public void reset(Path fileName) throws Vcs.VcsIncorrectUsageException, IOException {
         logger.traceEntry();

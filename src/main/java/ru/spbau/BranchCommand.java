@@ -7,9 +7,7 @@ import ru.spbau.zhidkov.VcsFileHandler;
 
 import java.io.IOException;
 
-/**
- * Class implementing branchHandler command.
- */
+/**Class implementing branchHandler command */
 public class BranchCommand {
     private static final Logger logger = LogManager.getLogger(BranchCommand.class);
 
@@ -22,17 +20,18 @@ public class BranchCommand {
     }
 
     /**
-     * Defines new branchHandler.
+     * Creates new branch.
      *
-     * @param branchName new branchHandler
-     * @throws IOException                       if something has gone wrong during
-     *                                           the work with file system
+     * @param branchName branch to create
+     * @throws IOException                           if something has gone wrong during
+     *                                               the work with file system
      * @throws Vcs.VcsBranchActionForbiddenException when trying to make illegal
-     *                                           actions with branchHandler
-     * @throws Vcs.VcsIncorrectUsageException          when vcs can't perform command because of incorrect
-     *                                           usage
+     *                                               actions with branch
+     * @throws Vcs.VcsIncorrectUsageException        when vcs can't perform command because of incorrect
+     *                                               usage
      */
-    public void createBranch(String branchName) throws IOException, Vcs.VcsBranchActionForbiddenException, Vcs.VcsIncorrectUsageException {
+    public void createBranch(String branchName) throws IOException, Vcs.VcsBranchActionForbiddenException,
+            Vcs.VcsIncorrectUsageException {
         logger.traceEntry();
         if (branchHandler.exists(branchName)) {
             logger.error("branch {} was already created", branchName);
@@ -45,17 +44,18 @@ public class BranchCommand {
     }
 
     /**
-     * Deletes specified branchHandler.
+     * Deletes specified branch.
      *
-     * @param branchName to delete
-     * @throws IOException                       if something has gone wrong during
-     *                                           the work with file system
-     * @throws Vcs.VcsBranchNotFoundException        when trying to access branchHandler
-     *                                           which doesn't exist.
+     * @param branchName branch to delete
+     * @throws IOException                           if something has gone wrong during
+     *                                               the work with file system
+     * @throws Vcs.VcsBranchNotFoundException        when trying to access branch
+     *                                               which doesn't exist.
      * @throws Vcs.VcsBranchActionForbiddenException when trying to make illegal
-     *                                           actions with branchHandler
+     *                                               actions with branch
      */
-    public void deleteBranch(String branchName) throws IOException, Vcs.VcsBranchNotFoundException, Vcs.VcsBranchActionForbiddenException {
+    public void deleteBranch(String branchName) throws IOException, Vcs.VcsBranchNotFoundException,
+            Vcs.VcsBranchActionForbiddenException {
         logger.traceEntry();
         if (branchHandler.getHeadName().equals(branchName)) {
             logger.error("Trying to delete current branch {}", branchName);

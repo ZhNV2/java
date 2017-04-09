@@ -8,13 +8,18 @@ import ru.spbau.zhidkov.vcs.VcsCommit;
 import java.io.IOException;
 
 
-/**
- * Class implementing log command.
- */
+/**Class implementing log command */
+@SuppressWarnings("WeakerAccess")
 public class LogCommand {
     private BranchHandler branchHandler;
     private VcsFileHandler vcsFileHandler;
 
+    /**
+     * Builds <tt>LogCommand</tt> with provided args
+     *
+     * @param branchHandler  branchHandler
+     * @param vcsFileHandler vcsFileHandler
+     */
     public LogCommand(BranchHandler branchHandler, VcsFileHandler vcsFileHandler) {
         this.branchHandler = branchHandler;
         this.vcsFileHandler = vcsFileHandler;
@@ -22,9 +27,9 @@ public class LogCommand {
 
     /**
      * Prints log about all commits from current to initial in
-     * the current branchHandler.
+     * the current branch.
      *
-     * @return information about all commits in current branchHandler
+     * @return information about all commits in current branch
      * @throws IOException if something has gone wrong during
      *                     the work with file system
      */
