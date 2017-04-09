@@ -22,5 +22,6 @@ You can read package and class documentation for more information
 ## Usage
 
 build -> gradle fatJar
+
 help -> --help
 
