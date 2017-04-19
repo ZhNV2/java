@@ -20,22 +20,26 @@ import static org.mockito.Mockito.*;
 
 public class CheckoutCommandExceptionTest {
 
-    private BranchHandler branchHandler =  mock(BranchHandler.class);
+    private BranchHandler branchHandler = mock(BranchHandler.class);
     private CommitHandler commitHandler = mock(CommitHandler.class);
     private VcsFileHandler vcsFileHandler = mock(VcsFileHandler.class);
     private ExternalFileHandler externalFileHandler = mock(ExternalFileHandler.class);
 
     @Test(expected = Vcs.VcsBranchNotFoundException.class)
-    public void branchDoesNotExistTest() throws IOException, Vcs.VcsBranchNotFoundException, Vcs.VcsIncorrectUsageException {
+    public void branchDoesNotExistTest() throws IOException, Vcs.VcsBranchNotFoundException,
+            Vcs.VcsIncorrectUsageException {
         doThrow(new Vcs.VcsBranchNotFoundException("")).when(branchHandler).assertBranchExists(anyString());
-        CheckoutCommand checkoutCommand = new CheckoutCommand(branchHandler, commitHandler, vcsFileHandler, externalFileHandler);
+        CheckoutCommand checkoutCommand = new CheckoutCommand(branchHandler, commitHandler, vcsFileHandler,
+                externalFileHandler);
         checkoutCommand.checkoutBranch("branch");
     }
 
     @Test(expected = Vcs.VcsRevisionNotFoundException.class)
-    public void revisionDoesNotExistTest() throws IOException, Vcs.VcsIncorrectUsageException, Vcs.VcsRevisionNotFoundException {
+    public void revisionDoesNotExistTest() throws IOException, Vcs.VcsIncorrectUsageException,
+            Vcs.VcsRevisionNotFoundException {
         doThrow(new Vcs.VcsRevisionNotFoundException("")).when(commitHandler).assertRevisionExists(anyString());
-        CheckoutCommand checkoutCommand = new CheckoutCommand(branchHandler, commitHandler, vcsFileHandler, externalFileHandler);
+        CheckoutCommand checkoutCommand = new CheckoutCommand(branchHandler, commitHandler, vcsFileHandler,
+                externalFileHandler);
         checkoutCommand.checkoutRevision("rev");
     }
 
@@ -45,8 +49,11 @@ public class CheckoutCommandExceptionTest {
         when(branchHandler.getBranchCommit(anyString())).thenReturn(vcsCommit);
         when(branchHandler.getHeadLastCommitHash()).thenReturn("a");
         doNothing().when(vcsFileHandler).assertListEmpty(VcsFileHandler.ListWithFiles.ADD_LIST);
-        doThrow(new Vcs.VcsIncorrectUsageException("")).when(vcsFileHandler).assertListEmpty(VcsFileHandler.ListWithFiles.RM_LIST);
-        CheckoutCommand checkoutCommand = new CheckoutCommand(branchHandler, commitHandler, vcsFileHandler, externalFileHandler);
+        doThrow(new Vcs.VcsIncorrectUsageException(""))
+                .when(vcsFileHandler)
+                .assertListEmpty(VcsFileHandler.ListWithFiles.RM_LIST);
+        CheckoutCommand checkoutCommand = new CheckoutCommand(branchHandler, commitHandler, vcsFileHandler,
+                externalFileHandler);
         checkoutCommand.checkoutBranch("branch");
     }
 }

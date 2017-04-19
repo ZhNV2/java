@@ -48,7 +48,9 @@ public class ObjectDeserializer {
         public List<Path> deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
                 throws JsonParseException {
             String jsonString = json.getAsJsonPrimitive().getAsString();
-            if (jsonString.equals("")) return new ArrayList<>();
+            if (jsonString.equals("")) {
+                return new ArrayList<>();
+            }
             return Arrays.stream(jsonString
                     .split(","))
                     .map(Paths::get)

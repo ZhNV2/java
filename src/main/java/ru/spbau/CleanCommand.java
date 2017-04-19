@@ -43,8 +43,8 @@ public class CleanCommand {
      * Deletes all files that are not been storing in the
      * current repo state
      *
-     * @throws IOException                    if something has gone wrong during
-     *                                        the work with file system
+     * @throws IOException if something has gone wrong during
+     *                     the work with file system
      * @throws Vcs.VcsIncorrectUsageException when vcs can't perform command because of incorrect
      *                                        usage
      */
@@ -64,7 +64,9 @@ public class CleanCommand {
                 .stream()
                 .sorted(FileSystem.compByLengthRev)
                 .collect(Collectors.toList())) {
-            if (!externalFileHandler.isDirectory(fileName)) continue;
+            if (!externalFileHandler.isDirectory(fileName)) {
+                continue;
+            }
             if (externalFileHandler.readAllFiles(fileName).size() == 1) {
                 externalFileHandler.deleteFolder(fileName);
             }

@@ -237,7 +237,9 @@ public class FileSystem {
      * @return relative path to file
      */
     public Path relativePath(Path file, Path dir) {
-        if (dir.toString().equals("")) return file;
+        if (dir.toString().equals("")) {
+            return file;
+        }
         return dir.relativize(file);
     }
 

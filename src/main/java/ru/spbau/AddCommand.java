@@ -35,8 +35,8 @@ public class AddCommand {
      * files to add).
      *
      * @param fileNames list of files to add.
-     * @throws IOException                    if something has gone wrong during
-     *                                        the work with file system
+     * @throws IOException if something has gone wrong during
+     *                     the work with file system
      * @throws Vcs.VcsIncorrectUsageException Is thrown when vcs can't perform command because of incorrect
      *                                        usage
      */

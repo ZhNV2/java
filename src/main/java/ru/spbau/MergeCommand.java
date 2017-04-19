@@ -44,15 +44,15 @@ public class MergeCommand {
      * unique files or content equal files.
      *
      * @param branchToMerge branch to merge with
-     * @throws IOException                           if something has gone wrong during
-     *                                               the work with file system
-     * @throws Vcs.VcsBranchNotFoundException        when trying to access branch
-     *                                               which doesn't exist.
-     * @throws Vcs.VcsConflictException              when conflict during merge was detected
+     * @throws IOException if something has gone wrong during
+     *                     the work with file system
+     * @throws Vcs.VcsBranchNotFoundException when trying to access branch
+     *                                        which doesn't exist.
+     * @throws Vcs.VcsConflictException when conflict during merge was detected
      * @throws Vcs.VcsBranchActionForbiddenException when trying to make illegal
      *                                               actions with branch
-     * @throws Vcs.VcsIncorrectUsageException        when vcs can't perform command because of incorrect
-     *                                               usage
+     * @throws Vcs.VcsIncorrectUsageException when vcs can't perform command because of incorrect
+     *                                        usage
      */
     public void merge(String branchToMerge) throws IOException, Vcs.VcsIncorrectUsageException,
             Vcs.VcsBranchNotFoundException, Vcs.VcsBranchActionForbiddenException, Vcs.VcsConflictException {
@@ -78,7 +78,9 @@ public class MergeCommand {
     private void mergeCommit(String commitHash, @NotNull Collection<Path> checked, VcsCommit newCommit) throws IOException, Vcs.VcsConflictException {
         VcsCommit commit = vcsFileHandler.getCommit(commitHash);
         for (Map.Entry<Path, String> entry : commit.getChildrenAdd().entrySet()) {
-            if (checked.contains(entry.getKey())) continue;
+            if (checked.contains(entry.getKey())) {
+                continue;
+            }
             Path fileName = entry.getKey();
             checked.add(fileName);
             VcsBlob blob = vcsFileHandler.getBlob(entry.getValue());

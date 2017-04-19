@@ -2,8 +2,6 @@ package test.ru.spbau;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import org.mockito.ArgumentCaptor;
 import ru.spbau.RemoveCommand;
 import ru.spbau.Vcs;
@@ -13,10 +11,8 @@ import ru.spbau.zhidkov.ExternalFileHandler;
 import ru.spbau.zhidkov.VcsFileHandler;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -24,10 +20,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
-
-/**
- * Created by Нико on 08.04.2017.
- */
 
 public class RemoveCommandTest {
 
@@ -61,16 +53,14 @@ public class RemoveCommandTest {
         verify(externalFileHandler, atLeast(0)).deleteIfExists(argumentCaptorDeletedFiles.capture());
 
         verify(vcsFileHandler).removeFromList(eq(VcsFileHandler.ListWithFiles.ADD_LIST), any());
-        verify(vcsFileHandler, times(0)).removeFromList(eq(VcsFileHandler.ListWithFiles.RM_LIST), any());
+        verify(vcsFileHandler, times(0)).removeFromList(eq(VcsFileHandler.ListWithFiles.RM_LIST),
+                any());
 
         verify(vcsFileHandler).addToList(eq(VcsFileHandler.ListWithFiles.RM_LIST), any());
         verify(vcsFileHandler, times(0)).addToList(eq(VcsFileHandler.ListWithFiles.ADD_LIST), any());
 
         assertTrue(CollectionUtils.isEqualCollection(filesToRm, argumentCaptorDeletedFiles.getAllValues()));
     }
-
-
-
 
 
 }

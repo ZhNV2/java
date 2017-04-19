@@ -1,15 +1,11 @@
 package test.ru.spbau;
 
-import com.google.common.collect.ImmutableMap;
 import org.jetbrains.annotations.NotNull;
-import jdk.nashorn.internal.ir.annotations.Immutable;
 import org.apache.commons.collections4.CollectionUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.mockito.ArgumentCaptor;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import ru.spbau.CleanCommand;
 import ru.spbau.Vcs;
 import ru.spbau.zhidkov.BranchHandler;
@@ -27,9 +23,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
-/**
- * Created by Нико on 08.04.2017.
- */
 @RunWith(Parameterized.class)
 public class CleanCommandTest {
 
@@ -46,7 +39,8 @@ public class CleanCommandTest {
     private CommitHandler commitHandler = mock(CommitHandler.class);
 
 
-    public CleanCommandTest(List<Path> externalFiles, List<Path> revisionFiles, Map<Path, List<Path>> listOfFiles, List<Path> filesToDelete, List<Path> dirsToDelete) {
+    public CleanCommandTest(List<Path> externalFiles, List<Path> revisionFiles, Map<Path, List<Path>> listOfFiles,
+                            List<Path> filesToDelete, List<Path> dirsToDelete) {
         this.externalFiles = externalFiles;
         this.revisionFiles = revisionFiles;
         this.listOfFiles = listOfFiles;
@@ -85,7 +79,6 @@ public class CleanCommandTest {
         });
 
 
-
         CleanCommand cleanCommand = new CleanCommand(vcsFileHandler, branchHandler, externalFileHandler, commitHandler);
         cleanCommand.clean();
 
@@ -106,84 +99,85 @@ public class CleanCommandTest {
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][]{
                 {
-                    Arrays.asList(Paths.get("a.txt"), Paths.get("dir"), Paths.get("dir/b.txt")),
-                    Collections.singletonList(Paths.get("b")),
+                        Arrays.asList(Paths.get("a.txt"), Paths.get("dir"), Paths.get("dir/b.txt")),
+                        Collections.singletonList(Paths.get("b")),
 
-                    new HashMap<Path, List<Path>>(){
-                        {
-                            put(Paths.get("dir"), new ArrayList<Path>() {{
-                                add(Paths.get("dir/b.txt"));
-                                add(Paths.get("dir"));
-                            }});
-                        }
-                    },
+                        new HashMap<Path, List<Path>>() {
+                            {
+                                put(Paths.get("dir"), new ArrayList<Path>() {{
+                                    add(Paths.get("dir/b.txt"));
+                                    add(Paths.get("dir"));
+                                }});
+                            }
+                        },
 
-                    Arrays.asList(Paths.get("a.txt"), Paths.get("dir/b.txt")),
-                    Collections.singletonList(Paths.get("dir")),
+                        Arrays.asList(Paths.get("a.txt"), Paths.get("dir/b.txt")),
+                        Collections.singletonList(Paths.get("dir")),
                 },
                 {
-                    Arrays.asList(Paths.get("a.txt"), Paths.get("dir"), Paths.get("dir/b.txt"), Paths.get("dir/dir2"), Paths.get("dir/dir2/c.txt")),
-                    Collections.singletonList(Paths.get("dir/dir2/c.txt")),
+                        Arrays.asList(Paths.get("a.txt"), Paths.get("dir"), Paths.get("dir/b.txt"),
+                                Paths.get("dir/dir2"), Paths.get("dir/dir2/c.txt")),
+                        Collections.singletonList(Paths.get("dir/dir2/c.txt")),
 
-                    new HashMap<Path, List<Path>>(){
-                        {
-                            put(Paths.get("dir"), new ArrayList<Path>() {{
-                                add(Paths.get("dir/b.txt"));
-                                add(Paths.get("dir"));
-                                add(Paths.get("dir/dir2"));
-                                add(Paths.get("dir/dir2/c.txt"));
-                            }});
+                        new HashMap<Path, List<Path>>() {
+                            {
+                                put(Paths.get("dir"), new ArrayList<Path>() {{
+                                    add(Paths.get("dir/b.txt"));
+                                    add(Paths.get("dir"));
+                                    add(Paths.get("dir/dir2"));
+                                    add(Paths.get("dir/dir2/c.txt"));
+                                }});
 
-                            put(Paths.get("dir/dir2"), new ArrayList<Path>() {{
-                                add(Paths.get("dir/dir2"));
-                                add(Paths.get("dir/dir2/c.txt"));
-                            }});
-                        }
-                    },
+                                put(Paths.get("dir/dir2"), new ArrayList<Path>() {{
+                                    add(Paths.get("dir/dir2"));
+                                    add(Paths.get("dir/dir2/c.txt"));
+                                }});
+                            }
+                        },
 
-                    Arrays.asList(Paths.get("a.txt"), Paths.get("dir/b.txt")),
-                    Collections.emptyList()
+                        Arrays.asList(Paths.get("a.txt"), Paths.get("dir/b.txt")),
+                        Collections.emptyList()
                 },
                 {
-                    Arrays.asList(Paths.get("a.txt"), Paths.get("dir"), Paths.get("dir/b.txt"),
-                            Paths.get("dir/dir2"), Paths.get("dir/dir2/c.txt")),
-                    Arrays.asList(Paths.get("dir/b.txt"), Paths.get("a.txt")),
+                        Arrays.asList(Paths.get("a.txt"), Paths.get("dir"), Paths.get("dir/b.txt"),
+                                Paths.get("dir/dir2"), Paths.get("dir/dir2/c.txt")),
+                        Arrays.asList(Paths.get("dir/b.txt"), Paths.get("a.txt")),
 
-                    new HashMap<Path, List<Path>>(){
-                        {
-                            put(Paths.get("dir"), new ArrayList<Path>() {{
-                                add(Paths.get("dir/b.txt"));
-                                add(Paths.get("dir"));
-                                add(Paths.get("dir/dir2"));
-                                add(Paths.get("dir/dir2/c.txt"));
-                            }});
+                        new HashMap<Path, List<Path>>() {
+                            {
+                                put(Paths.get("dir"), new ArrayList<Path>() {{
+                                    add(Paths.get("dir/b.txt"));
+                                    add(Paths.get("dir"));
+                                    add(Paths.get("dir/dir2"));
+                                    add(Paths.get("dir/dir2/c.txt"));
+                                }});
 
-                            put(Paths.get("dir/dir2"), new ArrayList<Path>() {{
-                                add(Paths.get("dir/dir2"));
-                                add(Paths.get("dir/dir2/c.txt"));
-                            }});
-                        }
-                    },
+                                put(Paths.get("dir/dir2"), new ArrayList<Path>() {{
+                                    add(Paths.get("dir/dir2"));
+                                    add(Paths.get("dir/dir2/c.txt"));
+                                }});
+                            }
+                        },
 
-                    Collections.singletonList(Paths.get("dir/dir2/c.txt")),
-                    Collections.singletonList(Paths.get("dir/dir2"))
+                        Collections.singletonList(Paths.get("dir/dir2/c.txt")),
+                        Collections.singletonList(Paths.get("dir/dir2"))
                 },
 
                 {
-                    Arrays.asList(Paths.get("dir"), Paths.get("dir/b.txt")),
-                    Collections.emptyList(),
+                        Arrays.asList(Paths.get("dir"), Paths.get("dir/b.txt")),
+                        Collections.emptyList(),
 
-                    new HashMap<Path, List<Path>>(){
-                        {
-                            put(Paths.get("dir"), new ArrayList<Path>() {{
-                                add(Paths.get("dir/b.txt"));
-                                add(Paths.get("dir"));
-                            }});
-                        }
-                    },
+                        new HashMap<Path, List<Path>>() {
+                            {
+                                put(Paths.get("dir"), new ArrayList<Path>() {{
+                                    add(Paths.get("dir/b.txt"));
+                                    add(Paths.get("dir"));
+                                }});
+                            }
+                        },
 
-                    Collections.singletonList(Paths.get("dir/b.txt")),
-                    Collections.singletonList(Paths.get("dir"))
+                        Collections.singletonList(Paths.get("dir/b.txt")),
+                        Collections.singletonList(Paths.get("dir"))
                 },
 
         });

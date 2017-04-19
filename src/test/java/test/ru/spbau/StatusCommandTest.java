@@ -25,9 +25,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-/**
- * Created by Нико on 08.04.2017.
- */
+
 @RunWith(Parameterized.class)
 public class StatusCommandTest extends ParametriziedThreeCommitsTest {
 
@@ -35,7 +33,10 @@ public class StatusCommandTest extends ParametriziedThreeCommitsTest {
     private ExternalFileHandler externalFileHandler = mock(ExternalFileHandler.class);
     private BranchHandler branchHandler = mock(BranchHandler.class);
 
-    public StatusCommandTest(Map<Path, String> fcommit1Add, List<Path> fcommit1Rm, Map<Path, String> fcommit2Add, List<Path> fcommit2Rm, Map<Path, String> fcommit3Add, List<Path> fcommit3Rm, List<Path> addList, List<Path> rmList, List<Path> externalFiles, List<Path> modifiedFilesAns, List<Path> foreignFilesAns) {
+    public StatusCommandTest(Map<Path, String> fcommit1Add, List<Path> fcommit1Rm, Map<Path, String> fcommit2Add,
+                             List<Path> fcommit2Rm, Map<Path, String> fcommit3Add, List<Path> fcommit3Rm,
+                             List<Path> addList, List<Path> rmList, List<Path> externalFiles,
+                             List<Path> modifiedFilesAns, List<Path> foreignFilesAns) {
         super(fcommit1Add, fcommit1Rm, fcommit2Add, fcommit2Rm, fcommit3Add, fcommit3Rm);
         this.addList = addList;
         this.rmList = rmList;
@@ -80,56 +81,57 @@ public class StatusCommandTest extends ParametriziedThreeCommitsTest {
     @NotNull
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-            {
-                ImmutableMap.of(Paths.get("a"), "hash.a", Paths.get("b"), "hash.b"),
-                Collections.emptyList(),
+        return Arrays.asList(new Object[][]{
+                {
+                        ImmutableMap.of(Paths.get("a"), "hash.a", Paths.get("b"), "hash.b"),
+                        Collections.emptyList(),
 
-                ImmutableMap.of(Paths.get("a"), "hash.a", Paths.get("c"), "hash.c"),
-                Collections.emptyList(),
+                        ImmutableMap.of(Paths.get("a"), "hash.a", Paths.get("c"), "hash.c"),
+                        Collections.emptyList(),
 
-                ImmutableMap.of(Paths.get("d"), "hash.d", Paths.get("c"), "hash.c"),
-                Collections.emptyList(),
+                        ImmutableMap.of(Paths.get("d"), "hash.d", Paths.get("c"), "hash.c"),
+                        Collections.emptyList(),
 
-                Collections.emptyList(),
-                Collections.emptyList(),
-                Arrays.asList(Paths.get("a"), Paths.get("b"), Paths.get("c"), Paths.get("d")),
-                Arrays.asList(Paths.get("a"), Paths.get("b"), Paths.get("c"), Paths.get("d")),
-                Collections.emptyList(),
+                        Collections.emptyList(),
+                        Collections.emptyList(),
+                        Arrays.asList(Paths.get("a"), Paths.get("b"), Paths.get("c"), Paths.get("d")),
+                        Arrays.asList(Paths.get("a"), Paths.get("b"), Paths.get("c"), Paths.get("d")),
+                        Collections.emptyList(),
 
-            },
-            {
-                Collections.emptyMap(),
-                Arrays.asList(Paths.get("c"), Paths.get("a")),
+                },
+                {
+                        Collections.emptyMap(),
+                        Arrays.asList(Paths.get("c"), Paths.get("a")),
 
-                ImmutableMap.of(Paths.get("a"), "hash.a", Paths.get("c"), "hash.c"),
-                Collections.singletonList(Paths.get("d")),
+                        ImmutableMap.of(Paths.get("a"), "hash.a", Paths.get("c"), "hash.c"),
+                        Collections.singletonList(Paths.get("d")),
 
-                ImmutableMap.of(Paths.get("d"), "hash.d", Paths.get("c"), "hash.c"),
-                Collections.emptyList(),
+                        ImmutableMap.of(Paths.get("d"), "hash.d", Paths.get("c"), "hash.c"),
+                        Collections.emptyList(),
 
-                Arrays.asList(Paths.get("a"), Paths.get("b")),
-                Collections.emptyList(),
-                Arrays.asList(Paths.get("a"), Paths.get("b"), Paths.get("c"), Paths.get("d")),
-                Collections.emptyList(),
-                Arrays.asList(Paths.get("c"), Paths.get("d")),
-            },
-            {
-                Collections.emptyMap(),
-                Collections.emptyList(),
+                        Arrays.asList(Paths.get("a"), Paths.get("b")),
+                        Collections.emptyList(),
+                        Arrays.asList(Paths.get("a"), Paths.get("b"), Paths.get("c"), Paths.get("d")),
+                        Collections.emptyList(),
+                        Arrays.asList(Paths.get("c"), Paths.get("d")),
+                },
+                {
+                        Collections.emptyMap(),
+                        Collections.emptyList(),
 
-                ImmutableMap.of(Paths.get("a"), "hash.a", Paths.get("b"), "hash.b"),
-                Collections.singletonList(Paths.get("c")),
+                        ImmutableMap.of(Paths.get("a"), "hash.a", Paths.get("b"), "hash.b"),
+                        Collections.singletonList(Paths.get("c")),
 
-                ImmutableMap.of(Paths.get("a"), "hash.a", Paths.get("b"), "hash.b", Paths.get("c"), "hash.c"),
-                Collections.emptyList(),
+                        ImmutableMap.of(Paths.get("a"), "hash.a", Paths.get("b"),
+                                "hash.b", Paths.get("c"), "hash.c"),
+                        Collections.emptyList(),
 
-                Collections.emptyList(),
-                Collections.singletonList(Paths.get("b")),
-                Arrays.asList(Paths.get("a"), Paths.get("b"), Paths.get("c"), Paths.get("d")),
-                Collections.singletonList(Paths.get("a")),
-                Arrays.asList(Paths.get("c"), Paths.get("d")),
-            }
+                        Collections.emptyList(),
+                        Collections.singletonList(Paths.get("b")),
+                        Arrays.asList(Paths.get("a"), Paths.get("b"), Paths.get("c"), Paths.get("d")),
+                        Collections.singletonList(Paths.get("a")),
+                        Arrays.asList(Paths.get("c"), Paths.get("d")),
+                }
         });
     }
 }

@@ -42,8 +42,8 @@ public class RemoveCommand {
      * Removes file from repo and physically from disk
      *
      * @param files to remove
-     * @throws IOException                    if something has gone wrong during
-     *                                        the work with file system
+     * @throws IOException if something has gone wrong during
+     *                     the work with file system
      * @throws Vcs.VcsIncorrectUsageException when vcs can't perform command because of incorrect
      *                                        usage
      */

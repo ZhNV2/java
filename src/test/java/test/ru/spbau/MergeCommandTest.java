@@ -23,7 +23,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -38,7 +37,10 @@ public class MergeCommandTest extends ParametriziedThreeCommitsTest {
 
     private List<Path> revFiles;
     private List<Path> newFiles;
-    public MergeCommandTest(Map<Path, String> fcommit1Add, List<Path> fcommit1Rm, Map<Path, String> fcommit2Add, List<Path> fcommit2Rm, Map<Path, String> fcommit3Add, List<Path> fcommit3Rm, List<Path> revFiles, List<Path> newFiles) {
+
+    public MergeCommandTest(Map<Path, String> fcommit1Add, List<Path> fcommit1Rm, Map<Path, String> fcommit2Add,
+                            List<Path> fcommit2Rm, Map<Path, String> fcommit3Add, List<Path> fcommit3Rm,
+                            List<Path> revFiles, List<Path> newFiles) {
         super(fcommit1Add, fcommit1Rm, fcommit2Add, fcommit2Rm, fcommit3Add, fcommit3Rm);
         this.revFiles = revFiles;
         this.newFiles = newFiles;
@@ -46,7 +48,8 @@ public class MergeCommandTest extends ParametriziedThreeCommitsTest {
 
 
     @Test
-    public void test() throws IOException, Vcs.VcsBranchActionForbiddenException, Vcs.VcsBranchNotFoundException, Vcs.VcsIncorrectUsageException, Vcs.VcsConflictException {
+    public void test() throws IOException, Vcs.VcsBranchActionForbiddenException, Vcs.VcsBranchNotFoundException,
+            Vcs.VcsIncorrectUsageException, Vcs.VcsConflictException {
         initCommits();
         VcsCommit newCommit = mock(VcsCommit.class);
         when(vcsFileHandler.buildCommit(any(), any(), any(), any(), any(), any())).thenReturn(newCommit);
@@ -77,34 +80,34 @@ public class MergeCommandTest extends ParametriziedThreeCommitsTest {
     @NotNull
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-            {
-                ImmutableMap.of(Paths.get("a"), "hash.a", Paths.get("b"), "hash.b"),
-                Collections.emptyList(),
+        return Arrays.asList(new Object[][]{
+                {
+                        ImmutableMap.of(Paths.get("a"), "hash.a", Paths.get("b"), "hash.b"),
+                        Collections.emptyList(),
 
-                ImmutableMap.of(Paths.get("a"), "hash.a", Paths.get("c"), "hash.c"),
-                Collections.emptyList(),
+                        ImmutableMap.of(Paths.get("a"), "hash.a", Paths.get("c"), "hash.c"),
+                        Collections.emptyList(),
 
-                ImmutableMap.of(Paths.get("d"), "hash.d", Paths.get("c"), "hash.c"),
-                Collections.emptyList(),
+                        ImmutableMap.of(Paths.get("d"), "hash.d", Paths.get("c"), "hash.c"),
+                        Collections.emptyList(),
 
-                Collections.emptyList(),
-                Arrays.asList(Paths.get("a"), Paths.get("b"), Paths.get("c"), Paths.get("d")),
-            },
+                        Collections.emptyList(),
+                        Arrays.asList(Paths.get("a"), Paths.get("b"), Paths.get("c"), Paths.get("d")),
+                },
 
-            {
-                ImmutableMap.of(Paths.get("a"), "hash.a", Paths.get("b"), "hash.b"),
-                Collections.emptyList(),
+                {
+                        ImmutableMap.of(Paths.get("a"), "hash.a", Paths.get("b"), "hash.b"),
+                        Collections.emptyList(),
 
-                ImmutableMap.of(Paths.get("a"), "hash.a", Paths.get("c"), "hash.c"),
-                Collections.emptyList(),
+                        ImmutableMap.of(Paths.get("a"), "hash.a", Paths.get("c"), "hash.c"),
+                        Collections.emptyList(),
 
-                ImmutableMap.of(Paths.get("d"), "hash.d", Paths.get("c"), "hash.c"),
-                Collections.emptyList(),
+                        ImmutableMap.of(Paths.get("d"), "hash.d", Paths.get("c"), "hash.c"),
+                        Collections.emptyList(),
 
-                Arrays.asList(Paths.get("a"), Paths.get("c")),
-                Arrays.asList(Paths.get("b"), Paths.get("d")),
-            },
+                        Arrays.asList(Paths.get("a"), Paths.get("c")),
+                        Arrays.asList(Paths.get("b"), Paths.get("d")),
+                },
         });
     }
 

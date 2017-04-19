@@ -8,7 +8,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import ru.spbau.zhidkov.CommitHandler;
 import ru.spbau.zhidkov.VcsFileHandler;
-import ru.spbau.zhidkov.vcs.VcsCommit;
 import test.ru.spbau.ParametriziedThreeCommitsTest;
 
 import java.io.IOException;
@@ -21,14 +20,14 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-/**
- * Created by Нико on 07.04.2017.
- */
 @RunWith(Parameterized.class)
 public class CommitHandlerTest extends ParametriziedThreeCommitsTest {
 
     private List<Path> ans;
-    public CommitHandlerTest(Map<Path, String> fcommit1Add, List<Path> fcommit1Rm, Map<Path, String> fcommit2Add, List<Path> fcommit2Rm, Map<Path, String> fcommit3Add, List<Path> fcommit3Rm, List<Path> ans) {
+
+    public CommitHandlerTest(Map<Path, String> fcommit1Add, List<Path> fcommit1Rm, Map<Path, String> fcommit2Add,
+                             List<Path> fcommit2Rm, Map<Path, String> fcommit3Add,
+                             List<Path> fcommit3Rm, List<Path> ans) {
         super(fcommit1Add, fcommit1Rm, fcommit2Add, fcommit2Rm, fcommit3Add, fcommit3Rm);
         this.ans = ans;
     }
@@ -48,7 +47,7 @@ public class CommitHandlerTest extends ParametriziedThreeCommitsTest {
     @NotNull
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
+        return Arrays.asList(new Object[][]{
                 {
                         ImmutableMap.of(Paths.get("a"), "hash.a", Paths.get("b"), "hash.b"),
                         Collections.emptyList(),
@@ -80,7 +79,8 @@ public class CommitHandlerTest extends ParametriziedThreeCommitsTest {
                         ImmutableMap.of(Paths.get("a"), "hash.a", Paths.get("b"), "hash.b"),
                         Collections.singletonList(Paths.get("c")),
 
-                        ImmutableMap.of(Paths.get("a"), "hash.a", Paths.get("b"), "hash.b", Paths.get("c"), "hash.c"),
+                        ImmutableMap.of(Paths.get("a"), "hash.a", Paths.get("b"), "hash.b",
+                                Paths.get("c"), "hash.c"),
                         Collections.emptyList(),
 
                         Collections.singletonList(Paths.get("a"))

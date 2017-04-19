@@ -23,9 +23,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static ru.spbau.zhidkov.VcsFileHandler.ListWithFiles.RM_LIST;
 
-/**
- * Created by Нико on 08.04.2017.
- */
+
 public class MergeExceptionTest {
 
     private BranchHandler branchHandler = mock(BranchHandler.class);
@@ -33,21 +31,24 @@ public class MergeExceptionTest {
     private ExternalFileHandler externalFileHandler = mock(ExternalFileHandler.class);
 
     @Test(expected = Vcs.VcsBranchActionForbiddenException.class)
-    public void sameBranchMergeTest() throws IOException, Vcs.VcsBranchActionForbiddenException, Vcs.VcsBranchNotFoundException, Vcs.VcsIncorrectUsageException, Vcs.VcsConflictException {
+    public void sameBranchMergeTest() throws IOException, Vcs.VcsBranchActionForbiddenException,
+            Vcs.VcsBranchNotFoundException, Vcs.VcsIncorrectUsageException, Vcs.VcsConflictException {
         when(branchHandler.getHeadName()).thenReturn("master");
         MergeCommand mergeCommand = new MergeCommand(branchHandler, vcsFileHandler, externalFileHandler);
         mergeCommand.merge("master");
     }
 
     @Test(expected = Vcs.VcsIncorrectUsageException.class)
-    public void uncommittedChanges() throws IOException, Vcs.VcsIncorrectUsageException, Vcs.VcsConflictException, Vcs.VcsBranchNotFoundException, Vcs.VcsBranchActionForbiddenException {
+    public void uncommittedChanges() throws IOException, Vcs.VcsIncorrectUsageException,
+            Vcs.VcsConflictException, Vcs.VcsBranchNotFoundException, Vcs.VcsBranchActionForbiddenException {
         doThrow(new Vcs.VcsIncorrectUsageException("")).when(vcsFileHandler).assertListEmpty(RM_LIST);
         MergeCommand mergeCommand = new MergeCommand(branchHandler, vcsFileHandler, externalFileHandler);
         mergeCommand.merge("branch");
     }
 
     @Test(expected = Vcs.VcsConflictException.class)
-    public void conflictTest() throws IOException, Vcs.VcsBranchActionForbiddenException, Vcs.VcsBranchNotFoundException, Vcs.VcsIncorrectUsageException, Vcs.VcsConflictException {
+    public void conflictTest() throws IOException, Vcs.VcsBranchActionForbiddenException,
+            Vcs.VcsBranchNotFoundException, Vcs.VcsIncorrectUsageException, Vcs.VcsConflictException {
         when(branchHandler.getHeadName()).thenReturn("bb");
         VcsCommit newCommit = mock(VcsCommit.class);
         when(vcsFileHandler.buildCommit(any(), any(), any(), any(), any(), any())).thenReturn(newCommit);

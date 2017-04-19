@@ -47,8 +47,8 @@ public class CheckoutCommand {
      * Switches current branch to another one
      *
      * @param branchName branch to switch to
-     * @throws IOException                    if something has gone wrong during
-     *                                        the work with file system
+     * @throws IOException if something has gone wrong during
+     *                     the work with file system
      * @throws Vcs.VcsBranchNotFoundException when trying to access branch
      *                                        which doesn't exist.
      * @throws Vcs.VcsIncorrectUsageException when vcs can't perform command because of incorrect
@@ -69,8 +69,8 @@ public class CheckoutCommand {
      * Switches current revision to provided one
      *
      * @param commitHash hash of revision to switch to
-     * @throws IOException                      if something has gone wrong during
-     *                                          the work with file system
+     * @throws IOException if something has gone wrong during
+     *                     the work with file system
      * @throws Vcs.VcsRevisionNotFoundException when trying to access revision
      *                                          which doesn't exist
      * @throws Vcs.VcsIncorrectUsageException   when vcs can't perform command because of incorrect
@@ -88,7 +88,9 @@ public class CheckoutCommand {
 
     private void checkout(String commitHash) throws IOException, Vcs.VcsIncorrectUsageException {
         String lastCommitHash = branchHandler.getHeadLastCommitHash();
-        if (lastCommitHash.equals(commitHash)) return;
+        if (lastCommitHash.equals(commitHash)) {
+            return;
+        }
         vcsFileHandler.assertListEmpty(VcsFileHandler.ListWithFiles.ADD_LIST);
         vcsFileHandler.assertListEmpty(VcsFileHandler.ListWithFiles.RM_LIST);
         deleteCommittedFiles(lastCommitHash, new HashSet<>());

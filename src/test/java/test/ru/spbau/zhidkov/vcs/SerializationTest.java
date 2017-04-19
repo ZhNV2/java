@@ -17,10 +17,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
-/**
- * Created by Нико on 09.04.2017.
- */
-
 public class SerializationTest {
 
     @Test
@@ -29,21 +25,24 @@ public class SerializationTest {
         List<Path> rm = Arrays.asList(Paths.get("b"), Paths.get("c"));
         VcsCommit vcsCommit = new VcsCommit(mock(FileSystem.class), mock(ObjectSerializer.class),
                 "hello", new Date(), "1", "2", add, rm);
-        VcsCommit newCommit = (VcsCommit) new ObjectDeserializer().deserialize(new ObjectSerializer().serialize(vcsCommit), VcsCommit.class);
+        VcsCommit newCommit = (VcsCommit) new ObjectDeserializer().deserialize(new ObjectSerializer().serialize(vcsCommit),
+                VcsCommit.class);
         assertTrue(CollectionUtils.isEqualCollection(newCommit.getChildrenRm(), rm));
         assertTrue(CollectionUtils.isEqualCollection(newCommit.getChildrenAdd().entrySet(), add.entrySet()));
     }
 
     @Test
     public void deserializeSerializeCommitTest() throws IOException {
-        String json = "{\"message\":\"hello\",\"date\":\"Apr 9, 2017 4:05:42 AM\",\"author\":\"1\",\"prevCommitHash\":\"2\",\"childrenAdd\":{\"a\":\"a\",\"B\":\"b\"},\"childrenRm\":\"b,c\"}";
+        String json = "{\"message\":\"hello\",\"date\":\"Apr 9, 2017 4:05:42 AM\",\"author\":\"1\"" +
+                ",\"prevCommitHash\":\"2\",\"childrenAdd\":{\"a\":\"a\",\"B\":\"b\"},\"childrenRm\":\"b,c\"}";
         String newJson = new ObjectSerializer().serialize(new ObjectDeserializer().deserialize(json, VcsCommit.class));
         assertEquals(json, newJson);
     }
 
     @Test
     public void emptyRmDeserializeTest() throws IOException {
-        String json = "{\"message\":\"hello\",\"date\":\"Apr 9, 2017 4:05:42 AM\",\"author\":\"1\",\"prevCommitHash\":\"2\",\"childrenAdd\":{\"a\":\"a\",\"B\":\"b\"},\"childrenRm\":\"\"}";
+        String json = "{\"message\":\"hello\",\"date\":\"Apr 9, 2017 4:05:42 AM\",\"author\":\"1\",\"" +
+                "prevCommitHash\":\"2\",\"childrenAdd\":{\"a\":\"a\",\"B\":\"b\"},\"childrenRm\":\"\"}";
         VcsCommit vcsCommit = (VcsCommit) new ObjectDeserializer().deserialize(json, VcsCommit.class);
         assertTrue(CollectionUtils.isEqualCollection(vcsCommit.getChildrenRm(), CollectionUtils.EMPTY_COLLECTION));
     }

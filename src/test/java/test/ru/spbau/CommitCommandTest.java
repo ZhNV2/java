@@ -3,22 +3,17 @@ package test.ru.spbau;
 import com.google.common.collect.ImmutableMap;
 import org.jetbrains.annotations.NotNull;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
 import ru.spbau.CommitCommand;
-import ru.spbau.Vcs;
 import ru.spbau.zhidkov.BranchHandler;
 import ru.spbau.zhidkov.ExternalFileHandler;
 import ru.spbau.zhidkov.VcsFileHandler;
 import ru.spbau.zhidkov.vcs.VcsBlob;
 import ru.spbau.zhidkov.vcs.VcsCommit;
-import ru.spbau.zhidkov.vcs.VcsObjectHandler;
 import ru.spbau.zhidkov.vcs.file.FileSystem;
-import ru.spbau.zhidkov.vcs.file.ObjectDeserializer;
 import ru.spbau.zhidkov.vcs.file.ObjectSerializer;
 
 import java.io.IOException;
@@ -73,11 +68,12 @@ public class CommitCommandTest {
             return blobs.get(arg);
         });
 
-        when(vcsFileHandler.buildCommit(any(), any(), any(), any(), any(), any())).thenAnswer(invocation ->{
+        when(vcsFileHandler.buildCommit(any(), any(), any(), any(), any(), any())).thenAnswer(invocation -> {
             Object[] args = invocation.getArguments();
             ObjectSerializer objectSerializer = mock(ObjectSerializer.class);
             when(objectSerializer.serialize(any())).thenReturn("abc");
-            return new VcsCommit(mock(FileSystem.class), objectSerializer, (String) args[0], (Date) args[1], (String) args[2], (String) args[3], (Map<Path, String>) args[4], (List<Path>) args[5]);
+            return new VcsCommit(mock(FileSystem.class), objectSerializer, (String) args[0], (Date) args[1],
+                    (String) args[2], (String) args[3], (Map<Path, String>) args[4], (List<Path>) args[5]);
         });
 
         CommitCommand commitCommand = new CommitCommand(vcsFileHandler, branchHandler);
@@ -104,14 +100,14 @@ public class CommitCommandTest {
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][]{
                 {
-                    Arrays.asList(Paths.get("a"), Paths.get("b"), Paths.get("c")),
-                    Arrays.asList(Paths.get("d"), Paths.get("e"), Paths.get("f")),
-                    ImmutableMap.of(Paths.get("a"), "a", Paths.get("b"), "b", Paths.get("c"), "c"),
+                        Arrays.asList(Paths.get("a"), Paths.get("b"), Paths.get("c")),
+                        Arrays.asList(Paths.get("d"), Paths.get("e"), Paths.get("f")),
+                        ImmutableMap.of(Paths.get("a"), "a", Paths.get("b"), "b", Paths.get("c"), "c"),
                 },
                 {
-                    Arrays.asList(Paths.get("a/b/c"), Paths.get("qwerty")),
-                    Arrays.asList(Paths.get("d/a/b"), Paths.get("r/i/p"), Paths.get("l/o/l")),
-                    ImmutableMap.of(Paths.get("a/b/c"), "abc", Paths.get("qwerty"), "qwer"),
+                        Arrays.asList(Paths.get("a/b/c"), Paths.get("qwerty")),
+                        Arrays.asList(Paths.get("d/a/b"), Paths.get("r/i/p"), Paths.get("l/o/l")),
+                        ImmutableMap.of(Paths.get("a/b/c"), "abc", Paths.get("qwerty"), "qwer"),
                 },
         });
     }

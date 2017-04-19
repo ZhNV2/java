@@ -18,14 +18,16 @@ public class BranchCommandExceptionTest {
     private VcsFileHandler vcsFileHandler = mock(VcsFileHandler.class);
 
     @Test(expected = Vcs.VcsBranchActionForbiddenException.class)
-    public void branchDoesNotExistTest() throws IOException, Vcs.VcsIncorrectUsageException, Vcs.VcsBranchActionForbiddenException {
+    public void branchDoesNotExistTest() throws IOException, Vcs.VcsIncorrectUsageException,
+            Vcs.VcsBranchActionForbiddenException {
         when(branchHandler.exists(anyString())).thenReturn(true);
         BranchCommand branchCommand = new BranchCommand(branchHandler, vcsFileHandler);
         branchCommand.createBranch("branch");
     }
 
     @Test(expected = Vcs.VcsIncorrectUsageException.class)
-    public void uncommittedChangesTest() throws Vcs.VcsConflictException, Vcs.VcsBranchActionForbiddenException, Vcs.VcsBranchNotFoundException, Vcs.VcsIncorrectUsageException, IOException {
+    public void uncommittedChangesTest() throws Vcs.VcsConflictException, Vcs.VcsBranchActionForbiddenException,
+            Vcs.VcsBranchNotFoundException, Vcs.VcsIncorrectUsageException, IOException {
         when(branchHandler.exists(anyString())).thenReturn(false);
         doThrow(new Vcs.VcsIncorrectUsageException("")).when(vcsFileHandler).assertListEmpty(any());
         BranchCommand branchCommand = new BranchCommand(branchHandler, vcsFileHandler);
@@ -33,7 +35,8 @@ public class BranchCommandExceptionTest {
     }
 
     @Test
-    public void basicCorrectnessCreateBranchTest() throws IOException, Vcs.VcsIncorrectUsageException, Vcs.VcsBranchActionForbiddenException {
+    public void basicCorrectnessCreateBranchTest() throws IOException, Vcs.VcsIncorrectUsageException,
+            Vcs.VcsBranchActionForbiddenException {
         when(branchHandler.exists(anyString())).thenReturn(false);
         when(branchHandler.getHeadLastCommitHash()).thenReturn("hash");
         BranchCommand branchCommand = new BranchCommand(branchHandler, vcsFileHandler);
@@ -42,7 +45,8 @@ public class BranchCommandExceptionTest {
     }
 
     @Test(expected = Vcs.VcsBranchActionForbiddenException.class)
-    public void sameBranchDeleteTest() throws IOException, Vcs.VcsBranchNotFoundException, Vcs.VcsBranchActionForbiddenException {
+    public void sameBranchDeleteTest() throws IOException, Vcs.VcsBranchNotFoundException,
+            Vcs.VcsBranchActionForbiddenException {
         when(branchHandler.getHeadName()).thenReturn("master");
         BranchCommand branchCommand = new BranchCommand(branchHandler, vcsFileHandler);
         branchCommand.deleteBranch("master");

@@ -40,8 +40,8 @@ public class ResetCommand {
      * storing in repository.
      *
      * @param fileName file to reset
-     * @throws IOException                    if something has gone wrong during
-     *                                        the work with file system
+     * @throws IOException if something has gone wrong during
+     *                     the work with file system
      * @throws Vcs.VcsIncorrectUsageException if provided file
      *                                        is not in repository yet
      */

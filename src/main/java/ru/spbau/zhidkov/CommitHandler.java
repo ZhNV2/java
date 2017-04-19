@@ -43,8 +43,8 @@ public class CommitHandler {
      * @param commitHash revision to check
      * @throws Vcs.VcsRevisionNotFoundException if revision
      *                                          does not exist
-     * @throws IOException                      if something has gone wrong during
-     *                                          the work with file system
+     * @throws IOException if something has gone wrong during
+     *                     the work with file system
      */
     public void assertRevisionExists(String commitHash) throws Vcs.VcsRevisionNotFoundException, IOException {
         if (!vcsFileHandler.commitExists(commitHash)) {
@@ -75,7 +75,9 @@ public class CommitHandler {
                                                     @NotNull List<Path> repFiles) throws IOException {
         VcsCommit commitHandler = vcsFileHandler.getCommit(commitHash);
         for (Map.Entry<Path, String> entry : commitHandler.getChildrenAdd().entrySet()) {
-            if (checked.contains(entry.getKey())) continue;
+            if (checked.contains(entry.getKey())) {
+                continue;
+            }
             repFiles.add(entry.getKey());
             checked.add(entry.getKey());
         }

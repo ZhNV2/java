@@ -105,8 +105,8 @@ public class Vcs {
      * files to add).
      *
      * @param fileNames list of files to add.
-     * @throws IOException                    if something has gone wrong during
-     *                                        the work with file system
+     * @throws IOException if something has gone wrong during
+     *                     the work with file system
      * @throws Vcs.VcsIncorrectUsageException when vcs can't perform command because of incorrect
      *                                        usage
      */
@@ -119,12 +119,12 @@ public class Vcs {
      * Defines new branch.
      *
      * @param branchName new branch
-     * @throws IOException                           if something has gone wrong during
-     *                                               the work with file system
+     * @throws IOException if something has gone wrong during
+     *                     the work with file system
      * @throws Vcs.VcsBranchActionForbiddenException when trying to make illegal
      *                                               actions with branch
-     * @throws VcsIncorrectUsageException            when vcs can't perform command because of incorrect
-     *                                               usage
+     * @throws VcsIncorrectUsageException when vcs can't perform command because of incorrect
+     *                                    usage
      */
     public void createBranch(String branchName) throws IOException, Vcs.VcsBranchActionForbiddenException,
             VcsIncorrectUsageException {
@@ -136,14 +136,14 @@ public class Vcs {
      * Deletes specified branch.
      *
      * @param branchName to delete
-     * @throws IOException                           if something has gone wrong during
-     *                                               the work with file system
-     * @throws Vcs.VcsBranchNotFoundException        when trying to access branch
-     *                                               which doesn't exist.
+     * @throws IOException if something has gone wrong during
+     *                     the work with file system
+     * @throws Vcs.VcsBranchNotFoundException when trying to access branch
+     *                                        which doesn't exist.
      * @throws Vcs.VcsBranchActionForbiddenException when trying to make illegal
      *                                               actions with branch
-     * @throws VcsIncorrectUsageException            when vcs can't perform command because of incorrect
-     *                                               usage
+     * @throws VcsIncorrectUsageException when vcs can't perform command because of incorrect
+     *                                    usage
      */
     public void deleteBranch(String branchName) throws IOException, Vcs.VcsBranchNotFoundException,
             Vcs.VcsBranchActionForbiddenException, VcsIncorrectUsageException {
@@ -155,12 +155,12 @@ public class Vcs {
      * Switches current branch to another.
      *
      * @param branchName branch to switch to
-     * @throws IOException                    if something has gone wrong during
-     *                                        the work with file system
+     * @throws IOException if something has gone wrong during
+     *                     the work with file system
      * @throws Vcs.VcsBranchNotFoundException when trying to access branch
      *                                        which doesn't exist.
-     * @throws VcsIncorrectUsageException     when vcs can't perform command because of incorrect
-     *                                        usage
+     * @throws VcsIncorrectUsageException when vcs can't perform command because of incorrect
+     *                                    usage
      */
     public void checkoutBranch(String branchName) throws IOException, Vcs.VcsBranchNotFoundException,
             VcsIncorrectUsageException {
@@ -172,8 +172,8 @@ public class Vcs {
      * Switches current revision to provided.
      *
      * @param commitHash hash of revision to switch to
-     * @throws IOException                      if something has gone wrong during
-     *                                          the work with file system
+     * @throws IOException if something has gone wrong during
+     *                     the work with file system
      * @throws Vcs.VcsRevisionNotFoundException when trying to access revision
      *                                          which doesn't exist
      * @throws VcsIncorrectUsageException       when vcs can't perform command because of incorrect
@@ -192,8 +192,8 @@ public class Vcs {
      * CommitCommand all files that were added after last commit.
      *
      * @param message commit message
-     * @throws IOException                if something has gone wrong during
-     *                                    the work with file system
+     * @throws IOException if something has gone wrong during
+     *                     the work with file system
      * @throws VcsIncorrectUsageException when vcs can't perform command because of incorrect
      *                                    usage
      */
@@ -206,8 +206,8 @@ public class Vcs {
      * Initializes repo in the current folder.
      *
      * @param authorName author name
-     * @throws IOException                if something has gone wrong during
-     *                                    the work with file system
+     * @throws IOException if something has gone wrong during
+     *                     the work with file system
      * @throws VcsIncorrectUsageException when vcs can't perform command because of incorrect
      *                                    usage
      */
@@ -223,8 +223,8 @@ public class Vcs {
      * the current branch.
      *
      * @return information about all commits in current branch
-     * @throws IOException                if something has gone wrong during
-     *                                    the work with file system
+     * @throws IOException if something has gone wrong during
+     *                     the work with file system
      * @throws VcsIncorrectUsageException when vcs can't perform command because of incorrect
      *                                    usage
      */
@@ -238,15 +238,15 @@ public class Vcs {
      * unique files or content equal files.
      *
      * @param branchToMerge branch to merge with
-     * @throws IOException                           if something has gone wrong during
-     *                                               the work with file system
-     * @throws Vcs.VcsBranchNotFoundException        when trying to access branch
-     *                                               which doesn't exist.
-     * @throws Vcs.VcsConflictException              when conflict during merge was detected
+     * @throws IOException if something has gone wrong during
+     *                     the work with file system
+     * @throws Vcs.VcsBranchNotFoundException when trying to access branch
+     *                                        which doesn't exist.
+     * @throws Vcs.VcsConflictException when conflict during merge was detected
      * @throws Vcs.VcsBranchActionForbiddenException when trying to make illegal
      *                                               actions with branch
-     * @throws VcsIncorrectUsageException            when vcs can't perform command because of incorrect
-     *                                               usage
+     * @throws VcsIncorrectUsageException when vcs can't perform command because of incorrect
+     *                                    usage
      */
     public void merge(String branchToMerge) throws IOException, Vcs.VcsBranchNotFoundException, Vcs.VcsConflictException,
             Vcs.VcsBranchActionForbiddenException, VcsIncorrectUsageException {
@@ -259,8 +259,8 @@ public class Vcs {
      * Reset file to its last state in repo
      *
      * @param fileName to reset
-     * @throws IOException                if something has gone wrong during
-     *                                    the work with file system
+     * @throws IOException if something has gone wrong during
+     *                     the work with file system
      * @throws VcsIncorrectUsageException when vcs can't perform command because of incorrect
      *                                    usage
      */
@@ -272,8 +272,8 @@ public class Vcs {
     /**
      * Deletes all files not from repo
      *
-     * @throws IOException                if something has gone wrong during
-     *                                    the work with file system
+     * @throws IOException if something has gone wrong during
+     *                     the work with file system
      * @throws VcsIncorrectUsageException when vcs can't perform command because of incorrect
      *                                    usage
      */
@@ -286,8 +286,8 @@ public class Vcs {
      * Deletes files from repo and from disk
      *
      * @param files files to delete
-     * @throws IOException                if something has gone wrong during
-     *                                    the work with file system
+     * @throws IOException if something has gone wrong during
+     *                     the work with file system
      * @throws VcsIncorrectUsageException when vcs can't perform command because of incorrect
      *                                    usage
      */
@@ -300,8 +300,8 @@ public class Vcs {
      * Status of current repo files state
      *
      * @return status
-     * @throws IOException                if something has gone wrong during
-     *                                    the work with file system
+     * @throws IOException if something has gone wrong during
+     *                     the work with file system
      * @throws VcsIncorrectUsageException when vcs can't perform command because of incorrect
      *                                    usage
      */

@@ -26,13 +26,10 @@ import static org.mockito.Mockito.*;
 
 import static org.junit.Assert.*;
 
-/**
- * Created by Нико on 07.04.2017.
- */
 @RunWith(Parameterized.class)
 public class CheckoutCommandTest extends ParametriziedThreeCommitsTest {
 
-    private BranchHandler branchHandler =  mock(BranchHandler.class);
+    private BranchHandler branchHandler = mock(BranchHandler.class);
     private CommitHandler commitHandler = mock(CommitHandler.class);
     private VcsFileHandler vcsFileHandler = mock(VcsFileHandler.class);
     private ExternalFileHandler externalFileHandler = mock(ExternalFileHandler.class);
@@ -42,7 +39,9 @@ public class CheckoutCommandTest extends ParametriziedThreeCommitsTest {
     private List<Path> ansWrite;
 
 
-    public CheckoutCommandTest(Map<Path, String> fcommit1Add, List<Path> fcommit1Rm, Map<Path, String> fcommit2Add, List<Path> fcommit2Rm, Map<Path, String> fcommit3Add, List<Path> fcommit3Rm, List<Path> ansDelete, List<Path> ansWrite) {
+    public CheckoutCommandTest(Map<Path, String> fcommit1Add, List<Path> fcommit1Rm, Map<Path, String> fcommit2Add,
+                               List<Path> fcommit2Rm, Map<Path, String> fcommit3Add, List<Path> fcommit3Rm,
+                               List<Path> ansDelete, List<Path> ansWrite) {
         super(fcommit1Add, fcommit1Rm, fcommit2Add, fcommit2Rm, fcommit3Add, fcommit3Rm);
         this.ansDelete = ansDelete;
         this.ansWrite = ansWrite;
@@ -76,7 +75,7 @@ public class CheckoutCommandTest extends ParametriziedThreeCommitsTest {
     @NotNull
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
+        return Arrays.asList(new Object[][]{
                 {
                         ImmutableMap.of(Paths.get("a"), "hash.a", Paths.get("b"), "hash.b"),
                         Collections.emptyList(),
@@ -112,7 +111,8 @@ public class CheckoutCommandTest extends ParametriziedThreeCommitsTest {
                         ImmutableMap.of(Paths.get("a"), "hash.a", Paths.get("b"), "hash.b"),
                         Collections.singletonList(Paths.get("c")),
 
-                        ImmutableMap.of(Paths.get("a"), "hash.a", Paths.get("b"), "hash.b", Paths.get("c"), "hash.c"),
+                        ImmutableMap.of(Paths.get("a"), "hash.a", Paths.get("b"), "hash.b", Paths.get("c"),
+                                "hash.c"),
                         Collections.emptyList(),
 
                         Collections.singletonList(Paths.get("a")),

@@ -75,7 +75,9 @@ public class StatusCommand {
         VcsCommit commit = vcsFileHandler.getCommit(commitHash);
         for (Map.Entry<Path, String> entry : commit.getChildrenAdd().entrySet()) {
             Path fileName = entry.getKey();
-            if (checked.contains(fileName)) continue;
+            if (checked.contains(fileName)) {
+                continue;
+            }
             checked.add(fileName);
             if (curFiles.contains(fileName)) {
                 byte[] content1 = externalFileHandler.readAllBytes(fileName);

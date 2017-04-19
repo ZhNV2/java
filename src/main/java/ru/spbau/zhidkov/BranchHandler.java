@@ -101,8 +101,8 @@ public class BranchHandler {
      * @param branchName branch to check
      * @throws Vcs.VcsBranchNotFoundException if pointed branch
      *                                        does not exits
-     * @throws IOException                    if something has gone wrong during
-     *                                        the work with file system
+     * @throws IOException if something has gone wrong during
+     *                     the work with file system
      */
     public void assertBranchExists(String branchName) throws Vcs.VcsBranchNotFoundException, IOException {
         if (!exists(branchName)) {

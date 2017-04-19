@@ -115,8 +115,8 @@ public class JCommanderParser {
         /**
          * Runs necessary action after parsing args.
          *
-         * @throws IOException                      if something has gone wrong during
-         *                                          the work with file system
+         * @throws IOException if something has gone wrong during
+         *                     the work with file system
          * @throws Vcs.VcsIncorrectUsageException   when vcs can't perform command because of incorrect
          *                                          usage
          * @throws Vcs.VcsRevisionNotFoundException when trying to access revision
@@ -151,8 +151,8 @@ public class JCommanderParser {
         /**
          * Runs necessary action after parsing args.
          *
-         * @throws IOException                           if something has gone wrong during
-         *                                               the work with file system
+         * @throws IOException if something has gone wrong during
+         *                     the work with file system
          * @throws Vcs.VcsBranchActionForbiddenException when trying to make illegal actions
          *                                               with branch
          * @throws Vcs.VcsBranchNotFoundException        when trying to
@@ -185,8 +185,8 @@ public class JCommanderParser {
         /**
          * Runs necessary action after parsing args.
          *
-         * @throws IOException                           if something has gone wrong during
-         *                                               the work with file system
+         * @throws IOException if something has gone wrong during
+         *                     the work with file system
          * @throws Vcs.VcsBranchActionForbiddenException when trying to make illegal actions
          *                                               with branch
          * @throws Vcs.VcsConflictException              when conflict during merge was detected
@@ -212,8 +212,8 @@ public class JCommanderParser {
         /**
          * Runs necessary action after parsing args.
          *
-         * @throws IOException                    if something has gone wrong during
-         *                                        the work with file system
+         * @throws IOException if something has gone wrong during
+         *                     the work with file system
          * @throws Vcs.VcsIncorrectUsageException when vcs can't perform command because of incorrect
          *                                        usage
          */

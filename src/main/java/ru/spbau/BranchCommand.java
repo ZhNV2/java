@@ -23,12 +23,12 @@ public class BranchCommand {
      * Creates new branch.
      *
      * @param branchName branch to create
-     * @throws IOException                           if something has gone wrong during
-     *                                               the work with file system
+     * @throws IOException if something has gone wrong during
+     *                     the work with file system
      * @throws Vcs.VcsBranchActionForbiddenException when trying to make illegal
      *                                               actions with branch
-     * @throws Vcs.VcsIncorrectUsageException        when vcs can't perform command because of incorrect
-     *                                               usage
+     * @throws Vcs.VcsIncorrectUsageException when vcs can't perform command because of incorrect
+     *                                        usage
      */
     public void createBranch(String branchName) throws IOException, Vcs.VcsBranchActionForbiddenException,
             Vcs.VcsIncorrectUsageException {
@@ -47,10 +47,10 @@ public class BranchCommand {
      * Deletes specified branch.
      *
      * @param branchName branch to delete
-     * @throws IOException                           if something has gone wrong during
-     *                                               the work with file system
-     * @throws Vcs.VcsBranchNotFoundException        when trying to access branch
-     *                                               which doesn't exist.
+     * @throws IOException if something has gone wrong during
+     *                     the work with file system
+     * @throws Vcs.VcsBranchNotFoundException when trying to access branch
+     *                                        which doesn't exist.
      * @throws Vcs.VcsBranchActionForbiddenException when trying to make illegal
      *                                               actions with branch
      */

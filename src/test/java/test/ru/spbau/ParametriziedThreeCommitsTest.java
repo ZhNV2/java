@@ -10,12 +10,12 @@ import java.util.Map;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-/**
- * Created by Нико on 07.04.2017.
- */
+
 public abstract class ParametriziedThreeCommitsTest {
 
-    public ParametriziedThreeCommitsTest(Map<Path, String> fcommit1Add, List<Path> fcommit1Rm, Map<Path, String> fcommit2Add, List<Path> fcommit2Rm, Map<Path, String> fcommit3Add, List<Path> fcommit3Rm) {
+    public ParametriziedThreeCommitsTest(Map<Path, String> fcommit1Add, List<Path> fcommit1Rm,
+                                         Map<Path, String> fcommit2Add, List<Path> fcommit2Rm,
+                                         Map<Path, String> fcommit3Add, List<Path> fcommit3Rm) {
         this.fcommit1Add = fcommit1Add;
         this.fcommit1Rm = fcommit1Rm;
         this.fcommit2Add = fcommit2Add;
@@ -24,20 +24,20 @@ public abstract class ParametriziedThreeCommitsTest {
         this.fcommit3Rm = fcommit3Rm;
     }
 
-    protected Map<Path, String> fcommit1Add;
-    protected List<Path> fcommit1Rm;
+    private Map<Path, String> fcommit1Add;
+    private List<Path> fcommit1Rm;
 
-    protected Map<Path, String> fcommit2Add;
-    protected List<Path> fcommit2Rm;
+    private Map<Path, String> fcommit2Add;
+    private List<Path> fcommit2Rm;
 
-    protected Map<Path, String> fcommit3Add;
-    protected List<Path> fcommit3Rm;
+    private Map<Path, String> fcommit3Add;
+    private List<Path> fcommit3Rm;
 
     protected VcsCommit commit1 = mock(VcsCommit.class);
     protected VcsCommit commit2 = mock(VcsCommit.class);
     protected VcsCommit commit3 = mock(VcsCommit.class);
 
-    public void initCommits() {
+    protected void initCommits() {
         when(commit1.getChildrenAdd()).thenReturn(fcommit1Add);
         when(commit1.getChildrenRm()).thenReturn(fcommit1Rm);
         when(commit1.getPrevCommitHash()).thenReturn("commit2.hash");

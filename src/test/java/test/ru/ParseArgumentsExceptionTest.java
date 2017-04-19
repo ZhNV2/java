@@ -1,15 +1,11 @@
 package test.ru;
 
 import com.beust.jcommander.ParameterException;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import ru.Main;
 import ru.spbau.Vcs;
 
 import java.io.IOException;
-import java.nio.file.Paths;
 
 import static org.mockito.Mockito.*;
 

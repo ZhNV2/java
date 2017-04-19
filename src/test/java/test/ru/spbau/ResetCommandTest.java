@@ -28,9 +28,6 @@ import static org.mockito.Mockito.when;
 
 import static org.junit.Assert.*;
 
-/**
- * Created by Нико on 08.04.2017.
- */
 @RunWith(Parameterized.class)
 public class ResetCommandTest extends ParametriziedThreeCommitsTest {
 
@@ -42,7 +39,9 @@ public class ResetCommandTest extends ParametriziedThreeCommitsTest {
     private String fileToResetHash;
     private Class<?> expectedExceptionClass;
 
-    public ResetCommandTest(Map<Path, String> fcommit1Add, List<Path> fcommit1Rm, Map<Path, String> fcommit2Add, List<Path> fcommit2Rm, Map<Path, String> fcommit3Add, List<Path> fcommit3Rm, Path fileToReset, String fileToResetHash, Class<?> expectedExceptionClass) {
+    public ResetCommandTest(Map<Path, String> fcommit1Add, List<Path> fcommit1Rm, Map<Path, String> fcommit2Add,
+                            List<Path> fcommit2Rm, Map<Path, String> fcommit3Add, List<Path> fcommit3Rm,
+                            Path fileToReset, String fileToResetHash, Class<?> expectedExceptionClass) {
         super(fcommit1Add, fcommit1Rm, fcommit2Add, fcommit2Rm, fcommit3Add, fcommit3Rm);
         this.fileToReset = fileToReset;
         this.fileToResetHash = fileToResetHash;
@@ -81,49 +80,49 @@ public class ResetCommandTest extends ParametriziedThreeCommitsTest {
     @NotNull
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
+        return Arrays.asList(new Object[][]{
                 {
-                    ImmutableMap.of(Paths.get("a"), "hash.a", Paths.get("b"), "hash.b"),
-                    Collections.emptyList(),
+                        ImmutableMap.of(Paths.get("a"), "hash.a", Paths.get("b"), "hash.b"),
+                        Collections.emptyList(),
 
-                    ImmutableMap.of(Paths.get("a"), "hash.a", Paths.get("c"), "hash.c"),
-                    Collections.emptyList(),
+                        ImmutableMap.of(Paths.get("a"), "hash.a", Paths.get("c"), "hash.c"),
+                        Collections.emptyList(),
 
-                    ImmutableMap.of(Paths.get("d"), "hash.d", Paths.get("c"), "hash.c"),
-                    Collections.emptyList(),
+                        ImmutableMap.of(Paths.get("d"), "hash.d", Paths.get("c"), "hash.c"),
+                        Collections.emptyList(),
 
-                    Paths.get("a"),
-                    "hash",
-                    null,
+                        Paths.get("a"),
+                        "hash",
+                        null,
 
                 },
                 {
-                    Collections.emptyMap(),
-                    Arrays.asList(Paths.get("c"), Paths.get("a")),
+                        Collections.emptyMap(),
+                        Arrays.asList(Paths.get("c"), Paths.get("a")),
 
-                    ImmutableMap.of(Paths.get("a"), "hash.a", Paths.get("c"), "hash.c"),
-                    Collections.singletonList(Paths.get("d")),
+                        ImmutableMap.of(Paths.get("a"), "hash.a", Paths.get("c"), "hash.c"),
+                        Collections.singletonList(Paths.get("d")),
 
-                    ImmutableMap.of(Paths.get("d"), "hash.d", Paths.get("c"), "hash.c"),
-                    Collections.emptyList(),
+                        ImmutableMap.of(Paths.get("d"), "hash.d", Paths.get("c"), "hash.c"),
+                        Collections.emptyList(),
 
-                    Paths.get("a"),
-                    "hash",
-                    Vcs.VcsIncorrectUsageException.class,
+                        Paths.get("a"),
+                        "hash",
+                        Vcs.VcsIncorrectUsageException.class,
                 },
                 {
-                    Collections.emptyMap(),
-                    Collections.singletonList(Paths.get("b")),
+                        Collections.emptyMap(),
+                        Collections.singletonList(Paths.get("b")),
 
-                    ImmutableMap.of(Paths.get("a"), "hash.a", Paths.get("b"), "hash.b"),
-                    Collections.singletonList(Paths.get("c")),
+                        ImmutableMap.of(Paths.get("a"), "hash.a", Paths.get("b"), "hash.b"),
+                        Collections.singletonList(Paths.get("c")),
 
-                    ImmutableMap.of(Paths.get("a"), "hash.a", Paths.get("b"), "hash.b", Paths.get("c"), "hash.c"),
-                    Collections.emptyList(),
+                        ImmutableMap.of(Paths.get("a"), "hash.a", Paths.get("b"), "hash.b", Paths.get("c"), "hash.c"),
+                        Collections.emptyList(),
 
-                    Paths.get("f"),
-                    "hash",
-                    Vcs.VcsIncorrectUsageException.class,
+                        Paths.get("f"),
+                        "hash",
+                        Vcs.VcsIncorrectUsageException.class,
                 }
         });
     }

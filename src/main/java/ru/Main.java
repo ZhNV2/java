@@ -119,7 +119,9 @@ public class Main {
             jc.usage();
         } else {
             String command = jc.getParsedCommand();
-            if (command == null) throw new ParameterException("You should specify the command");
+            if (command == null) {
+                throw new ParameterException("You should specify the command");
+            }
             CommandName.valueOf(command).getCommand().run();
         }
         vcs.clearWorkingCopy();
