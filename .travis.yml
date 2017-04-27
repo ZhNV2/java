@@ -3,5 +3,5 @@ jdk:
   - oraclejdk8
 script:
     - ./gradlew test
-    - ./gradlew serverJar
     - ./gradlew clientJar
+    - ./gradlew serverJar
