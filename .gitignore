@@ -1,0 +1,9 @@
+.idea/
+out/
+tmp/
+build/
+.gradle/
+build.bat
+tmp1
+tmp2
+out
