@@ -44,8 +44,8 @@ public class IntegrationTest {
                 temporaryFolderServer.newFile(entry.getKey().toString());
             }
         }
-        server = Server.buildServer("localhost", 1234, Paths.get(temporaryFolderServer.getRoot().getAbsolutePath()));
-        client = Client.buildClient("localhost", 1234, Paths.get(temporaryFolderClient.getRoot().getAbsolutePath()));
+        server = Server.buildServer("localhost", 12345, Paths.get(temporaryFolderServer.getRoot().getAbsolutePath()));
+        client = Client.buildClient("localhost", 12345, Paths.get(temporaryFolderClient.getRoot().getAbsolutePath()));
 
         new Thread(() -> {
             try {
