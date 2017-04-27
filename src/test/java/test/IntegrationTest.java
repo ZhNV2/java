@@ -7,7 +7,7 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import ru.Main;
+import ru.spbau.zhidkov.console.Main;
 
 import java.io.IOException;
 import java.nio.file.Files;
