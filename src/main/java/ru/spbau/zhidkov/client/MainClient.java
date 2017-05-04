@@ -21,6 +21,10 @@ public class MainClient extends MainParametersAbstract {
     @Parameter(names = "--path", required = true, description = "path to query file")
     private String path;
 
+    @Parameter(names = "--save", required = false, description = "path to save file in get query, " +
+            "otherwise it's equal to path")
+    private String pathToSave;
+
     /**
      * Starts client work
      *
@@ -50,7 +54,7 @@ public class MainClient extends MainParametersAbstract {
                 System.out.println(entry.getKey().toString() + "  " + entry.getValue());
             }
         } else if (query.equals(Query.QueryType.GET.toString().toLowerCase())) {
-            client.executeGet(Paths.get(path));
+            client.executeGet(Paths.get(path), Paths.get(pathToSave == null ? path : pathToSave));
         } else {
             client.disconnect();
             throw new ParameterException("query parameter should be either list or get");

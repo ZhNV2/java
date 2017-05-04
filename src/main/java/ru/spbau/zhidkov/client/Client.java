@@ -52,18 +52,19 @@ public class Client {
         socketChannel = SocketChannel.open();
         socketChannel.configureBlocking(false);
         socketChannel.connect(new InetSocketAddress(hostname, port));
-        while (!socketChannel.finishConnect()) ;
+        while (!socketChannel.finishConnect());
     }
 
     /**
      * Performs get query
      *
      * @param path query path parameter
+     * @param pathToSave path to save get result
      * @throws IOException in case of errors in IO operations
      */
-    public void executeGet(Path path) throws IOException {
+    public void executeGet(Path path, Path pathToSave) throws IOException {
         sendQuery(new Query(Query.QueryType.GET.getTypeNumber(), path));
-        getFileFromServer(path);
+        getFileFromServer(pathToSave, FileSystem.outputChannelOfInner(pathToSave));
     }
 
     /**
@@ -76,8 +77,11 @@ public class Client {
      */
     public Map<Path, Boolean> executeList(Path path) throws IOException {
         sendQuery(new Query(Query.QueryType.LIST.getTypeNumber(), path));
+        System.out.println("sent");
         Path tmpFile = fileSystem.createTmpFile();
-        getFileFromServer(tmpFile);
+        System.out.println("tmp");
+        getFileFromServer(tmpFile, fileSystem.outputChannelOf(tmpFile));
+        System.out.println("got");
         FilesList filesList = FilesList.buildFromFile(tmpFile, fileSystem);
         return filesList.getFiles();
     }
@@ -102,11 +106,13 @@ public class Client {
         fileChannel.close();
     }
 
-    private void getFileFromServer(Path path) throws IOException {
-        FileChannel fileChannel = fileSystem.outputChannelOf(path);
+    private void getFileFromServer(Path path, FileChannel fileChannel) throws IOException {
+        System.out.println(path);
         FileReader fileReader = new FileReader(socketChannel, fileChannel);
         while (!fileReader.read()) ;
+        System.out.println(path + " closed");
         fileChannel.close();
+
     }
 
     /**

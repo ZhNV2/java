@@ -13,3 +13,12 @@ build -> gradle clientJar
 
 help -> --help
 
+## UI Usage
+
+Double click to download file.
+
+## Apologizes
+
+Despite of essential performance, now there are several technical issues (such as file channels).
+I hope I'll fix them in 3-4 days.
+

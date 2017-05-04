@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -57,17 +58,23 @@ public class IntegrationTest {
         client.connect();
     }
 
-    @Test(timeout = 5000)
+    @Test(timeout = 500000)
     public void performList() throws IOException {
-        Map<Path, Boolean> res = client.executeList(Paths.get("."));
-        assertTrue(CollectionUtils.isEqualCollection(res.entrySet(), dirs.entrySet()));
+        Map<Path, Boolean> res = client.executeList(Paths.get(temporaryFolderServer.getRoot().getAbsolutePath()));
+        Map<Path, Boolean> realRes = new HashMap<>();
+        realRes.put(Paths.get("a"), false);
+        realRes.put(Paths.get("dir1"), true);
+
+
+        assertTrue(CollectionUtils.isEqualCollection(res.entrySet(), realRes.entrySet()));
     }
 
-    @Test(timeout = 5000)
+    @Test(timeout = 50000)
     public void performGet() throws IOException {
         Files.write(Paths.get(temporaryFolderServer.getRoot().getAbsolutePath()).resolve(Paths.get("./dir1/c")),
                 "hello!".getBytes());
-        client.executeGet(Paths.get("./dir1/c"));
+        client.executeGet(Paths.get("./dir1/c"), Paths.get(temporaryFolderClient.getRoot().getAbsolutePath())
+                .resolve(Paths.get("./dir1/c")));
         byte[] bytes = Files.readAllBytes(Paths.get(temporaryFolderClient.getRoot().getAbsolutePath())
                 .resolve(Paths.get("./dir1/c")));
         String res = new String(bytes, StandardCharsets.UTF_8);

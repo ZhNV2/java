@@ -6,6 +6,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Random;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /** Class providing basic work with file system */
@@ -16,12 +18,22 @@ public class FileSystem {
 
     /**
      * Builds <tt>FileSystem</tt> with folder that
-     * is going to be basic for all operations
+     * is going to be basic for all operations.
+     * Also erases all previous tmp-files.
      *
      * @param basicFolder base folder to all operations
      */
-    public FileSystem(Path basicFolder) {
+    public FileSystem(Path basicFolder)  {
         this.basicFolder = basicFolder;
+        try {
+            for (Path  path : Files.list(basicFolder).collect(Collectors.toList())) {
+                if (basicFolder.relativize(path).toString().startsWith(TMP_FILE_HEADING)) {
+                    Files.delete(path);
+                }
+            }
+        } catch (Exception e) {
+            //
+        }
     }
 
     private Path basicFolder;
@@ -33,9 +45,8 @@ public class FileSystem {
      * @throws IOException in case of errors in IO operations
      */
     public Path createTmpFile() throws IOException {
-        Path path = Paths.get(TMP_FILE_HEADING + tmpFileNum);
+        Path path = Paths.get(TMP_FILE_HEADING + (new Random()).nextInt());
         Files.createFile(getRealPath(path));
-        tmpFileNum++;
         return path;
     }
 
@@ -105,8 +116,8 @@ public class FileSystem {
      * @return stream of files
      * @throws IOException in case of errors in IO operations
      */
-    public Stream<Path> walk(Path path) throws IOException {
-        return Files.walk(getRealPath(path)).map(s -> basicFolder.relativize(s));
+    public Stream<Path> list(Path path) throws IOException {
+        return Files.list(getRealPath(path)).map(s -> basicFolder.relativize(s));
     }
 
     /**
@@ -131,6 +142,24 @@ public class FileSystem {
             create(tmpFilePath);
         }
         return new FileOutputStream(new File(getRealPath(tmpFilePath).toString())).getChannel();
+    }
+
+    /**
+     * Returns output channel for any file.
+     *
+     * @param tmpFilePath file to build channel
+     * @return file channel
+     * @throws IOException in case of errors in IO operations
+     */
+    public static FileChannel outputChannelOfInner(Path tmpFilePath) throws IOException {
+        if (!Files.exists(tmpFilePath)) {
+            Path parent = tmpFilePath.getParent();
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
+            Files.createFile(tmpFilePath);
+        }
+        return new FileOutputStream(new File(tmpFilePath.toString())).getChannel();
     }
 
     /**
@@ -161,10 +190,12 @@ public class FileSystem {
      * @throws IOException in case of errors in IO operations
      */
     public void rmTmpFiles() throws IOException {
-        for (int i = 0; i < tmpFileNum; i++) {
-            Files.deleteIfExists(getRealPath(Paths.get(TMP_FILE_HEADING + i)));
-        }
-        tmpFileNum = 0;
+//        for (int i = 0; i < tmpFileNum; i++) {
+//            Files.delete(getRealPath(Paths.get(TMP_FILE_HEADING + i)));
+//        //    System.out.println(getRealPath(Paths.get(TMP_FILE_HEADING + i)));
+//          //  System.out.println(Files.deleteIfExists(getRealPath(Paths.get(TMP_FILE_HEADING + i))));
+//        }
+//        tmpFileNum = 0;
     }
 
     /**

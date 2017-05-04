@@ -136,7 +136,7 @@ public class Server {
 
     private FilesList getDirList(Query query) throws IOException {
         Map<Path, Boolean> dirs = new HashMap<>();
-        List<Path> paths = fileSystem.walk(query.getPath()).collect(Collectors.toList());
+        List<Path> paths = fileSystem.list(query.getPath()).collect(Collectors.toList());
         for (Path path : paths) {
             if (!fileSystem.isTmpFile(path)) {
                 dirs.put(path, fileSystem.isDir(path));
