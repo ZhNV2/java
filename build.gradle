@@ -27,6 +27,16 @@ task clientJar(type: Jar) {
     with jar
 }
 
+task guiJar(type: Jar) {
+    manifest {
+        attributes 'Implementation-Title': 'Ftp hui client jar file',
+                'Implementation-Version': version,
+                'Main-Class': 'ru.spbau.zhidkov.client.MainGuiClient'
+    }
+    baseName = 'gui-client-' + project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
 
 repositories {
     mavenCentral()
