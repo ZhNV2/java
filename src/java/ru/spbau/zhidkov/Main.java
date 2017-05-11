@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
+/** Class implementing game UI */
 public class Main extends Application {
 
     private static final double MIN_BUTTON_SIZE = 50;
@@ -36,7 +37,9 @@ public class Main extends Application {
     private List<ButtonCell> toFlushText = new ArrayList<>();
     private List<ButtonCell> toFlushEffect = new ArrayList<>();
 
+    /** Starts the game flow */
     public void start(Stage primaryStage) throws Exception {
+
         fillGrid();
 
         Scene scene = new Scene(gridPane, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -47,14 +50,8 @@ public class Main extends Application {
     }
 
     private void process(ButtonCell buttonCell) {
-        for (ButtonCell button : toFlushText) {
-            button.setText(EMPTY_CELL);
-        }
-        toFlushText.clear();
-        for (ButtonCell button : toFlushEffect) {
-            button.setEffect(null);
-        }
-        toFlushEffect.clear();
+        flushText();
+        flushEffect();
         if (!buttonCell.isActive() || currentChosen == buttonCell) {
             return;
         }
@@ -84,6 +81,20 @@ public class Main extends Application {
 
     }
 
+    private void flushEffect() {
+        for (ButtonCell button : toFlushEffect) {
+            button.setEffect(null);
+        }
+        toFlushEffect.clear();
+    }
+
+    private void flushText() {
+        for (ButtonCell button : toFlushText) {
+            button.setText(EMPTY_CELL);
+        }
+        toFlushText.clear();
+    }
+
     private void fillGrid() {
         final Random random = new Random();
         int cntZeroes = 0;
@@ -100,8 +111,6 @@ public class Main extends Application {
                 buttonCell.setMinSize(MIN_BUTTON_SIZE, MIN_BUTTON_SIZE);
                 buttonCell.setOnAction(event -> {
                     try {
-                        System.out.println("1");
-                        System.out.println(buttonCell.getValue());
                         process(buttonCell);
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -125,17 +134,11 @@ public class Main extends Application {
         }
     }
 
-
-
-
-
-
     public static void main(String[] args) {
         launch(args);
     }
 
-    
-
+    /** Class for button holding a value */
     private static class ButtonCell extends Button {
 
         final private String value;
