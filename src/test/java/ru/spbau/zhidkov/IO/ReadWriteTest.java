@@ -5,6 +5,8 @@ import org.junit.Test;
 import ru.spbau.zhidkov.server.Server;
 import ru.spbau.zhidkov.utils.Query;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -30,7 +32,7 @@ public class ReadWriteTest {
     @Test(timeout = 5000)
     public void QueryReaderTest() throws IOException {
         Path path = Paths.get("abcdesakldfjasdkfljasfdkjassafjfkasdljfalsfj");
-        Query query = new Query(1, path);
+        Query query = new Query(Query.QueryType.LIST, path);
         byte[] queryBytes = query.toByteArray();
         ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
         buffer.putLong(8 + queryBytes.length);
@@ -39,13 +41,15 @@ public class ReadWriteTest {
 
         SocketChannel channel = mock(SocketChannel.class);
         setUpReadChannel(channel, bytes);
-        Server.QueryReader queryReader = new Server.QueryReader(channel);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        Reader reader = new Reader(channel, outputStream);
         while (true) {
-            if (queryReader.read()) {
+            if (reader.read()) {
                 break;
             }
         }
-        Query query1 = queryReader.getQuery();
+        Query query1 = Query.fromByteArray(((ByteArrayOutputStream) reader.getOutputStream()).toByteArray());
+        reader.closeStream();
         assertEquals(query.getType(), query1.getType());
         assertEquals(query.getPath(), query1.getPath());
     }
@@ -59,12 +63,13 @@ public class ReadWriteTest {
         List<Byte> byteList = new ArrayList<>();
         setUpWriteChannel(socketChannel, byteList);
 
-        Writer writer = new Writer(channelToRead, socketChannel, bytes.length);
+        Writer writer = new Writer(socketChannel, bytes.length, new ByteArrayInputStream(bytes));
         while (true) {
             if (writer.write()) {
                 break;
             }
         }
+        writer.closeStream();
         assertEquals(bytes.length + Long.BYTES, byteList.size());
         for (int i = 0; i < bytes.length; i++) {
             assertTrue(bytes[i] == byteList.get(i + Long.BYTES));

@@ -13,17 +13,17 @@ public class QueryTest {
 
     @Test
     public void serializeDeserialize() throws IOException {
-        Query query = new Query(515, Paths.get("aabab"));
-        Query query1 = Query.buildQuery(query.toByteArray());
+        Query query = new Query(Query.QueryType.GET, Paths.get("aabab"));
+        Query query1 = Query.fromByteArray(query.toByteArray());
         assertEquals(query.getPath(), query1.getPath());
         assertEquals(query.getType(), query1.getType());
     }
 
     @Test
     public void deserializeSerialize() throws IOException {
-        Query query = new Query(513, Paths.get("dsafkj"));
+        Query query = new Query(Query.QueryType.LIST, Paths.get("dsafkj"));
         byte[] bytes = query.toByteArray();
-        byte[] bytes1 = Query.buildQuery(bytes).toByteArray();
+        byte[] bytes1 = Query.fromByteArray(bytes).toByteArray();
         assertArrayEquals(bytes, bytes1);
     }
 }

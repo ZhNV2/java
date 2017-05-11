@@ -3,6 +3,7 @@ package ru.spbau.zhidkov.client;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
+import ru.spbau.zhidkov.utils.FilesList;
 import ru.spbau.zhidkov.utils.MainParametersAbstract;
 import ru.spbau.zhidkov.utils.Query;
 
@@ -49,9 +50,9 @@ public class MainClient extends MainParametersAbstract {
         client.connect();
 
         if (query.equals(Query.QueryType.LIST.toString().toLowerCase())) {
-            Map<Path, Boolean> map = client.executeList(Paths.get(path));
-            for (Map.Entry<Path, Boolean> entry : map.entrySet()) {
-                System.out.println(entry.getKey().toString() + "  " + entry.getValue());
+            Map<Path, FilesList.FileType> map = client.executeList(Paths.get(path));
+            for (Map.Entry<Path, FilesList.FileType> entry : map.entrySet()) {
+                System.out.println(entry.getKey().toString() + "  " + entry.getValue().toString());
             }
         } else if (query.equals(Query.QueryType.GET.toString().toLowerCase())) {
             client.executeGet(Paths.get(path), Paths.get(pathToSave == null ? path : pathToSave));

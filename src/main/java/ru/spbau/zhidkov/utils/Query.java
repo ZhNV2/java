@@ -8,7 +8,7 @@ import java.nio.file.Paths;
 /* Class presenting query structure */
 public class Query {
 
-    private int type;
+    private QueryType type;
     private Path path;
 
     /* Enum of possible types of query */
@@ -23,20 +23,28 @@ public class Query {
             return typeNumber;
         }
 
+        static QueryType fromTypeNumber(int x) {
+            switch (x) {
+                case 1: return LIST;
+                case 2: return GET;
+            }
+            throw new IllegalArgumentException();
+        }
+
         int typeNumber;
     }
 
-    public Query(int type, Path path) {
+    public Query(QueryType type, Path path) {
         this.type = type;
         this.path = path;
     }
 
     /**
-     * Returns type of query. 1 for list, 2 for get
+     * Returns type of query
      *
      * @return type of query
      */
-    public int getType() {
+    public QueryType getType() {
         return type;
     }
 
@@ -56,13 +64,13 @@ public class Query {
      * @return built query
      * @throws IOException in case of errors in IO operations
      */
-    public static Query buildQuery(byte[] bytes) throws IOException {
+    public static Query fromByteArray(byte[] bytes) throws IOException {
         DataInputStream dataInputStream = new DataInputStream(new ByteArrayInputStream(bytes));
         int type = dataInputStream.readInt();
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(dataInputStream));
         Path path = Paths.get(bufferedReader.readLine());
         bufferedReader.close();
-        return new Query(type, path);
+        return new Query(QueryType.fromTypeNumber(type), path);
     }
 
     /**
@@ -73,7 +81,7 @@ public class Query {
      */
     public byte[] toByteArray() throws IOException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(4 + path.toString().getBytes().length);
-        byteArrayOutputStream.write(ByteBuffer.allocate(4).putInt(type).array());
+        byteArrayOutputStream.write(ByteBuffer.allocate(4).putInt(type.getTypeNumber()).array());
         byteArrayOutputStream.write(path.toString().getBytes());
         return byteArrayOutputStream.toByteArray();
     }

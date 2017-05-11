@@ -1,8 +1,6 @@
 package ru.spbau.zhidkov.utils;
 
-import ru.spbau.zhidkov.IO.FileSystem;
-
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -11,57 +9,85 @@ import java.util.Map;
 /** Class for storing list of files and directories */
 public class FilesList {
 
+    /** Enum specifying file type */
+    public enum FileType {
+
+        FILE, FOLDER;
+
+        public int toInt() {
+            switch (this) {
+                case FILE: return 1;
+                case FOLDER: return 0;
+            }
+            throw new IllegalArgumentException();
+        }
+
+        public static FileType fromInt(int t) {
+            switch (t) {
+                case 1: return FILE;
+                case 0: return FOLDER;
+            }
+            throw new IllegalArgumentException();
+        }
+    }
+
     /**
      * Map presenting list of files. Value is equal to
      * {@code true} if key is directory.
      *
      * @return map of files been stored in <tt>FilesList</tt>
      */
-    public Map<Path, Boolean> getFiles() {
+    public Map<Path, FileType> getFiles() {
         return files;
     }
 
-    private Map<Path, Boolean> files;
+    private Map<Path, FileType> files;
 
-    private static final String TRUE_STRING = Boolean.toString(true);
-    private static final String FALSE_STRING = Boolean.toString(false);
-
-    public FilesList(Map<Path, Boolean> files) {
+    public FilesList(Map<Path, FileType> files) {
         this.files = files;
     }
 
     /**
-     * Serializes list to file
+     * Converts <tt>FileList</tt> to byte array
      *
-     * @param path of file to serialize file in
-     * @param fileSystem to handle IO operations
+     * @return byte array representing <tt>FileList</tt>
      * @throws IOException in case of errors in IO operations
      */
-    public void writeToFile(Path path, FileSystem fileSystem) throws IOException {
-        for (Map.Entry<Path, Boolean> file : files.entrySet()) {
-            String line = file.getKey().toString() + file.getValue() + "\n";
-            fileSystem.appendToFile(path, line.getBytes());
+    public byte[] toByteArray() throws IOException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        outputStream.write(files.size());
+        for (Map.Entry<Path, FileType> file : files.entrySet()) {
+            outputStream.write(file.getValue().toInt());
+            byte[] bytePath = file.getKey().toString().getBytes();
+            outputStream.write(bytePath.length);
+            for (byte aBytePath : bytePath) {
+                outputStream.write(aBytePath);
+            }
         }
+        return outputStream.toByteArray();
     }
 
     /**
-     * Builds list from file
+     * Builds <tt>FileList</tt> from byte array
      *
-     * @param path to read list from
-     * @param fileSystem to handle IO operations
-     * @return built list
+     * @param bytes to build array from
+     * @return built <tt>FileList</tt>
      * @throws IOException in case of errors in IO operations
      */
-    public static FilesList buildFromFile(Path path, FileSystem fileSystem) throws IOException {
-        Map<Path, Boolean> newDirs = new HashMap<>();
-        fileSystem.lines(path)
-                .forEach(s -> {
-                    if (s.endsWith(TRUE_STRING)) {
-                        newDirs.put(Paths.get(s.substring(0, s.length() - TRUE_STRING.length())), true);
-                    } else {
-                        newDirs.put(Paths.get(s.substring(0, s.length() - FALSE_STRING.length())), false);
-                    }
-                });
-        return new FilesList(newDirs);
+    public static FilesList formByteArray(byte[] bytes) throws IOException {
+        Map<Path, FileType> newFiles = new HashMap<>();
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
+        int sz = inputStream.read();
+        for (int i = 0; i < sz; i++) {
+            FileType fileType = FileType.fromInt(inputStream.read());
+            int pathLen = inputStream.read();
+            byte[] bytePath = new byte[pathLen];
+            for (int j = 0; j < pathLen; j++) {
+                bytePath[j] = (byte) inputStream.read();
+            }
+            Path path = Paths.get(new String(bytePath));
+            newFiles.put(path, fileType);
+        }
+        return new FilesList(newFiles);
     }
 }

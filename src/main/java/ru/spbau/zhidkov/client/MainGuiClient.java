@@ -12,6 +12,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import ru.spbau.zhidkov.utils.FilesList;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,7 +23,6 @@ import java.util.Map;
 /** Class providing graphical interface */
 public class MainGuiClient extends Application {
 
-
     public static void main(String[] args) throws IOException {
         launch(args);
     }
@@ -31,24 +31,49 @@ public class MainGuiClient extends Application {
     private TextField hostField = new TextField("host");
     private TextField portField = new TextField("port");
     private VBox vBox = new VBox();
+    private Client client = null;
+    private boolean started = false;
 
     /** Starts UI */
     @Override
     public void start(Stage stage) throws IOException {
         StackPane root = new StackPane();
-        Button button = new Button("start");
-        button.setOnAction(event -> {
-            drawTree(stage);
+        Button buttonStart = new Button("start");
+        buttonStart.setOnAction(event -> {
+            if (started) {
+                return;
+            }
+            started = true;
+            try {
+                buildTree(stage);
+            } catch (IOException e) {
+                // TODO: alert
+            }
         });
-        vBox.getChildren().addAll(hostField, portField, button);
+//        Button buttonExit = new Button("exit");
+//        buttonExit.setOnAction(event -> {
+//            try {
+//                if (client != null) {
+//                    client.disconnect();
+//                    // TODO: stop;
+//                }
+//            } catch (IOException e) {
+//                // TODO: alert
+//            } catch (Exception e) {
+//                // TODO: wtf?
+//            }
+//        });
+
+        vBox.getChildren().addAll(hostField, portField, buttonStart);
         root.getChildren().add(vBox);
         stage.setScene(new Scene(root, 300, 250));
         stage.show();
     }
 
-    private void drawTree(Stage stage) {
+    private void buildTree(Stage stage) throws IOException {
+        startClient();
         TreeItem<Path> root1 = new TreeItemPath(Paths.get("."), true, hostField.getText(),
-                Integer.valueOf(portField.getText()));
+                Integer.valueOf(portField.getText()), client);
         TreeView treeView = new TreeView<>(root1);
         treeView.setOnMouseClicked(mouseEvent -> {
             if (mouseEvent.getClickCount() == 2) {
@@ -56,12 +81,8 @@ public class MainGuiClient extends Application {
                 if (item != null && !item.isDir()) {
                     File file = fileChooser.showOpenDialog(stage);
                     if (file != null) {
-                        Client client = Client.buildClient(hostField.getText(), Integer.valueOf(portField.getText()),
-                                Paths.get(System.getProperty("user.dir")));
                         try {
-                            client.connect();
                             client.executeGet(item.getPath(), file.toPath());
-                            client.disconnect();
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -70,6 +91,12 @@ public class MainGuiClient extends Application {
             }
         });
         vBox.getChildren().add(treeView);
+    }
+
+    private void startClient() throws IOException {
+        client = Client.buildClient(hostField.getText(), Integer.valueOf(portField.getText()),
+                Paths.get(System.getProperty("user.dir")));
+        client.connect();
     }
 
     private static class TreeItemPath extends TreeItem<Path> {
@@ -84,18 +111,20 @@ public class MainGuiClient extends Application {
             return path;
         }
 
+
         private Path path;
         private String hostname;
         private int port;
+        private Client client;
         private boolean firstTime = true;
 
-        public TreeItemPath(Path path, boolean isDir, String hostname, int port) {
+        public TreeItemPath(Path path, boolean isDir, String hostname, int port, Client client) {
             super(path);
             this.path = path;
             this.isDir = isDir;
             this.hostname = hostname;
             this.port = port;
-
+            this.client = client;
         }
 
         @Override
@@ -115,15 +144,12 @@ public class MainGuiClient extends Application {
         private ObservableList<TreeItem<Path>> buildChildren() {
             try {
                 ObservableList<TreeItem<Path>> children = FXCollections.observableArrayList();
-                Client client = Client.buildClient(hostname, port, Paths.get(System.getProperty("user.dir")));
                 client.connect();
-                Map<Path, Boolean> files = client.executeList(path);
-                client.disconnect();
-                for (Map.Entry<Path, Boolean> entry : files.entrySet()) {
-                    children.add(new TreeItemPath(entry.getKey(), entry.getValue(), hostname, port));
+                Map<Path, FilesList.FileType> files = client.executeList(path);
+                for (Map.Entry<Path, FilesList.FileType> entry : files.entrySet()) {
+                    children.add(new TreeItemPath(entry.getKey(), entry.getValue().equals(FilesList.FileType.FOLDER), hostname, port, client));
                 }
                 return children;
-
             } catch (IOException e) {
                 e.printStackTrace();
                 return FXCollections.emptyObservableList();

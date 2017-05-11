@@ -1,112 +1,26 @@
 package ru.spbau.zhidkov.IO;
 
 import java.io.*;
-import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.Random;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /** Class providing basic work with file system */
 public class FileSystem {
 
-    private static int tmpFileNum = 0;
-    private static final String TMP_FILE_HEADING = "tmptmp";
+    private Path basicFolder;
 
     /**
      * Builds <tt>FileSystem</tt> with folder that
      * is going to be basic for all operations.
-     * Also erases all previous tmp-files.
      *
      * @param basicFolder base folder to all operations
      */
     public FileSystem(Path basicFolder)  {
         this.basicFolder = basicFolder;
-        try {
-            for (Path  path : Files.list(basicFolder).collect(Collectors.toList())) {
-                if (basicFolder.relativize(path).toString().startsWith(TMP_FILE_HEADING)) {
-                    Files.delete(path);
-                }
-            }
-        } catch (Exception e) {
-            //
-        }
     }
 
-    private Path basicFolder;
-
-    /**
-     * Creates temporary file
-     *
-     * @return created temporary file name
-     * @throws IOException in case of errors in IO operations
-     */
-    public Path createTmpFile() throws IOException {
-        Path path = Paths.get(TMP_FILE_HEADING + (new Random()).nextInt());
-        Files.createFile(getRealPath(path));
-        return path;
-    }
-
-    private void create(Path tmpFilePath) throws IOException {
-        Path parent = getRealPath(tmpFilePath).getParent();
-        if (parent != null) {
-            Files.createDirectories(parent);
-        }
-        Files.createFile(getRealPath(tmpFilePath));
-    }
-
-    /**
-     * Writes byte array to file
-     *
-     * @param tmpFilePath file to write in
-     * @param bytes byte array
-     * @throws IOException in case of errors in IO operations
-     */
-    public void write(Path tmpFilePath, byte[] bytes) throws IOException {
-        if (!exists(tmpFilePath)) {
-            create(tmpFilePath);
-        }
-        Files.write(getRealPath(tmpFilePath), bytes);
-    }
-
-    /**
-     * Appends data to the end of file
-     *
-     * @param path file to append data to
-     * @param bytes to append
-     * @throws IOException in case of errors in IO operations
-     */
-    public void appendToFile(Path path, byte[] bytes) throws IOException {
-        Files.write(getRealPath(path), bytes, StandardOpenOption.APPEND);
-    }
-
-    /**
-     * Returns stream of all file lines
-     *
-     * @param path to read lines
-     * @return stream of lines
-     * @throws IOException in case of errors in IO operations
-     */
-    public Stream<String> lines(Path path) throws IOException {
-        return Files.lines(getRealPath(path));
-    }
-
-    /**
-     * Creates input channel of given file
-     *
-     * @param tmpFilePath to make channel from
-     * @return input channel
-     * @throws IOException in case of errors in IO operations
-     */
-    public FileChannel inputChannelOf(Path tmpFilePath) throws IOException {
-        if (!Files.exists(getRealPath(tmpFilePath))) {
-            Files.createFile(getRealPath(tmpFilePath));
-        }
-        return new FileInputStream(new File(getRealPath(tmpFilePath).toString())).getChannel();
-    }
 
     /**
      * Returns all files and folders in
@@ -122,6 +36,7 @@ public class FileSystem {
 
     /**
      * Checks if file is directory
+     *
      * @param path file to check
      * @return whether file folder or not
      * @throws IOException in case of errors in IO operations
@@ -130,37 +45,6 @@ public class FileSystem {
         return Files.isDirectory(getRealPath(path));
     }
 
-    /**
-     * Creates output channel of given file
-     *
-     * @param tmpFilePath to make channel from
-     * @return output channel
-     * @throws IOException in case of errors in IO operations
-     */
-    public FileChannel outputChannelOf(Path tmpFilePath) throws IOException {
-        if (!exists(tmpFilePath)) {
-            create(tmpFilePath);
-        }
-        return new FileOutputStream(new File(getRealPath(tmpFilePath).toString())).getChannel();
-    }
-
-    /**
-     * Returns output channel for any file.
-     *
-     * @param tmpFilePath file to build channel
-     * @return file channel
-     * @throws IOException in case of errors in IO operations
-     */
-    public static FileChannel outputChannelOfInner(Path tmpFilePath) throws IOException {
-        if (!Files.exists(tmpFilePath)) {
-            Path parent = tmpFilePath.getParent();
-            if (parent != null) {
-                Files.createDirectories(parent);
-            }
-            Files.createFile(tmpFilePath);
-        }
-        return new FileOutputStream(new File(tmpFilePath.toString())).getChannel();
-    }
 
     /**
      * Checks if file exists
@@ -184,31 +68,41 @@ public class FileSystem {
     }
 
     /**
-     * Removes all temporary files were created till
-     * this moment
+     * Returns <tt>InputStream</tt> of provided <tt>Path</tt>
      *
-     * @throws IOException in case of errors in IO operations
+     * @param path to get <tt>InputStream</tt>
+     * @return <tt>InputStream</tt> of file was provided
+     * @throws FileNotFoundException if provided <tt>Path</tt> doesn't exist
      */
-    public void rmTmpFiles() throws IOException {
-//        for (int i = 0; i < tmpFileNum; i++) {
-//            Files.delete(getRealPath(Paths.get(TMP_FILE_HEADING + i)));
-//        //    System.out.println(getRealPath(Paths.get(TMP_FILE_HEADING + i)));
-//          //  System.out.println(Files.deleteIfExists(getRealPath(Paths.get(TMP_FILE_HEADING + i))));
-//        }
-//        tmpFileNum = 0;
+    public BufferedInputStream getBufferedInputStream(Path path) throws FileNotFoundException {
+        return new BufferedInputStream(new FileInputStream(getRealPath(path).toString()));
     }
 
     /**
-     * Checks if file was created as temporary
+     * Returns <tt>InputStream</tt> of provided <tt>Path</tt>.
+     * Alse creates new file, if <tt>Path</tt> didn't exist
      *
-     * @param path file to check
-     * @return whether file is temporary
+     * @param path to get <tt>OutputStream</tt>
+     * @return <tt>OutputStrea,</tt> of file was provided
+     * @throws IOException in case of errors in IO operations
      */
-    public boolean isTmpFile(Path path) {
-        return getRealPath(path).getFileName().toString().startsWith(TMP_FILE_HEADING);
+    public BufferedOutputStream getBufferedOutputStream(Path path) throws IOException {
+        if (!exists(path)) {
+            create(path);
+        }
+        return new BufferedOutputStream(new FileOutputStream(getRealPath(path).toString()));
     }
 
     private Path getRealPath(Path path) {
         return basicFolder.resolve(path);
     }
+
+    private void create(Path tmpFilePath) throws IOException {
+        Path parent = getRealPath(tmpFilePath).getParent();
+        if (parent != null) {
+            Files.createDirectories(parent);
+        }
+        Files.createFile(getRealPath(tmpFilePath));
+    }
+
 }

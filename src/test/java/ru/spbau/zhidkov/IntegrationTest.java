@@ -6,6 +6,7 @@ import org.junit.*;
 import org.junit.rules.TemporaryFolder;
 import ru.spbau.zhidkov.client.Client;
 import ru.spbau.zhidkov.server.Server;
+import ru.spbau.zhidkov.utils.FilesList;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -58,18 +59,16 @@ public class IntegrationTest {
         client.connect();
     }
 
-    @Test(timeout = 500000)
+    @Test(timeout = 5000)
     public void performList() throws IOException {
-        Map<Path, Boolean> res = client.executeList(Paths.get(temporaryFolderServer.getRoot().getAbsolutePath()));
-        Map<Path, Boolean> realRes = new HashMap<>();
-        realRes.put(Paths.get("a"), false);
-        realRes.put(Paths.get("dir1"), true);
-
-
+        Map<Path, FilesList.FileType> res = client.executeList(Paths.get(temporaryFolderServer.getRoot().getAbsolutePath()));
+        Map<Path, FilesList.FileType> realRes = new HashMap<>();
+        realRes.put(Paths.get("a"), FilesList.FileType.FILE);
+        realRes.put(Paths.get("dir1"), FilesList.FileType.FOLDER);
         assertTrue(CollectionUtils.isEqualCollection(res.entrySet(), realRes.entrySet()));
     }
 
-    @Test(timeout = 50000)
+    @Test(timeout = 5000)
     public void performGet() throws IOException {
         Files.write(Paths.get(temporaryFolderServer.getRoot().getAbsolutePath()).resolve(Paths.get("./dir1/c")),
                 "hello!".getBytes());

@@ -18,8 +18,12 @@ public abstract class MainParametersAbstract {
     @Parameter(names = "--hostname", required = true, description = "target server hostname")
     protected String hostname;
 
-    /** Writes help info in case of exception */
+    /**
+     * Writes help info in case of exception
+     * @param e exception to be logged
+     */
     protected static void logException(Exception e) {
+        System.out.println(e.getClass().getName());
         System.out.println(e.getMessage());
         System.out.println(HELP);
     }

@@ -9,8 +9,6 @@ import ru.spbau.zhidkov.utils.Query;
 
 import java.io.*;
 import java.net.InetSocketAddress;
-import java.nio.channels.FileChannel;
-import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.file.Path;
 import java.util.Map;
@@ -63,8 +61,8 @@ public class Client {
      * @throws IOException in case of errors in IO operations
      */
     public void executeGet(Path path, Path pathToSave) throws IOException {
-        sendQuery(new Query(Query.QueryType.GET.getTypeNumber(), path));
-        getFileFromServer(pathToSave, FileSystem.outputChannelOfInner(pathToSave));
+        sendQuery(new Query(Query.QueryType.GET, path));
+        readAnsFromServer(fileSystem.getBufferedOutputStream(pathToSave));
     }
 
     /**
@@ -75,14 +73,11 @@ public class Client {
      * is equal to {@code true} then key is folder.
      * @throws IOException in case of errors in IO operations
      */
-    public Map<Path, Boolean> executeList(Path path) throws IOException {
-        sendQuery(new Query(Query.QueryType.LIST.getTypeNumber(), path));
-        System.out.println("sent");
-        Path tmpFile = fileSystem.createTmpFile();
-        System.out.println("tmp");
-        getFileFromServer(tmpFile, fileSystem.outputChannelOf(tmpFile));
-        System.out.println("got");
-        FilesList filesList = FilesList.buildFromFile(tmpFile, fileSystem);
+    public Map<Path, FilesList.FileType> executeList(Path path) throws IOException {
+        sendQuery(new Query(Query.QueryType.LIST, path));
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        readAnsFromServer(outputStream);
+        FilesList filesList = FilesList.formByteArray(outputStream.toByteArray());
         return filesList.getFiles();
     }
 
@@ -93,58 +88,18 @@ public class Client {
      */
     public void disconnect() throws IOException {
         socketChannel.close();
-        fileSystem.rmTmpFiles();
     }
 
     private void sendQuery(Query query) throws IOException {
-        Path tmpFilePath = fileSystem.createTmpFile();
-        fileSystem.write(tmpFilePath, query.toByteArray());
-
-        ReadableByteChannel fileChannel = fileSystem.inputChannelOf(tmpFilePath);
-        Writer fileWriter = new Writer(fileChannel, socketChannel, fileSystem.sizeOf(tmpFilePath));
-        while (!fileWriter.write()) ;
-        fileChannel.close();
+        byte[] bytesToWrite = query.toByteArray();
+        Writer fileWriter = new Writer(socketChannel, bytesToWrite.length, new ByteArrayInputStream(bytesToWrite));
+        while (!fileWriter.write());
     }
 
-    private void getFileFromServer(Path path, FileChannel fileChannel) throws IOException {
-        System.out.println(path);
-        FileReader fileReader = new FileReader(socketChannel, fileChannel);
-        while (!fileReader.read()) ;
-        System.out.println(path + " closed");
-        fileChannel.close();
-
-    }
-
-    /**
-     * Class for reading data from <tt>ReadableByteChannel</tt>
-     * to <tt>FileChannel</tt>
-     */
-    private class FileReader extends Reader {
-
-        private FileChannel fileChannel;
-
-        public FileReader(ReadableByteChannel readableByteChannel, FileChannel fileChannel) {
-            super(readableByteChannel);
-            this.fileChannel = fileChannel;
-        }
-
-        /**
-         * Operation should be performed after <tt>ByteBuffer</tt> got
-         * updated.
-         *
-         * @return whether update was complete or not
-         * @throws IOException in case of errors in IO operations
-         */
-        @Override
-        protected boolean update() throws IOException {
-            while (byteBuffer.hasRemaining()) {
-                long written = fileChannel.write(byteBuffer);
-                if (written == 0) {
-                    return false;
-                }
-            }
-            return true;
-        }
+    private void readAnsFromServer(OutputStream outputStream) throws IOException {
+        Reader reader = new Reader(socketChannel, outputStream);
+        while (!reader.read()) ;
+        reader.closeStream();
     }
 
 }

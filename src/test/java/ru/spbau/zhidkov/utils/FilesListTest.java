@@ -14,6 +14,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertTrue;
 
 /** Class testing (de)serialization of <tt>FilesList</tt> class */
@@ -24,27 +25,18 @@ public class FilesListTest {
 
     @Test
     public void serializeDeserialize() throws IOException {
-        FilesList filesList = new FilesList(ImmutableMap.of(Paths.get("a"), true, Paths.get("b\\c\\d"),
-                false, Paths.get("d\\g\\q"), true));
-        File file = folder.newFile();
-        filesList.writeToFile(file.toPath(), new FileSystem(Paths.get(folder.getRoot().getAbsolutePath())));
-        FilesList filesList1 = FilesList.buildFromFile(file.toPath(), new FileSystem(Paths.get(folder.getRoot()
-                .getAbsolutePath())));
+        FilesList filesList = new FilesList(ImmutableMap.of(Paths.get("a"), FilesList.FileType.FILE, Paths.get("b\\c\\d"),
+                FilesList.FileType.FOLDER, Paths.get("d\\g\\q"), FilesList.FileType.FILE));
+
+        FilesList filesList1 = FilesList.formByteArray(filesList.toByteArray());
         assertTrue(CollectionUtils.isEqualCollection(filesList.getFiles().entrySet(), filesList1.getFiles().entrySet()));
     }
 
     @Test
     public void deserializeSerialize() throws IOException {
-        File file1 = folder.newFile();
-        File file2 = folder.newFile();
-        Files.write(file1.toPath(), "abctrue\n".getBytes(), StandardOpenOption.APPEND);
-        Files.write(file1.toPath(), "e\\f\\wqerfalse\n".getBytes(), StandardOpenOption.APPEND);
-        Files.write(file1.toPath(), "ketfalse\n".getBytes(), StandardOpenOption.APPEND);
-        FilesList filesList = FilesList.buildFromFile(file1.toPath(), new FileSystem(Paths.get(folder.getRoot()
-                .getAbsolutePath())));
-        filesList.writeToFile(file2.toPath(), new FileSystem(Paths.get(folder.getRoot().getAbsolutePath())));
-        List<String> file1Strings = Files.readAllLines(file1.toPath());
-        List<String> file2Strings = Files.readAllLines(file1.toPath());
-        assertTrue(CollectionUtils.isEqualCollection(file1Strings, file2Strings));
+        FilesList filesList = new FilesList(ImmutableMap.of(Paths.get("a"), FilesList.FileType.FILE, Paths.get("b\\c\\d"),
+                FilesList.FileType.FOLDER, Paths.get("d\\g\\q"), FilesList.FileType.FILE));
+        byte[] byteList = filesList.toByteArray();
+        assertArrayEquals(byteList, FilesList.formByteArray(byteList).toByteArray());
     }
 }

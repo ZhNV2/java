@@ -22,3 +22,9 @@ Double click to download file.
 Despite of essential performance, now there are several technical issues (such as file channels).
 I hope I'll fix them in 3-4 days.
 
+## Updates
+
+Now file channels are removed, but there is still a problem with continuous connection between server and client.
+Also button exit does not work.
+Hope fix it in several days.
+

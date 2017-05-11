@@ -1,13 +1,12 @@
 package ru.spbau.zhidkov.server;
 
-import org.apache.commons.lang3.ArrayUtils;
 import ru.spbau.zhidkov.IO.FileSystem;
 import ru.spbau.zhidkov.IO.Reader;
 import ru.spbau.zhidkov.IO.Writer;
 import ru.spbau.zhidkov.utils.FilesList;
 import ru.spbau.zhidkov.utils.Query;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.channels.*;
 import java.nio.file.Path;
@@ -31,8 +30,10 @@ public class Server {
 
     /**
      * Starts server cycle
+     * @throws IOException in case of errors in IO operations
      */
     public void start() throws IOException {
+
         selector = Selector.open();
 
         ServerSocketChannel serverChannel = ServerSocketChannel.open();
@@ -58,7 +59,6 @@ public class Server {
                 }
             }
         }
-        fileSystem.rmTmpFiles();
         serverChannel.socket().close();
     }
 
@@ -91,115 +91,80 @@ public class Server {
         ServerSocketChannel serverChannel = (ServerSocketChannel) key.channel();
         SocketChannel channel = serverChannel.accept();
         channel.configureBlocking(false);
-        QueryReader queryReader = new QueryReader(channel);
-        channel.register(key.selector(), SelectionKey.OP_READ, queryReader);
+        Reader reader = new Reader(channel, new ByteArrayOutputStream());
+        channel.register(key.selector(), SelectionKey.OP_READ, reader);
     }
 
     private void read(SelectionKey key) throws IOException {
-        QueryReader queryReader = (QueryReader) key.attachment();
-        if (!queryReader.read()) {
+        if (key.attachment() == null) {
             return;
         }
-        answerQuery(queryReader.getQuery(), key);
+        Reader reader = (Reader) key.attachment();
+        if (!reader.read()) {
+            return;
+        }
+        Query query = Query.fromByteArray(((ByteArrayOutputStream) reader.getOutputStream()).toByteArray());
+        answerQuery(query, key);
     }
 
     private void write(SelectionKey key) throws IOException {
         Writer writer = (Writer) key.attachment();
-        writer.write();
+        if (!writer.write()) {
+            return;
+        }
+        writer.closeStream();
+        key.cancel();
     }
 
     private void answerQuery(Query query, SelectionKey key) throws IOException {
         if (!fileSystem.exists(query.getPath())) {
-            sendEmptyFile(key);
+            sendEmptyAnswer(key);
             return;
         }
         switch (query.getType()) {
-            case 1: {
+            case LIST: {
                 if (!fileSystem.isDir(query.getPath())) {
-                    sendEmptyFile(key);
+                    sendEmptyAnswer(key);
                 }
-                Path tmpFile = fileSystem.createTmpFile();
-                getDirList(query).writeToFile(tmpFile, fileSystem);
-                runWriter(tmpFile, key);
+                sendFilesList(getFileList(query), key);
                 break;
             }
-            case 2: {
-                runWriter(query.getPath(), key);
+            case GET: {
+                sendFile(query.getPath(), key);
                 break;
             }
             default: {
-                sendEmptyFile(key);
+                sendEmptyAnswer(key);
             }
         }
     }
 
+    private void sendFilesList(FilesList filesList, SelectionKey key) throws IOException {
+        byte[] byteFileList = filesList.toByteArray();
+        runWriter(byteFileList.length, new ByteArrayInputStream(byteFileList), key);
+    }
 
-    private FilesList getDirList(Query query) throws IOException {
-        Map<Path, Boolean> dirs = new HashMap<>();
+    private void sendFile(Path path, SelectionKey key) throws IOException {
+        runWriter(fileSystem.sizeOf(path), fileSystem.getBufferedInputStream(path), key);
+    }
+
+    private FilesList getFileList(Query query) throws IOException {
+        Map<Path, FilesList.FileType> dirs = new HashMap<>();
         List<Path> paths = fileSystem.list(query.getPath()).collect(Collectors.toList());
         for (Path path : paths) {
-            if (!fileSystem.isTmpFile(path)) {
-                dirs.put(path, fileSystem.isDir(path));
-            }
+            dirs.put(path, fileSystem.isDir(path) ? FilesList.FileType.FOLDER : FilesList.FileType.FILE);
         }
         return new FilesList(dirs);
     }
 
-    private void runWriter(Path path, SelectionKey key) throws IOException {
+    private void runWriter(long size, InputStream inputStream, SelectionKey key) throws IOException {
         SocketChannel channel = (SocketChannel) key.channel();
-        FileChannel fileChannel = fileSystem.inputChannelOf(path);
-        Writer fileWriter = new Writer(fileChannel, channel, fileSystem.sizeOf(path)) {
-            @Override
-            public void finish() throws IOException {
-                fileChannel.close();
-                key.cancel();
-                fileSystem.rmTmpFiles();
-            }
-        };
-        channel.register(key.selector(), SelectionKey.OP_WRITE, fileWriter);
+        channel.register(key.selector(), SelectionKey.OP_WRITE, new Writer(channel, size, inputStream));
     }
 
-    private void sendEmptyFile(SelectionKey key) throws IOException {
-        Path path = fileSystem.createTmpFile();
-        runWriter(path, key);
+    private void sendEmptyAnswer(SelectionKey key) throws IOException {
+        sendFilesList(new FilesList(new HashMap<>()), key);
     }
 
-    /** Class for reading query from <tt>ReadableByteChannel</tt>*/
-    public static class QueryReader extends Reader {
 
-        private byte[] bytes = new byte[0];
-
-        public QueryReader(ReadableByteChannel readableByteChannel) {
-            super(readableByteChannel);
-        }
-
-        /**
-         * Action that should be performed after something
-         * was read in <tt>ByteBuffer</tt>
-         *
-         * @return if update was successful or not
-         * @throws IOException in case of errors in IO operations
-         */
-        @Override
-        protected boolean update() throws IOException {
-            while (byteBuffer.hasRemaining()) {
-                byte[] tmp = new byte[byteBuffer.remaining()];
-                byteBuffer.get(tmp);
-                bytes = ArrayUtils.addAll(bytes, tmp);
-            }
-            return true;
-        }
-
-        /**
-         * Returns query that was read from channel.
-         * Should be called only after {@link #read() Reader::read()}
-         * returns {@code true}
-         *
-         * @return read query
-         * @throws IOException in case of errors in IO operations
-         */
-        public Query getQuery() throws IOException {
-            return Query.buildQuery(bytes);
-        }
-    }
 }

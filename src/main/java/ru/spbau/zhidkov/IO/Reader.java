@@ -1,23 +1,39 @@
 package ru.spbau.zhidkov.IO;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 
-/** Class for reading data from <tt>ReadableByteChannel</tt> */
-abstract public class Reader {
+/**
+ * Class for reading data from <tt>ReadableByteChannel</tt>
+ * to <tt>OutputStream</tt>
+ */
+public class Reader {
 
     private static final int BUFFER_SIZE = 2048;
 
-    protected ByteBuffer byteBuffer;
+    private ByteBuffer byteBuffer;
     private ReadableByteChannel readableByteChannel;
     private long bytesToRead = -1;
     private long bytesAlreadyRead = 0;
     private boolean isBytesToReadSet = false;
     private boolean waitingForUpdate = false;
+    private OutputStream outputStream;
 
-    public Reader(ReadableByteChannel readableByteChannel) {
+    public OutputStream getOutputStream() {
+        return outputStream;
+    }
+
+    /**
+     * Builds new <tt>Reader</tt> from giver params
+     *
+     * @param readableByteChannel channel to read from
+     * @param outputStream stream to write to
+     */
+    public Reader(ReadableByteChannel readableByteChannel, OutputStream outputStream) {
         this.readableByteChannel = readableByteChannel;
+        this.outputStream = outputStream;
         byteBuffer = ByteBuffer.allocate(BUFFER_SIZE);
     }
 
@@ -33,9 +49,7 @@ abstract public class Reader {
         while (true) {
             if (isBytesToReadSet) {
                 if (waitingForUpdate) {
-                    if (!update()) {
-                        return false;
-                    }
+                    write();
                     waitingForUpdate = false;
                 }
                 if (bytesToRead == bytesAlreadyRead) {
@@ -78,6 +92,13 @@ abstract public class Reader {
         return true;
     }
 
-    protected abstract boolean update() throws IOException;
+    private void write() throws IOException {
+        while (byteBuffer.hasRemaining()) {
+            outputStream.write(byteBuffer.get());
+        }
+    }
 
+    public void closeStream() throws IOException {
+        outputStream.close();
+    }
 }
