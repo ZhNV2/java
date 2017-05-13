@@ -28,3 +28,7 @@ Now file channels are removed, but there is still a problem with continuous conn
 Also button exit does not work.
 Hope fix it in several days.
 
+## Upd 2
+
+Now all issues were fixed
+

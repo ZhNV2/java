@@ -113,7 +113,9 @@ public class Server {
             return;
         }
         writer.closeStream();
-        key.cancel();
+        SocketChannel channel = (SocketChannel) key.channel();
+        Reader reader = new Reader(channel, new ByteArrayOutputStream());
+        channel.register(key.selector(), SelectionKey.OP_READ, reader);
     }
 
     private void answerQuery(Query query, SelectionKey key) throws IOException {

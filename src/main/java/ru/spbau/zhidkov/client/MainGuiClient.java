@@ -1,13 +1,11 @@
 package ru.spbau.zhidkov.client;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
+import javafx.scene.control.*;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
@@ -19,6 +17,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.Optional;
 
 /** Class providing graphical interface */
 public class MainGuiClient extends Application {
@@ -47,24 +46,21 @@ public class MainGuiClient extends Application {
             try {
                 buildTree(stage);
             } catch (IOException e) {
-                // TODO: alert
+                showErrorAlert();
             }
         });
-//        Button buttonExit = new Button("exit");
-//        buttonExit.setOnAction(event -> {
-//            try {
-//                if (client != null) {
-//                    client.disconnect();
-//                    // TODO: stop;
-//                }
-//            } catch (IOException e) {
-//                // TODO: alert
-//            } catch (Exception e) {
-//                // TODO: wtf?
-//            }
-//        });
-
-        vBox.getChildren().addAll(hostField, portField, buttonStart);
+        Button buttonExit = new Button("exit");
+        buttonExit.setOnAction(event -> {
+            try {
+                if (client != null) {
+                    client.disconnect();
+                }
+                Platform.exit();
+            } catch (Exception e) {
+                showErrorAlert();
+            }
+        });
+        vBox.getChildren().addAll(hostField, portField, buttonStart, buttonExit);
         root.getChildren().add(vBox);
         stage.setScene(new Scene(root, 300, 250));
         stage.show();
@@ -97,6 +93,13 @@ public class MainGuiClient extends Application {
         client = Client.buildClient(hostField.getText(), Integer.valueOf(portField.getText()),
                 Paths.get(System.getProperty("user.dir")));
         client.connect();
+    }
+
+    private void showErrorAlert() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Information Dialog");
+        alert.setHeaderText("Error!");
+        alert.setContentText("Problems, try again");
     }
 
     private static class TreeItemPath extends TreeItem<Path> {
@@ -144,7 +147,6 @@ public class MainGuiClient extends Application {
         private ObservableList<TreeItem<Path>> buildChildren() {
             try {
                 ObservableList<TreeItem<Path>> children = FXCollections.observableArrayList();
-                client.connect();
                 Map<Path, FilesList.FileType> files = client.executeList(path);
                 for (Map.Entry<Path, FilesList.FileType> entry : files.entrySet()) {
                     children.add(new TreeItemPath(entry.getKey(), entry.getValue().equals(FilesList.FileType.FOLDER), hostname, port, client));
