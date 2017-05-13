@@ -62,7 +62,12 @@ public class VcsCommit extends VcsObject {
      * @param childrenRm       <tt>List</tt> of files were removed in this
      *                         commit
      */
-    public VcsCommit(FileSystem fileSystem, ObjectSerializer objectSerializer, String message, Date date,
+    public static VcsCommit buildVcsCommit(FileSystem fileSystem, ObjectSerializer objectSerializer, String message, Date date,
+                     String author, String prevCommitHash, Map<Path, String> childrenAdd, List<Path> childrenRm) {
+        return new VcsCommit(fileSystem, objectSerializer, message, date, author, prevCommitHash, childrenAdd, childrenRm);
+    }
+
+    private VcsCommit(FileSystem fileSystem, ObjectSerializer objectSerializer, String message, Date date,
                      String author, String prevCommitHash, Map<Path, String> childrenAdd, List<Path> childrenRm) {
         super(fileSystem, objectSerializer);
         this.message = message;

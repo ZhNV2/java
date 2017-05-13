@@ -50,7 +50,7 @@ public class VcsObjectHandler {
     @NotNull
     VcsCommit buildCommit(String message, Date date, String author,
                           String prevCommitHash, Map<Path, String> childrenAdd, List<Path> childrenRm) {
-        return new VcsCommit(fileSystem, objectSerializer, message, date, author, prevCommitHash, childrenAdd, childrenRm);
+        return VcsCommit.buildVcsCommit(fileSystem, objectSerializer, message, date, author, prevCommitHash, childrenAdd, childrenRm);
     }
 
     /**

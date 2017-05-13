@@ -17,6 +17,7 @@ import ru.spbau.zhidkov.vcs.file.FileSystem;
 import ru.spbau.zhidkov.vcs.file.ObjectSerializer;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -72,8 +73,11 @@ public class CommitCommandTest {
             Object[] args = invocation.getArguments();
             ObjectSerializer objectSerializer = mock(ObjectSerializer.class);
             when(objectSerializer.serialize(any())).thenReturn("abc");
-            return new VcsCommit(mock(FileSystem.class), objectSerializer, (String) args[0], (Date) args[1],
-                    (String) args[2], (String) args[3], (Map<Path, String>) args[4], (List<Path>) args[5]);
+            Constructor<VcsCommit> commitConstructor = VcsCommit.class.getDeclaredConstructor(FileSystem.class,
+                    ObjectSerializer.class, String.class, Date.class, String.class, String.class, Map.class, List.class);
+            commitConstructor.setAccessible(true);
+            return commitConstructor.newInstance(mock(FileSystem.class), objectSerializer, args[0], args[1],
+                    args[2], args[3], args[4], args[5]);
         });
 
         CommitCommand commitCommand = new CommitCommand(vcsFileHandler, branchHandler);
