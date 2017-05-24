@@ -50,7 +50,12 @@ public class Client {
         socketChannel = SocketChannel.open();
         socketChannel.configureBlocking(false);
         socketChannel.connect(new InetSocketAddress(hostname, port));
-        while (!socketChannel.finishConnect());
+        while (!socketChannel.finishConnect()) {
+        }
+    }
+
+    public boolean isConnected() {
+        return socketChannel.isConnected();
     }
 
     /**
@@ -93,12 +98,16 @@ public class Client {
     private void sendQuery(Query query) throws IOException {
         byte[] bytesToWrite = query.toByteArray();
         Writer fileWriter = new Writer(socketChannel, bytesToWrite.length, new ByteArrayInputStream(bytesToWrite));
-        while (!fileWriter.write());
+        while (!fileWriter.write()) {
+
+        }
     }
 
     private void readAnsFromServer(OutputStream outputStream) throws IOException {
         Reader reader = new Reader(socketChannel, outputStream);
-        while (!reader.read()) ;
+        while (!reader.read()) {
+
+        }
         reader.closeStream();
     }
 

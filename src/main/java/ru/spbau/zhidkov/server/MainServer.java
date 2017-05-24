@@ -47,6 +47,7 @@ public class MainServer extends MainParametersAbstract {
         while (true) {
             System.out.print("server>");
             String text = scanner.next();
+
             if (text.equals(STOP_COMMAND)) {
                 server.stop();
                 break;

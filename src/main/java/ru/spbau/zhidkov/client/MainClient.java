@@ -11,20 +11,10 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.Scanner;
 
 /** Main class for client work */
 public class MainClient extends MainParametersAbstract {
-
-    @Parameter(names = "--query", required = true, description = "parameter \"get\" copies file from server, " +
-            "\"list\" returns list of files in required path")
-    private String query;
-
-    @Parameter(names = "--path", required = true, description = "path to query file")
-    private String path;
-
-    @Parameter(names = "--save", required = false, description = "path to save file in get query, " +
-            "otherwise it's equal to path")
-    private String pathToSave;
 
     /**
      * Starts client work
@@ -36,7 +26,11 @@ public class MainClient extends MainParametersAbstract {
             MainClient mainClient = new MainClient();
             JCommander jCommander = new JCommander(mainClient, args);
             mainClient.execute(jCommander);
+        } catch (ParameterException e) {
+            System.out.println("An error occurred during the parsing:");
+            logException(e);
         } catch (Exception e) {
+            System.out.println("An error occurred during the connecting to the server:");
             logException(e);
         }
     }
@@ -46,21 +40,17 @@ public class MainClient extends MainParametersAbstract {
             jCommander.usage();
             return;
         }
-        Client client = Client.buildClient(hostname, serverPort, Paths.get(System.getProperty("user.dir")));
+        final Scanner scanner = new Scanner(System.in);
+        final Client client = Client.buildClient(hostname, serverPort, Paths.get(System.getProperty("user.dir")));
         client.connect();
-
-        if (query.equals(Query.QueryType.LIST.toString().toLowerCase())) {
-            Map<Path, FilesList.FileType> map = client.executeList(Paths.get(path));
-            for (Map.Entry<Path, FilesList.FileType> entry : map.entrySet()) {
-                System.out.println(entry.getKey().toString() + "  " + entry.getValue().toString());
+        while (true) {
+            System.out.print("client>");
+            CommandLineHandler commandLineHandler = new CommandLineHandler();
+            String[] args = scanner.nextLine().split(" ");
+            if (commandLineHandler.execute(client, args)) {
+                break;
             }
-        } else if (query.equals(Query.QueryType.GET.toString().toLowerCase())) {
-            client.executeGet(Paths.get(path), Paths.get(pathToSave == null ? path : pathToSave));
-        } else {
-            client.disconnect();
-            throw new ParameterException("query parameter should be either list or get");
         }
-        client.disconnect();
     }
 
 }

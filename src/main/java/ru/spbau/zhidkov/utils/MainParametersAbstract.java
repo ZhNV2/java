@@ -23,7 +23,6 @@ public abstract class MainParametersAbstract {
      * @param e exception to be logged
      */
     protected static void logException(Exception e) {
-        System.out.println(e.getClass().getName());
         System.out.println(e.getMessage());
         System.out.println(HELP);
     }

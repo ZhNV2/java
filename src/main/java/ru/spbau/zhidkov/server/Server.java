@@ -50,12 +50,18 @@ public class Server {
                 if (!key.isValid()) {
                     continue;
                 }
-                if (key.isAcceptable()) {
-                    accept(key);
-                } else if (key.isReadable()) {
-                    read(key);
-                } else if (key.isWritable()) {
-                    write(key);
+                try {
+                    if (key.isAcceptable()) {
+                        accept(key);
+                    } else if (key.isReadable()) {
+                        read(key);
+                    } else if (key.isWritable()) {
+                        write(key);
+                    }
+                } catch (Exception e) {
+                    System.out.println("key is closed because of " + e.getMessage());
+                    key.channel().close();
+                    key.cancel();
                 }
             }
         }

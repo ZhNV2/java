@@ -35,7 +35,7 @@ public class IntegrationTest {
             Paths.get("./dir1/c"), false, Paths.get("./dir1/dir2"), true, Paths.get("."), true);
 
     @Before
-    public void preparation() throws IOException {
+    public void preparation() throws IOException, InterruptedException {
         for (Map.Entry<Path, Boolean> entry : dirs.entrySet()) {
             if (entry.getKey().equals(Paths.get("."))) {
                 continue;
@@ -56,11 +56,17 @@ public class IntegrationTest {
                 e.printStackTrace();
             }
         }).start();
+        Thread.sleep(1000);
         client.connect();
     }
 
     @Test(timeout = 5000)
-    public void performList() throws IOException {
+    public void test() throws IOException {
+        performGet();
+        performList();
+    }
+
+    private void performList() throws IOException {
         Map<Path, FilesList.FileType> res = client.executeList(Paths.get(temporaryFolderServer.getRoot().getAbsolutePath()));
         Map<Path, FilesList.FileType> realRes = new HashMap<>();
         realRes.put(Paths.get("a"), FilesList.FileType.FILE);
@@ -68,8 +74,7 @@ public class IntegrationTest {
         assertTrue(CollectionUtils.isEqualCollection(res.entrySet(), realRes.entrySet()));
     }
 
-    @Test(timeout = 5000)
-    public void performGet() throws IOException {
+    private void performGet() throws IOException {
         Files.write(Paths.get(temporaryFolderServer.getRoot().getAbsolutePath()).resolve(Paths.get("./dir1/c")),
                 "hello!".getBytes());
         client.executeGet(Paths.get("./dir1/c"), Paths.get(temporaryFolderClient.getRoot().getAbsolutePath())
