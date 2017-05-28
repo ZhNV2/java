@@ -12,7 +12,7 @@ task fatJar(type: Jar) {
     manifest {
         attributes 'Implementation-Title': 'Vcs Jar File',
                 'Implementation-Version': version,
-                'Main-Class': 'ru.console.Main'
+                'Main-Class': 'ru.spbau.zhidkov.console.Main'
     }
     baseName = project.name + '-all'
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
