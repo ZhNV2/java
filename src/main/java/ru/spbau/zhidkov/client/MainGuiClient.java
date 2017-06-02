@@ -2,10 +2,9 @@ package ru.spbau.zhidkov.client;
 
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
@@ -17,7 +16,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
-import java.util.Optional;
 
 /** Class providing graphical interface */
 public class MainGuiClient extends Application {
@@ -32,6 +30,9 @@ public class MainGuiClient extends Application {
     private VBox vBox = new VBox();
     private Client client = null;
     private boolean started = false;
+    private Path currentPath = Paths.get(".");
+    private ListView<String> listView = null;
+
 
     /** Starts UI */
     @Override
@@ -44,7 +45,9 @@ public class MainGuiClient extends Application {
             }
             started = true;
             try {
-                buildTree(stage);
+                startClient();
+
+                showList(stage);
             } catch (IOException e) {
                 showErrorAlert();
             }
@@ -66,28 +69,49 @@ public class MainGuiClient extends Application {
         stage.show();
     }
 
-    private void buildTree(Stage stage) throws IOException {
-        startClient();
-        TreeItem<Path> root1 = new TreeItemPath(Paths.get("."), true, hostField.getText(),
-                Integer.valueOf(portField.getText()), client);
-        TreeView treeView = new TreeView<>(root1);
-        treeView.setOnMouseClicked(mouseEvent -> {
-            if (mouseEvent.getClickCount() == 2) {
-                TreeItemPath item = (TreeItemPath) treeView.getSelectionModel().getSelectedItem();
-                if (item != null && !item.isDir()) {
+    private void showList(Stage stage) throws IOException {
+        vBox.getChildren().clear();
+        listView = new ListView<>();
+        final Map<Path, FilesList.FileType> files = client.executeList(currentPath);
+        for (Map.Entry<Path, FilesList.FileType> entry : files.entrySet()) {
+            String path = entry.getKey().toString();
+            if (entry.getValue().equals(FilesList.FileType.FOLDER) &&
+                    !String.valueOf(path.charAt(path.length() - 1)).equals(File.separator)) {
+                path += File.separator;
+            }
+            listView.getItems().add(path);
+        }
+        listView.setOnKeyPressed(keyEvent -> {
+            if (keyEvent.getCode() != KeyCode.ENTER) {
+                return;
+            }
+            String item = listView.getSelectionModel().getSelectedItem();
+            Path path = Paths.get(item);
+            switch (files.get(path)) {
+                case FILE: {
                     fileChooser.setTitle("Save file as");
                     File file = fileChooser.showSaveDialog(stage);
                     if (file != null) {
                         try {
-                            client.executeGet(item.getPath(), file.toPath());
+                            client.executeGet(path, file.toPath());
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
                     }
+                    break;
+                }
+                case FOLDER: {
+                    currentPath = Paths.get(currentPath.toString(), path.toString());
+                    try {
+                        showList(stage);
+                    } catch (IOException e) {
+                        showErrorAlert();
+                    }
+                    break;
                 }
             }
         });
-        vBox.getChildren().add(treeView);
+        vBox.getChildren().add(listView);
     }
 
     private void startClient() throws IOException {
@@ -101,62 +125,5 @@ public class MainGuiClient extends Application {
         alert.setTitle("Information Dialog");
         alert.setHeaderText("Error!");
         alert.setContentText("Problems, try again");
-    }
-
-    private static class TreeItemPath extends TreeItem<Path> {
-
-        public boolean isDir() {
-            return isDir;
-        }
-
-        private boolean isDir;
-
-        public Path getPath() {
-            return path;
-        }
-
-
-        private Path path;
-        private String hostname;
-        private int port;
-        private Client client;
-        private boolean firstTime = true;
-
-        public TreeItemPath(Path path, boolean isDir, String hostname, int port, Client client) {
-            super(path);
-            this.path = path;
-            this.isDir = isDir;
-            this.hostname = hostname;
-            this.port = port;
-            this.client = client;
-        }
-
-        @Override
-        public ObservableList<TreeItem<Path>> getChildren() {
-            if (firstTime) {
-                firstTime = false;
-                super.getChildren().setAll(buildChildren());
-            }
-            return super.getChildren();
-        }
-
-        @Override
-        public boolean isLeaf() {
-            return !isDir;
-        }
-
-        private ObservableList<TreeItem<Path>> buildChildren() {
-            try {
-                ObservableList<TreeItem<Path>> children = FXCollections.observableArrayList();
-                Map<Path, FilesList.FileType> files = client.executeList(path);
-                for (Map.Entry<Path, FilesList.FileType> entry : files.entrySet()) {
-                    children.add(new TreeItemPath(entry.getKey(), entry.getValue().equals(FilesList.FileType.FOLDER), hostname, port, client));
-                }
-                return children;
-            } catch (IOException e) {
-                e.printStackTrace();
-                return FXCollections.emptyObservableList();
-            }
-        }
     }
 }

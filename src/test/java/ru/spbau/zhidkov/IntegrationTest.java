@@ -62,12 +62,13 @@ public class IntegrationTest {
 
     @Test(timeout = 5000)
     public void test() throws IOException {
-        performGet();
         performList();
+        performGet();
+
     }
 
     private void performList() throws IOException {
-        Map<Path, FilesList.FileType> res = client.executeList(Paths.get(temporaryFolderServer.getRoot().getAbsolutePath()));
+        Map<Path, FilesList.FileType> res = client.executeList(Paths.get("."));
         Map<Path, FilesList.FileType> realRes = new HashMap<>();
         realRes.put(Paths.get("a"), FilesList.FileType.FILE);
         realRes.put(Paths.get("dir1"), FilesList.FileType.FOLDER);

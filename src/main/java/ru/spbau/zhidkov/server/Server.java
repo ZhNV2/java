@@ -162,7 +162,10 @@ public class Server {
         List<Path> paths = fileSystem.list(query.getPath()).collect(Collectors.toList());
         dirs.put(Paths.get(".."), FilesList.FileType.FOLDER);
         for (Path path : paths) {
-            dirs.put(path, fileSystem.isDir(path) ? FilesList.FileType.FOLDER : FilesList.FileType.FILE);
+//            System.out.println(path);
+//            System.out.println(query.getPath());
+//            System.out.println();
+            dirs.put(query.getPath().relativize(path), fileSystem.isDir(path) ? FilesList.FileType.FOLDER : FilesList.FileType.FILE);
         }
         return new FilesList(dirs);
     }
