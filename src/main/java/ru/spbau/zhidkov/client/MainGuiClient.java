@@ -75,7 +75,8 @@ public class MainGuiClient extends Application {
             if (mouseEvent.getClickCount() == 2) {
                 TreeItemPath item = (TreeItemPath) treeView.getSelectionModel().getSelectedItem();
                 if (item != null && !item.isDir()) {
-                    File file = fileChooser.showOpenDialog(stage);
+                    fileChooser.setTitle("Save file as");
+                    File file = fileChooser.showSaveDialog(stage);
                     if (file != null) {
                         try {
                             client.executeGet(item.getPath(), file.toPath());

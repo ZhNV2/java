@@ -10,6 +10,7 @@ import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.channels.*;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -159,6 +160,7 @@ public class Server {
     private FilesList getFileList(Query query) throws IOException {
         Map<Path, FilesList.FileType> dirs = new HashMap<>();
         List<Path> paths = fileSystem.list(query.getPath()).collect(Collectors.toList());
+        dirs.put(Paths.get(".."), FilesList.FileType.FOLDER);
         for (Path path : paths) {
             dirs.put(path, fileSystem.isDir(path) ? FilesList.FileType.FOLDER : FilesList.FileType.FILE);
         }

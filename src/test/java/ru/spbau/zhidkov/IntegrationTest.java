@@ -71,6 +71,7 @@ public class IntegrationTest {
         Map<Path, FilesList.FileType> realRes = new HashMap<>();
         realRes.put(Paths.get("a"), FilesList.FileType.FILE);
         realRes.put(Paths.get("dir1"), FilesList.FileType.FOLDER);
+        realRes.put(Paths.get(".."), FilesList.FileType.FOLDER);
         assertTrue(CollectionUtils.isEqualCollection(res.entrySet(), realRes.entrySet()));
     }
 
