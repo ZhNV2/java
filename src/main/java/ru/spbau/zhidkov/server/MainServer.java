@@ -1,6 +1,7 @@
 package ru.spbau.zhidkov.server;
 
 import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
 import ru.spbau.zhidkov.utils.MainParametersAbstract;
 
 import java.io.IOException;
@@ -9,6 +10,9 @@ import java.util.Scanner;
 
 /** Main class for server */
 public class MainServer extends MainParametersAbstract {
+
+    @Parameter(names = "--port", required = true, description = "target server port")
+    private int serverPort;
 
     private final static String STOP_COMMAND = "stop";
 
@@ -34,7 +38,7 @@ public class MainServer extends MainParametersAbstract {
         }
 
         System.out.println("server has started, type \"stop\" to finish it");
-        Server server = Server.buildServer(hostname, serverPort, Paths.get(System.getProperty("user.dir")));
+        Server server = Server.buildServer(serverPort, Paths.get(System.getProperty("user.dir")));
         new Thread(() -> {
             try {
                 server.start();

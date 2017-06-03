@@ -12,11 +12,6 @@ public abstract class MainParametersAbstract {
 
     private final static String HELP = "use --help for more information";
 
-    @Parameter(names = "--port", required = true, description = "target server port")
-    protected int serverPort;
-
-    @Parameter(names = "--hostname", required = true, description = "target server hostname")
-    protected String hostname;
 
     /**
      * Writes help info in case of exception

@@ -18,13 +18,14 @@ import java.util.stream.Collectors;
 @SuppressWarnings("WeakerAccess")
 public class Server {
 
+    private final String HOSTNAME = "localhost";
     private InetSocketAddress serverAddress;
     private FileSystem fileSystem;
     private boolean shouldStop = false;
     private Selector selector;
 
-    private Server(String hostname, int port, FileSystem fileSystem) {
-        serverAddress = new InetSocketAddress(hostname, port);
+    private Server(int port, FileSystem fileSystem) {
+        serverAddress = new InetSocketAddress(HOSTNAME, port);
         this.fileSystem = fileSystem;
     }
 
@@ -72,14 +73,13 @@ public class Server {
     /**
      * Builds server from given data
      *
-     * @param hostname host name
      * @param serverPort port
      * @param basicFolder folder with which server is
      *                    going to work
      * @return <tt>Server</tt> instance
      */
-    public static Server buildServer(String hostname, int serverPort, Path basicFolder) {
-        return new Server(hostname, serverPort, new FileSystem(basicFolder));
+    public static Server buildServer(int serverPort, Path basicFolder) {
+        return new Server(serverPort, new FileSystem(basicFolder));
     }
 
     /**

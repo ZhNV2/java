@@ -16,6 +16,12 @@ import java.util.Scanner;
 /** Main class for client work */
 public class MainClient extends MainParametersAbstract {
 
+    @Parameter(names = "--port", required = true, description = "target server port")
+    private int serverPort;
+
+    @Parameter(names = "--hostname", required = true, description = "target server hostname")
+    private String hostname;
+
     /**
      * Starts client work
      *
