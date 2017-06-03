@@ -24,6 +24,9 @@ public class MainGuiClient extends Application {
         launch(args);
     }
 
+    private final static String DEFAULT_HOST = "localhost";
+    private final static String DEFAULT_PORT = "1234";
+
     private FileChooser fileChooser = new FileChooser();
     private TextField hostField = new TextField("host");
     private TextField portField = new TextField("port");
@@ -34,9 +37,12 @@ public class MainGuiClient extends Application {
     private ListView<String> listView = null;
 
 
+
     /** Starts UI */
     @Override
     public void start(Stage stage) throws IOException {
+        hostField.setText(DEFAULT_HOST);
+        portField.setText(DEFAULT_PORT);
         StackPane root = new StackPane();
         Button buttonStart = new Button("start");
         buttonStart.setOnAction(event -> {
@@ -81,6 +87,7 @@ public class MainGuiClient extends Application {
             }
             listView.getItems().add(path);
         }
+        listView.getSelectionModel().select(0);
         listView.setOnKeyPressed(keyEvent -> {
             if (keyEvent.getCode() != KeyCode.ENTER) {
                 return;
@@ -90,6 +97,7 @@ public class MainGuiClient extends Application {
             switch (files.get(path)) {
                 case FILE: {
                     fileChooser.setTitle("Save file as");
+                    fileChooser.setInitialFileName(path.toString());
                     File file = fileChooser.showSaveDialog(stage);
                     if (file != null) {
                         try {
