@@ -13,19 +13,15 @@ import java.util.Map;
 /** Class for handling command line client work cycle */
 public class CommandLineHandler {
 
-    @Parameter(names = "--help", help = true, description = "help information")
-    private boolean help;
+    private final static String HELP = "use help for more information";
+    private final static String USAGE = "use \"help\" for help\n" +
+            "use \"stop\" to finish work session\n" +
+            "use \"list dir\" to observe list of files in directory\n" +
+            "use \"get file\" to download file in the same place as file you're gonna download lies";
 
-    private final static String HELP = "use --help for more information";
-
-    @Parameter(names = "--list", description = " returns list of files in required path")
-    private String listDir;
-
-    @Parameter(names = "--get", description = "copies file from server")
-    private String getFile;
-
-    @Parameter(names = "--stop", description = "finishes communication")
-    private boolean stop = false;
+    private enum Command {
+        LIST, GET, HELP, STOP;
+    }
 
     /**
      * Executes query been provided with arguments from command line and
@@ -37,33 +33,25 @@ public class CommandLineHandler {
      */
     public boolean execute(Client client, String[] args) {
         try {
-            JCommander jCommander = new JCommander(this, args);
-
-            if (help) {
-                jCommander.usage();
-                return false;
-            }
-            if (stop) {
+            if (args.length == 1 && args[0].toUpperCase().equals(Command.STOP.toString())) {
                 return true;
             }
-
-            if (listDir != null && getFile != null) {
-                throw new ParameterException("Specify one query");
+            if (args.length == 1 && args[0].toUpperCase().equals(Command.HELP.toString())) {
+                System.out.println(USAGE);
+                return false;
             }
-            if (listDir == null && getFile == null) {
-                throw new ParameterException("you should provide list, get or stop instruction");
-            }
-
-            if (listDir != null) {
-                Map<Path, FilesList.FileType> map = client.executeList(Paths.get(listDir));
+            if (args.length == 2 && args[0].toUpperCase().equals(Command.LIST.toString())) {
+                Map<Path, FilesList.FileType> map = client.executeList(Paths.get(args[1]));
                 for (Map.Entry<Path, FilesList.FileType> entry : map.entrySet()) {
                     System.out.println(entry.getKey().toString() + "  " + entry.getValue().toString());
                 }
                 return false;
-            } else {
-                client.executeGet(Paths.get(getFile), Paths.get(getFile));
+            }
+            if (args.length == 2 && args[0].toUpperCase().equals(Command.GET.toString())) {
+                client.executeGet(Paths.get(args[1]), Paths.get(args[1]));
                 return false;
             }
+            throw new ParameterException("invalid command");
         } catch (ParameterException e) {
             logError("An error occurred during parsing:", e);
             return false;
