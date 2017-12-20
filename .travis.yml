@@ -1,0 +1,8 @@
+language: java
+jdk:
+  - oraclejdk8
+script:
+    - sudo iptables -I INPUT -p tcp -m tcp --dport 12345 -j ACCEPT
+    - ./gradlew test
+    - ./gradlew clientJar
+    - ./gradlew serverJar
